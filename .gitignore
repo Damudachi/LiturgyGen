@@ -19,3 +19,9 @@ Needed info/
 
 # Scratch scripts kept out of the repository.
 server/tmp/
+
+# Stray git directories kept beside the project (old history, backups).
+# A .git directory committed *into* a repository is junk at best and a way to
+# smuggle removed history back in at worst.
+git(old)/
+*.git/
