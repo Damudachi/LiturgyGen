@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Book Antiqua', 'Palatino Linotype', Palatino, Georgia, serif;
+
+  /* Liturgical colours, used for calendar day chips and season badges. */
+  --color-lit-green: #15803d;
+  --color-lit-violet: #6d28d9;
+  --color-lit-white: #a1a1aa;
+  --color-lit-red: #b91c1c;
+  --color-lit-rose: #db7093;
+  --color-lit-gold: #ca8a04;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-stone-100 text-stone-900 antialiased;
+}
+
+/* The document preview reproduces the printed missalette, so it uses the same
+   serif face and page proportions as the generated .docx. */
+.missalette {
+  font-family: var(--font-serif);
+  line-height: 1.35;
+}
+
+.missalette .doc-page {
+  width: 100%;
+  max-width: 46rem;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* A calmer scrollbar for the long preview and template panes. */
+.scroll-slim::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-stone-300;
+}
+.scroll-slim::-webkit-scrollbar-thumb:hover {
+  @apply bg-stone-400;
+}
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,13 @@
+Make the server test script portable across Node versions
+
+`node --test` only expands glob patterns on Node 21+, and the quoted
+pattern is not expanded by the shell either, so on Node 20.10 the runner
+received the literal string and failed to resolve it as a path. That is
+below the floor package.json declares in `engines`, so `npm test` was
+broken on the project's own stated minimum, not only in CI.
+
+With no arguments the runner scans the working directory, skips
+node_modules, and finds the same 74 tests on Node 18 through 22.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BTkKMUEjtr619qep3d6QMt

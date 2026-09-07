@@ -1,0 +1,21 @@
+node_modules/
+dist/
+*.log
+server/data/*.sqlite
+server/data/*.sqlite-journal
+server/data/*.sqlite-wal
+server/data/*.sqlite-shm
+server/.cache/
+output/
+.env
+.DS_Store
+
+# Copyrighted source material - transcriptions and scans of the office's own
+# liturgical books (General Intercessions for Weekday Masses, Fr. Albert
+# Orillo, ST PAULS Philippines) and the printed ORDO. For office use only and
+# never to be committed: the repository carries the code, never the books.
+server/data/orillo/
+Needed info/
+
+# Scratch scripts kept out of the repository.
+server/tmp/

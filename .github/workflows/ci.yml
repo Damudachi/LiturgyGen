@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor from package.json engines, and current LTS.
+        node: ['20.10', '22']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      # better-sqlite3 ships prebuilds; `npm ci` falls back to a source build
+      # when there is none for the runner, so the toolchain must be present.
+      - run: npm ci
+
+      # The office's transcriptions are deliberately not in the repository, so
+      # CI seeds the placeholder set alone. That is the same path a fresh clone
+      # takes, which is exactly what is worth testing here.
+      - run: npm run test:server
+
+      - run: npm run build

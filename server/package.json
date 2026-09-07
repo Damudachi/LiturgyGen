@@ -1,0 +1,25 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "seed": "node src/db/seed.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@romcal/calendar.philippines": "^3.0.0-dev.140",
+    "archiver": "^7.0.1",
+    "axios": "^1.7.9",
+    "better-sqlite3": "^11.8.1",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "docx": "^9.1.1",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "romcal": "3.0.0-dev.140"
+  }
+}

@@ -1,0 +1,10 @@
+# Normalise line endings so diffs stay clean across Windows and CI.
+* text=eol=lf
+
+# Binary assets git should never try to merge or diff as text.
+*.docx binary
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.sqlite binary

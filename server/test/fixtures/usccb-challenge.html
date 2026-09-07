@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Checking connection</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 8px;
+      padding: 48px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .spinner {
+      border: 3px solid #e0e0e0;
+      border-top: 3px solid #888;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    p {
+      font-size: 15px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <p>Checking connection...</p>
+  </div>
+
+  <script>
+    // Cookie name — may be suffixed for per-test isolation
+    var PROOF_COOKIE_NAME = 'X_Obolus_Proof';
+
+    // Challenge configuration from server
+    const BENCHMARK_ITERATIONS = 4096;  // Must match silent handshake
+    const CONFIG = {
+      targetTime: parseInt('500', 10),
+      maxTime: parseInt('4000', 10),
+      nonce: '23654c76bdf3dd80',
+      challengeToken: 'b9e0accefbee3bcb601cf29a51df693686ce6968839e0e2f0737c00420fc6d71',
+      challengeTimestamp: '1788619555',
+      difficulty: '14',
+      benchmarkElapsed: parseInt('0', 10) || 0,
+      mode: 'aggressive'  // This is the hard challenge
+    };
+
+    // Diagnostic: detect proof rejection loop
+    if (document.cookie.indexOf(PROOF_COOKIE_NAME + '=') !== -1) {
+      var proofRe = new RegExp(PROOF_COOKIE_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]+)');
+      var existingProof = document.cookie.match(proofRe);
+      console.warn('Obolus: existing proof was rejected!', existingProof ? existingProof[1] : '(not found)');
+    }
+
+    // Minimal UI functions
+    function updateStatus() {}
+    function updateProgress() {}
+    function showError(message) {
+      console.error('Obolus:', message);
+    }
+
+    // Calculate adaptive difficulty based on SHA-256 benchmark
+    function calculateDifficulty(benchmarkElapsed, targetTime) {
+      // Adaptive difficulty scaling based on fixed-iteration SHA-256 benchmark
+      // benchmarkElapsed = ms to complete BENCHMARK_ITERATIONS SHA-256 hashes
+      // targetTime = desired time for this challenge (ms)
+      //
+      // Calculate difficulty (leading zero bits) such that:
+      // Expected attempts = 2^difficulty
+      // hashesPerMs = BENCHMARK_ITERATIONS / benchmarkElapsed
+      // Time = 2^difficulty / hashesPerMs ≈ targetTime
+      //
+      // Solve for difficulty:
+      // 2^difficulty = targetTime * hashesPerMs
+      // difficulty = log2(targetTime * (BENCHMARK_ITERATIONS / benchmarkElapsed))
+
+      const hashesPerMs = BENCHMARK_ITERATIONS / benchmarkElapsed;
+      const expectedAttempts = targetTime * hashesPerMs;
+      const difficulty = Math.log2(expectedAttempts);
+
+      // Clamp difficulty to reasonable range
+      // Min: 12 bits (~4k attempts)
+      // Max: 18 bits (~262k attempts)
+      const clampedDifficulty = Math.max(12, Math.min(18, Math.floor(difficulty)));
+
+      console.log('Adaptive difficulty calculation:', {
+        benchmarkElapsed,
+        hashesPerMs,
+        targetTime,
+        expectedAttempts,
+        rawDifficulty: difficulty,
+        clampedDifficulty
+      });
+
+      return clampedDifficulty;
+    }
+
+    // Bitcoin-style PoW computation (find hash with N leading zero bits)
+    async function computeProof(config) {
+      const startTime = Date.now();
+      let attempts = 0;
+      let lastProgressUpdate = startTime;
+
+      // Step 1: Run SHA-256 benchmark if no benchmark exists
+      let benchmarkElapsed = config.benchmarkElapsed;
+      if (!benchmarkElapsed || benchmarkElapsed === 0) {
+        updateStatus('Running baseline benchmark...');
+        const benchmarkStart = Date.now();
+
+        // Same SHA-256 hash cycle as mining (fixed iterations)
+        for (let i = 0; i < BENCHMARK_ITERATIONS; i++) {
+          const input = config.nonce + ':benchmark:' + i;
+          const encoder = new TextEncoder();
+          const data = encoder.encode(input);
+          const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+          if (i % 512 === 0 && i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 0));
+          }
+        }
+
+        benchmarkElapsed = Date.now() - benchmarkStart;
+        console.log('Baseline benchmark complete:', {
+          iterations: BENCHMARK_ITERATIONS,
+          elapsed: benchmarkElapsed + 'ms',
+          hashesPerSec: Math.round((BENCHMARK_ITERATIONS / benchmarkElapsed) * 1000)
+        });
+      }
+
+      // Step 2: Calculate adaptive difficulty based on benchmark
+      let difficulty;
+      if (config.difficulty === 'adaptive') {
+        // Target 75% of max time (e.g., 3 seconds out of 4 second max)
+        difficulty = calculateDifficulty(benchmarkElapsed, config.maxTime * 0.75);
+      } else {
+        difficulty = parseInt(config.difficulty, 10);
+      }
+
+      const targetBits = difficulty;
+
+      updateStatus('Computing proof of work (difficulty: ' + difficulty + ' bits)...');
+
+      // Find nonce where SHA256(challengeNonce:mine:nonce) has N leading zero bits
+      let found = false;
+      let resultHash = '';
+      let nonce = 0;
+      let miningNonce = 0;
+
+      const SAFETY_TIMEOUT = 30000;  // 30 second absolute timeout
+
+      while (!found) {
+        const input = config.nonce + ':mine:' + nonce.toString();
+
+        // Compute SHA-256 hash using SubtleCrypto
+        const encoder = new TextEncoder();
+        const data = encoder.encode(input);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        // Check if hash meets difficulty requirement (N leading zero bits)
+        const leadingZeroBits = countLeadingZeroBits(hashHex);
+
+        if (leadingZeroBits >= targetBits) {
+          found = true;
+          resultHash = hashHex;
+          miningNonce = nonce;  // Store winning nonce before increment
+        }
+
+        attempts++;
+        nonce++;
+
+        // Progress updates and timeout check
+        const elapsed = Date.now() - startTime;
+        if (elapsed - lastProgressUpdate > 100) {
+          // Estimate progress based on probability
+          // Probability of finding solution = attempts / 2^difficulty
+          const expectedAttempts = Math.pow(2, targetBits);
+          const progress = Math.min(95, (attempts / expectedAttempts) * 100);
+          updateProgress(progress);
+          lastProgressUpdate = elapsed;
+
+          // Yield to event loop
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
+
+        // Safety timeout to prevent infinite mining
+        if (Date.now() - startTime > SAFETY_TIMEOUT) break;
+      }
+
+      const timestamp = Math.floor(Date.now() / 1000);
+      const elapsed = Date.now() - startTime;
+
+      console.log('PoW complete:', {
+        difficulty: targetBits,
+        attempts,
+        elapsed: elapsed + 'ms',
+        hash: resultHash,
+        nonce
+      });
+
+      return {
+        timestamp: timestamp,
+        nonce: config.nonce,
+        miningNonce: miningNonce,
+        attempts: attempts,
+        elapsed: elapsed,
+        hash: resultHash,
+        difficulty: targetBits,
+        benchmarkElapsed: benchmarkElapsed,
+        found: found
+      };
+    }
+
+    // Count leading zero bits in hex string
+    function countLeadingZeroBits(hexString) {
+      let count = 0;
+      for (let i = 0; i < hexString.length; i++) {
+        const hexDigit = parseInt(hexString[i], 16);
+        if (hexDigit === 0) {
+          count += 4;
+        } else {
+          // Count leading zeros in this hex digit (binary)
+          count += Math.clz32(hexDigit) - 28; // clz32 returns leading zeros in 32-bit, adjust for 4-bit hex
+          break;
+        }
+      }
+      return count;
+    }
+
+    // Handle proof completion
+    function completeProof(result) {
+      updateProgress(100);
+      updateStatus('Verification complete, redirecting...');
+
+      // Proof cookie: challengeTimestamp:nonce:token:benchmarkElapsed:miningNonce
+      // Token was pre-computed by server — no client-side signing needed
+      var proof = CONFIG.challengeTimestamp + ':' + CONFIG.nonce + ':' + CONFIG.challengeToken + ':' + result.benchmarkElapsed + ':' + result.miningNonce;
+      document.cookie = PROOF_COOKIE_NAME + '=' + proof + '; Path=/; Max-Age=1800; SameSite=Lax; Secure';
+
+      // Log completion (for debugging)
+      console.log('Obolus PoW complete:', {
+        mode: CONFIG.mode,
+        difficulty: result.difficulty || 'time-based',
+        attempts: result.attempts,
+        elapsed: result.elapsed + 'ms',
+        hash: result.hash,
+        method: result.method || 'unknown'
+      });
+
+      // Reload current page (replace to avoid back-button loop)
+      setTimeout(function() {
+        window.location.replace(window.location.href);
+      }, 100);
+    }
+
+    // Worker code for Bitcoin-style PoW mining
+    const workerCode = `
+      self.onmessage = async function(e) {
+        const startTime = Date.now();
+        const challengeNonce = e.data.nonce;
+        const benchmarkIterations = e.data.benchmarkIterations;
+        const forceDifficulty = e.data.forceDifficulty || 0;
+        let providedBenchmarkElapsed = e.data.benchmarkElapsed;
+
+        // Step 1: Run SHA-256 benchmark if not provided
+        let benchmarkElapsed = providedBenchmarkElapsed;
+        if (!benchmarkElapsed || benchmarkElapsed === 0) {
+          const benchmarkStart = Date.now();
+          for (let i = 0; i < benchmarkIterations; i++) {
+            const input = challengeNonce + ':benchmark:' + i;
+            const encoder = new TextEncoder();
+            const data = encoder.encode(input);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          }
+          benchmarkElapsed = Date.now() - benchmarkStart;
+        }
+
+        // Step 2: Calculate difficulty (or use forced baseline)
+        let targetBits;
+        if (forceDifficulty > 0) {
+          targetBits = forceDifficulty;
+        } else {
+          const hashesPerMs = benchmarkIterations / benchmarkElapsed;
+          const targetTime = e.data.maxTime * 0.75;
+          const expectedAttempts = targetTime * hashesPerMs;
+          const rawDifficulty = Math.log2(expectedAttempts);
+          targetBits = Math.max(12, Math.min(18, Math.floor(rawDifficulty)));
+        }
+
+        // Step 3: Bitcoin-style mining
+        let attempts = 0;
+        let nonce = 0;
+        let found = false;
+        let resultHash = '';
+        let miningNonce = 0;
+
+        function countLeadingZeroBits(hexString) {
+          let count = 0;
+          for (let i = 0; i < hexString.length; i++) {
+            const hexDigit = parseInt(hexString[i], 16);
+            if (hexDigit === 0) {
+              count += 4;
+            } else {
+              count += Math.clz32(hexDigit) - 28;
+              break;
+            }
+          }
+          return count;
+        }
+
+        const SAFETY_TIMEOUT = 30000;  // 30 second absolute timeout
+
+        while (!found) {
+          const input = challengeNonce + ':mine:' + nonce.toString();
+          const encoder = new TextEncoder();
+          const data = encoder.encode(input);
+
+          try {
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            if (countLeadingZeroBits(hashHex) >= targetBits) {
+              found = true;
+              resultHash = hashHex;
+              miningNonce = nonce;
+            }
+          } catch (err) {
+            self.postMessage({ type: 'error', message: err.message });
+            return;
+          }
+
+          attempts++;
+          nonce++;
+
+          // Safety timeout to prevent infinite mining
+          if (Date.now() - startTime > SAFETY_TIMEOUT) break;
+        }
+
+        const timestamp = Math.floor(Date.now() / 1000);
+        self.postMessage({
+          type: 'complete',
+          timestamp: timestamp,
+          nonce: challengeNonce,
+          miningNonce: miningNonce,
+          attempts: attempts,
+          elapsed: Date.now() - startTime,
+          hash: resultHash,
+          difficulty: targetBits,
+          benchmarkElapsed: benchmarkElapsed,
+          found: found,
+          method: forceDifficulty > 0 ? 'worker-baseline-retry' : 'worker'
+        });
+      };
+    `;
+
+    const BASELINE_DIFFICULTY = 12;
+    let completed = false;
+    let currentWorker = null;
+
+    function startWorker(forceDifficulty) {
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      currentWorker = new Worker(URL.createObjectURL(blob));
+
+      currentWorker.onmessage = function(e) {
+        if (e.data.type === 'complete') {
+          if (e.data.found === false) {
+            // Mining timed out — do not set invalid cookie
+            showError('Mining timed out');
+            return;
+          }
+          completed = true;
+          completeProof(e.data);
+        } else if (e.data.type === 'error') {
+          showError(e.data.message);
+        }
+      };
+
+      currentWorker.onerror = function() {
+        // Fallback to async
+        CONFIG.difficulty = String(forceDifficulty || BASELINE_DIFFICULTY);
+        computeProof(CONFIG).then(result => {
+          if (!result.found) { showError('Mining timed out'); return; }
+          completed = true;
+          result.method = 'async-fallback';
+          completeProof(result);
+        }).catch(err => {
+          showError('Fallback failed: ' + err.message);
+        });
+      };
+
+      currentWorker.postMessage({
+        nonce: CONFIG.nonce,
+        benchmarkElapsed: CONFIG.benchmarkElapsed,
+        benchmarkIterations: BENCHMARK_ITERATIONS,
+        maxTime: CONFIG.maxTime,
+        forceDifficulty: forceDifficulty
+      });
+    }
+
+    if (window.Worker && CONFIG.mode === 'aggressive') {
+      // Start with adaptive difficulty
+      startWorker(0);
+
+      // Retry once with baseline difficulty if adaptive takes too long
+      setTimeout(function() {
+        if (!completed) {
+          console.log('Obolus: adaptive PoW timed out, retrying with baseline difficulty');
+          if (currentWorker) currentWorker.terminate();
+          startWorker(BASELINE_DIFFICULTY);
+        }
+      }, CONFIG.maxTime + 2000);
+    } else {
+      // Async fallback
+      computeProof(CONFIG).then(result => {
+        if (!result.found) { showError('Mining timed out'); return; }
+        completed = true;
+        result.method = 'async';
+        completeProof(result);
+      }).catch(err => {
+        showError('Computation failed: ' + err.message);
+      });
+    }
+
+  </script>
+</body>
+</html>
