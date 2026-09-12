@@ -28,6 +28,9 @@ const DATA_DIR = path.resolve(
   '../data/orillo',
 );
 
+/** Sections in the order the book prints them, as orillo.seed.js has them. */
+const SECTIONS = ['advent', 'christmas', 'lent', 'easter', 'solemnities', 'ordinary-time'];
+
 /* ------------------------------------------------------------------ tier 1 */
 
 /**
@@ -50,6 +53,210 @@ const LIGATURES = [
  * Their prayers go to the worksheet instead.
  */
 const AMBIGUOUS = /[€åÅæ]/;
+
+/**
+ * The Lent and Easter sections failed differently from Ordinary Time: instead
+ * of dropping characters the extractor dropped the SPACES, collapsing whole
+ * lines into one token ("LORD,HEAROURPRAYER"). Those are recoverable, but only
+ * against a vocabulary - so the vocabulary is built from the corpus itself,
+ * from the tokens that came through the other sections correctly spaced. A
+ * collapsed run is only split when every piece is a word the book actually
+ * uses; anything else is left alone and flagged.
+ */
+function tokensOf(sections) {
+  const vocab = new Map();
+  for (const section of sections) {
+    const file = path.join(DATA_DIR, `${section}.json`);
+    if (!fs.existsSync(file)) continue;
+    let doc;
+    try {
+      doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch {
+      continue;
+    }
+    for (const p of doc.prayers ?? []) {
+      const text = [
+        p.priestInvitation, p.priestConclusion,
+        ...(p.intentions ?? []), ...(p.responseOptions ?? []),
+      ].join(' ');
+      for (const w of text.match(/[A-Za-z]+/g) ?? []) {
+        const k = w.toLowerCase();
+        vocab.set(k, (vocab.get(k) ?? 0) + 1);
+      }
+    }
+  }
+  return vocab;
+}
+
+/**
+ * The vocabulary that vouches for a word, and supplies the pieces of a split.
+ *
+ * A section cannot vouch for its own damage: if Lent's "ourfather" counts as a
+ * word, the splitter happily "recognises" the very run it is meant to take
+ * apart. So the target section is excluded, and so are Lent and Easter, whose
+ * collapsed lines would otherwise be learned as vocabulary by each other.
+ */
+function vouchingVocabulary(target) {
+  const vocab = tokensOf(
+    SECTIONS.filter((s) => s !== target && s !== 'lent' && s !== 'easter'),
+  );
+
+  // Even those sections carry a little glue ("Thatthe", "inyour"), and a glued
+  // token in the vocabulary vouches for the very thing we are splitting. Drop
+  // any uncommon token that comes apart into words far more common than it is;
+  // a real compound ("everlasting") has no such decomposition.
+  const suspect = [];
+  for (const [word, count] of vocab) {
+    if (word.length < 6 || count > 3) continue;
+    for (let i = 2; i <= word.length - 2; i += 1) {
+      const [a, b] = [word.slice(0, i), word.slice(i)];
+      if ((vocab.get(a) ?? 0) >= 10 && (vocab.get(b) ?? 0) >= 10) {
+        suspect.push(word);
+        break;
+      }
+    }
+  }
+  for (const word of suspect) vocab.delete(word);
+  return vocab;
+}
+
+/** Single letters the book uses as words: the vocative "O", "a", "I". */
+const SINGLES = new Set(['a', 'i', 'o']);
+
+/**
+ * The short words that are genuinely words. Anything else of one or two
+ * letters in a proposed split is a shard of a word the vocabulary is missing
+ * ("a lie na ted" for "alienated"), which is the failure mode to guard against.
+ */
+const SHORT_WORDS = new Set([
+  'a', 'i', 'o', 'am', 'an', 'as', 'at', 'be', 'by', 'do', 'go', 'he', 'if',
+  'in', 'is', 'it', 'me', 'my', 'no', 'of', 'on', 'or', 'so', 'to', 'up',
+  'us', 'we',
+]);
+
+/** Set by the entry point once the target section is known. */
+let VOCAB = new Map();
+
+const known = (w) => (w.length === 1 ? SINGLES.has(w) : VOCAB.has(w));
+
+/**
+ * Would this piece stand as a word on its own? A short piece has to be on the
+ * list above; a longer one has to have been seen twice, since a token that
+ * appears exactly once is as likely to be another collapsed run as a word.
+ */
+const solidPiece = (w) => {
+  // A lone letter is only a word where the book wrote it as one - the vocative
+  // "O Lord", "I". Lower case, it is the tail of a word the vocabulary is
+  // missing, as in "protect i on".
+  if (w.length === 1) return /[AIO]/.test(w);
+  if (w.length === 2) return SHORT_WORDS.has(w.toLowerCase());
+  return (VOCAB.get(w.toLowerCase()) ?? 0) >= 2;
+};
+
+/**
+ * Total token count, for turning vocabulary counts into probabilities.
+ * Recomputed whenever the vocabulary is set.
+ */
+let VOCAB_TOTAL = 1;
+
+/**
+ * How likely this word is, as a log probability. Scoring a split by the sum of
+ * these picks the reading the book itself makes most often, which is what
+ * settles the cases length alone gets wrong: "your son" beats "yours on"
+ * because "your" and "son" are common here and "yours" is not, and "that the"
+ * beats the glued "thatthe" for the same reason.
+ */
+const logProbability = (w) =>
+  Math.log((VOCAB.get(w.toLowerCase()) ?? 0.5) / VOCAB_TOTAL);
+
+/**
+ * Split a run of letters into corpus words, or return null when it cannot be
+ * done cleanly.
+ */
+function segment(run) {
+  const s = run.toLowerCase();
+  const n = s.length;
+  const best = new Array(n + 1).fill(-Infinity);
+  const from = new Array(n + 1).fill(-1);
+  best[0] = 0;
+  for (let i = 0; i < n; i += 1) {
+    if (best[i] === -Infinity) continue;
+    for (let j = i + 1; j <= n; j += 1) {
+      // A piece may never be the whole run: that is the case we are splitting.
+      if (i === 0 && j === n) continue;
+      const w = s.slice(i, j);
+      if (!known(w)) continue;
+      // A flat cost per word keeps the split from buying cheap extra pieces
+      // out of very common short words - without it "in to" edges out "into",
+      // which is a real reading only because "in" and "to" are everywhere. A
+      // single letter is penalised further still, so that a word missing from
+      // the vocabulary is never patched over with stray letters ("i sin").
+      const score = best[i] + logProbability(w) - 1 - (w.length === 1 ? 8 : 0);
+      if (score > best[j]) {
+        best[j] = score;
+        from[j] = i;
+      }
+    }
+  }
+  if (best[n] === -Infinity) return null;
+  const cuts = [];
+  for (let i = n; i > 0; i = from[i]) cuts.unshift(i);
+  cuts.unshift(0);
+  if (cuts.length - 1 < 2) return null; // not actually two words
+  // Slice the ORIGINAL so capitalisation survives untouched.
+  return cuts.slice(0, -1).map((start, i) => run.slice(start, cuts[i + 1]));
+}
+
+/**
+ * Is this run worth trying to split at all?
+ *  - An internal capital ("ourFather", "intheKingdom") is decisive: no English
+ *    word carries one, so the run is certainly two words run together.
+ *  - Otherwise the run has to be long enough to be a collapsed line AND
+ *    unvouched-for by the undamaged sections.
+ */
+function looksCollapsed(run) {
+  if (/[a-z][A-Z]/.test(run)) return true;
+  // Thirteen, not ten: at ten this starts shredding ordinary words that the
+  // vouching sections happen not to use - "protection", "indwelling" - and a
+  // plausible-looking wrong word in a prayer is worse than one left flagged.
+  if (run.length < 13) return false;
+  return !VOCAB.has(run.toLowerCase());
+}
+
+/**
+ * Every split this tool makes, as `run -> result`, so that --explain can show
+ * its work. A wrong split corrupts a prayer silently, so the decisions are
+ * reviewable rather than implicit.
+ */
+const SPLITS = new Map();
+
+/**
+ * Expand the collapsed runs in a string.
+ *
+ * A split is only written into the prayer when every piece stands on its own
+ * as a word. Where it does not, the guess goes to the worksheet as a
+ * suggestion and the text is left exactly as it was: a wrong split reads as
+ * real text and would be prayed aloud, whereas a run left collapsed is
+ * obviously broken and gets retyped.
+ */
+function unglue(text, note) {
+  return text.replace(/[A-Za-z]{8,}/g, (run) => {
+    if (!looksCollapsed(run)) return run;
+    const parts = segment(run);
+    if (!parts) {
+      note('collapsed run could not be split', run);
+      return run;
+    }
+    const joined = parts.join(' ');
+    if (!parts.every(solidPiece)) {
+      const weak = parts.filter((w) => !solidPiece(w)).join(', ');
+      note('collapsed run - check this split by hand', `${run} -> ${joined}  (unsure: ${weak})`);
+      return run;
+    }
+    SPLITS.set(run, joined);
+    return joined;
+  });
+}
 
 /** Word-level errors with exactly one possible reading. */
 const WORDS = [
@@ -75,8 +282,17 @@ const WORDS = [
   [/\bgroq\b/g, 'grows'],
   [/\bGodour\b/g, 'God our'],
   [/\bInving\b/g, 'Loving'],
-  // spacing: a period glued to the next sentence
+  // Short glue the splitter will not touch: it only considers runs of eight
+  // letters or more, and no English word is "inthe" or "tothe" anyway.
+  [/\binthe\b/gi, 'in the'],
+  [/\btothe\b/gi, 'to the'],
+  [/\bofthe\b/gi, 'of the'],
+  [/\bandthe\b/gi, 'and the'],
+  [/\bthatwe\b/gi, 'that we'],
+  [/\bwemay\b/gi, 'we may'],
+  // spacing: a period or comma glued to what follows it
   [/([a-z])\.([A-Z])/g, '$1. $2'],
+  [/([a-z]),([A-Za-z])/g, '$1, $2'],
 ];
 
 /**
@@ -92,7 +308,8 @@ const INVOCATION = new RegExp(
       'Lord our', 'Lord, ', 'God our', 'God Our', 'God of', 'God Of',
       'God and', 'God, you', 'Father of', 'Father in', 'Father all',
       'Father, ', 'Father a', 'O Lord', 'Grd, ', 'L\\)rd ', 'Almighty',
-      'Loving God', 'Loving Father',
+      'Loving God', 'Loving Father', 'Gracious Father', 'Gentle Father',
+      'Holy Father', 'All powerful', 'Almighty and', 'O God',
     ].join('|') +
   ')',
 );
@@ -147,10 +364,13 @@ function splitConclusion(text) {
 }
 
 function repairPrayer(p, flags) {
-  const id = `W${p.week} ${p.dayOfWeek}`;
+  // Ordinary Time is identified by week and weekday; the seasons name their
+  // days instead ("Thursday after Ash Wednesday"), so the title is the label
+  // that works for every section.
+  const id = (p.title ?? `W${p.week} ${p.dayOfWeek}`).replace(/\s*\(Orillo\)\s*$/, '');
   const note = (kind, detail) => flags.push({ id, kind, detail });
   const out = { ...p };
-  const fix = (s) => applyRules(applyRules(s, LIGATURES), WORDS);
+  const fix = (s) => unglue(applyRules(applyRules(s, LIGATURES), WORDS), note);
 
   for (const k of ['priestInvitation', 'priestConclusion']) {
     if (AMBIGUOUS.test(p[k])) note('ambiguous ligature', `${k}: ${p[k].match(AMBIGUOUS)[0]}`);
@@ -226,6 +446,9 @@ if (!fs.existsSync(file)) {
   process.exit(2);
 }
 
+VOCAB = vouchingVocabulary(section);
+VOCAB_TOTAL = [...VOCAB.values()].reduce((a, b) => a + b, 0) || 1;
+
 const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
 const flags = [];
 const before = JSON.stringify(doc.prayers);
@@ -245,6 +468,13 @@ console.log(`${section}: ${doc.prayers.length} prayers, text ${changed ? 'change
 console.log(`flagged for manual retyping: ${byPrayer.size} prayers, ${flags.length} findings`);
 for (const [k, n] of Object.entries(kinds).sort((a, b) => b[1] - a[1])) {
   console.log(`  ${String(n).padStart(4)}  ${k}`);
+}
+
+if (process.argv.includes('--explain')) {
+  console.log(`\ncollapsed runs split apart (${SPLITS.size}) - check each one:`);
+  for (const [run, joined] of [...SPLITS].sort()) {
+    console.log(`  ${run}\n    -> ${joined}`);
+  }
 }
 
 if (write) {
