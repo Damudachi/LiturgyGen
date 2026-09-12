@@ -46,12 +46,35 @@ const LIGATURES = [
   [/»/g, 'w'],
   [/ß/g, 'Le'],
   [/é/g, 'e'],
+  // The extractor opened a quotation with a curly mark and closed it with a
+  // straight one. The rest of the corpus is straight throughout.
+  [/[“”]/g, '"'],
+  [/[‘’]/g, "'"],
 ];
 
 /**
- * Characters whose expansion varies by word, so no global rule is safe.
- * Their prayers go to the worksheet instead.
+ * These four characters stand for a different string in nearly every word
+ * they appear in - the "å" of "naåons" is "ti", of "åe" is "th", of
+ * "proclåmers" is "ai" - so there is no character rule to write. There are
+ * only twelve of them in the whole corpus, and context fixes each one, so
+ * they are listed as whole tokens and replaced before the character pass.
  */
+const AMBIGUOUS_TOKENS = [
+  [/1Å\)rd/g, 'Lord'],
+  [/»Åth/g, 'with'],
+  [/»\.?€ith/g, 'with'],
+  [/»åtness/g, 'witness'],
+  [/proclåmers/g, 'proclaimers'],
+  [/naåons/g, 'nations'],
+  // Not \b: a word boundary needs a word character on one side, and "å" is
+  // not one, so /\båe\b/ never matches at all.
+  [/åe(?![A-Za-z])/g, 'the'],
+  [/cidæns/g, 'citizens'],
+  [/Chris€ans/g, 'Christians'],
+  [/pray€/g, 'prayer'],
+];
+
+/** Any of those four left over after the list above has run. */
 const AMBIGUOUS = /[€åÅæ]/;
 
 /**
@@ -117,6 +140,8 @@ function vouchingVocabulary(target) {
     }
   }
   for (const word of suspect) vocab.delete(word);
+  // Seeded last so the pruning above cannot take them back out.
+  for (const word of KNOWN_WORDS) vocab.set(word, Math.max(vocab.get(word) ?? 0, 4));
   return vocab;
 }
 
@@ -215,12 +240,17 @@ function segment(run) {
  *    unvouched-for by the undamaged sections.
  */
 function looksCollapsed(run) {
-  if (/[a-z][A-Z]/.test(run)) return true;
-  // Thirteen, not ten: at ten this starts shredding ordinary words that the
-  // vouching sections happen not to use - "protection", "indwelling" - and a
-  // plausible-looking wrong word in a prayer is worse than one left flagged.
-  if (run.length < 13) return false;
-  return !VOCAB.has(run.toLowerCase());
+  // An internal capital, or a long run the vouching sections do not know, is
+  // real evidence of collapse - worth reporting when it cannot be split.
+  if (/[a-z][A-Z]/.test(run)) return 'evident';
+  if (VOCAB.has(run.toLowerCase())) return false;
+  if (run.length >= 13) return 'evident';
+  // Ten to twelve letters is not evidence of anything: most such runs are
+  // ordinary words the vouching sections merely happen not to use. Try a
+  // split, but say nothing when there isn't one - flagging these buries the
+  // real findings under hundreds of false ones.
+  if (run.length >= 10) return 'speculative';
+  return false;
 }
 
 /**
@@ -229,6 +259,76 @@ function looksCollapsed(run) {
  * reviewable rather than implicit.
  */
 const SPLITS = new Map();
+
+/** Every intention put back together, for --explain to show. */
+const REJOINED = [];
+
+/**
+ * Rubric debris: what is left of "Let us pray to the Lord." once the extractor
+ * has chewed the front off it. Carries no words of its own.
+ */
+const DEBRIS = /^(?:[a-z]{1,3}\s+)?(?:us\s+)?(?:pray\s+)?(?:to\s+)?(?:the\s+)?(?:Lord|Los)?[.,;:]?$/i;
+
+/**
+ * Does this read as running prose rather than extraction rubble? Rubble is
+ * recognisable by stray single letters and digits mixed into words ("n e to do
+ * younill", "b filg"), which never occur in the printed prayers.
+ */
+function looksLikeProse(s) {
+  if (s.length < 3) return false;
+  if (/\d/.test(s)) return false;
+  if (/[()|$~^{}\\]/.test(s)) return false;
+  const words = s.split(/\s+/);
+  const singles = words.filter((w) => /^[A-Za-z]$/.test(w) && !/^[AIO]$/.test(w));
+  return singles.length === 0;
+}
+
+/**
+ * The extractor lifted the end of the last intention into the front of the
+ * conclusion. Put it back, but only where the join is unambiguous: the stored
+ * intention has to be visibly unfinished, and the fragment has to read as
+ * prose that closes a sentence. Everything else is left for the worksheet,
+ * because a wrongly rejoined intention is read aloud as if it were the book.
+ */
+function reattachLead(out, lead, id, note) {
+  const cleaned = lead.replace(RUBRIC, ' ').replace(/\s+/g, ' ').trim();
+  if (!cleaned || DEBRIS.test(cleaned)) return; // nothing but rubric remnants
+  const last = out.intentions.length - 1;
+  const stored = out.intentions[last];
+
+  // Sometimes the whole numbered intention came across, not just its tail.
+  // The number is sometimes followed by a comma rather than a full stop.
+  const numbered = cleaned.match(/^(\d)[.,]\s*(That\b[\s\S]*)$/);
+  if (numbered) {
+    const text = numbered[2].replace(RUBRIC, ' ').replace(/\s+/g, ' ').trim();
+    if (/\d\.\s+That/.test(text)) {
+      note('bleed holds more than one intention', cleaned);
+      return;
+    }
+    if (!looksLikeProse(text) || !/[.!?"]$/.test(text)) {
+      note('bleed holds a damaged intention', cleaned);
+      return;
+    }
+    if (text.length > stored.length) {
+      REJOINED.push(`${id} int${last + 1}: [replaced] ${stored}  ==>  ${text}`);
+      out.intentions[last] = text;
+    } else {
+      note('bleed repeats an intention already stored', cleaned);
+    }
+    return;
+  }
+
+  if (/[.!?"]$/.test(stored)) {
+    note('bleed before conclusion, intention already complete', cleaned);
+    return;
+  }
+  if (!looksLikeProse(cleaned) || !/[.!?"]$/.test(cleaned)) {
+    note('bleed before conclusion, too damaged to rejoin', cleaned);
+    return;
+  }
+  REJOINED.push(`${id} int${last + 1}: ${stored}  +  ${cleaned}`);
+  out.intentions[last] = `${stored} ${cleaned}`;
+}
 
 /**
  * Expand the collapsed runs in a string.
@@ -241,22 +341,104 @@ const SPLITS = new Map();
  */
 function unglue(text, note) {
   return text.replace(/[A-Za-z]{8,}/g, (run) => {
-    if (!looksCollapsed(run)) return run;
+    // The curated list handles this one on the pass after this, so neither
+    // split it here nor report it as unsplittable.
+    if (GLUED_PAIRS[run]) return run;
+    const evidence = looksCollapsed(run);
+    if (!evidence) return run;
+    const speculative = evidence === 'speculative';
+    const report = (kind, detail) => {
+      if (!speculative) note(kind, detail);
+    };
+
     const parts = segment(run);
     if (!parts) {
-      note('collapsed run could not be split', run);
+      report('collapsed run could not be split', run);
+      return run;
+    }
+    // Splitting a ten-letter word in two is how "protection" becomes
+    // "protect on" and "workplaces" becomes "work places". Three or more
+    // pieces is evidence of a collapsed line rather than a word, so demand
+    // that before touching anything the length alone does not condemn.
+    if (speculative && parts.length < 3) {
       return run;
     }
     const joined = parts.join(' ');
     if (!parts.every(solidPiece)) {
       const weak = parts.filter((w) => !solidPiece(w)).join(', ');
-      note('collapsed run - check this split by hand', `${run} -> ${joined}  (unsure: ${weak})`);
+      report('collapsed run - check this split by hand', `${run} -> ${joined}  (unsure: ${weak})`);
       return run;
     }
     SPLITS.set(run, joined);
     return joined;
   });
 }
+
+/**
+ * Two words run together, short enough that the splitter will not risk them.
+ * Below thirteen letters a two-piece split is as likely to be an ordinary word
+ * as a collapsed line, so these are curated by hand rather than computed.
+ *
+ * THE RULES ARE NOT IN THIS REPOSITORY. Each one pairs a mangled run with the
+ * words it stands for, so the replacements are short fragments of the printed
+ * prayers - the book's text, which this repository must never carry. They live
+ * beside the transcriptions instead:
+ *
+ *   server/data/orillo/_repair-rules.json      (gitignored)
+ *
+ * A checkout without that file still runs: the runs it would have mended are
+ * reported in the worksheet as unsplittable, and nothing is silently skipped.
+ */
+function loadCuratedRules() {
+  const file = path.join(DATA_DIR, '_repair-rules.json');
+  if (!fs.existsSync(file)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8')).gluedPairs ?? {};
+  } catch (cause) {
+    throw new Error(`${file} is not valid JSON.`, { cause });
+  }
+}
+
+const GLUED_PAIRS = loadCuratedRules();
+
+/**
+ * Applied last, after the splitting, because the splitting is what produces
+ * these: a collapsed line was set in small capitals on the page and came out
+ * of the extractor in lower case, so the proper nouns inside it lose their
+ * capitals the moment the line is broken back into words.
+ */
+const AFTER_SPLIT = [
+  [/\bjesus\b/g, 'Jesus'],
+  [/\bchrist\b/g, 'Christ'],
+  [/\blord\b/g, 'Lord'],
+  // A vocative needs its comma back: "of Jesus Father, hear us".
+  [/\bJesus [Ff]ather\b/g, 'Jesus, Father'],
+  // "die" is a word the prayers use ("to die to self"), so it is only
+  // corrected where the sense is plainly "the".
+  [/\bdie banquet\b/g, 'the banquet'],
+];
+
+/**
+ * Ordinary words that the vouching sections happen not to use, which the
+ * splitter would therefore treat as collapsed lines - it offered "under
+ * privileged", "transform at ion" and "protect on" for these. Seeding them as
+ * vocabulary settles it: they are words, so they are left alone and not
+ * reported.
+ */
+const KNOWN_WORDS = [
+  'alienated', 'becoming', 'beside', 'cannot', 'compromise', 'contemplating',
+  'encouragement', 'enlightenment', 'illnesses', 'indwelling', 'inhuman',
+  'injustice', 'lingering', 'meritoriously', 'mourning', 'nowhere', 'passion',
+  'pathway', 'privileged', 'protection', 'reconciliation', 'reconciliations',
+  'responsibilities', 'righteousness', 'thirst', 'transformation',
+  'uncertainties', 'underprivileged', 'understanding', 'whenever',
+  'workplaces',
+  // Long words the vouching sections do not happen to contain, which were
+  // being reported as unsplittable runs when they are simply words.
+  'communicating', 'compassionate', 'consideration', 'contradiction',
+  'disadvantaged', 'discrimination', 'opportunities', 'organizations',
+  'respectability', 'supplications',
+];
 
 /** Word-level errors with exactly one possible reading. */
 const WORDS = [
@@ -277,6 +459,15 @@ const WORDS = [
   [/\beardl\b/g, 'earth'],
   [/\bdie Gospel\b/g, 'the Gospel'],
   [/\bevemvhere\b/g, 'everywhere'],
+  [/\binvitadon\b/g, 'invitation'],
+  [/\bffe\b/g, 'the'],
+  [/\bGouour\b/g, 'God our'],
+  [/\byouoy\b/g, 'your only'],
+  [/\bFatheraJJ\b/g, 'Father all'],
+  [/\bIor\b/g, 'Lord'],
+  [/\bIord\b/g, 'Lord'],
+  [/\baplace\b/g, 'a place'],
+  [/\bUsin\b/g, 'Us in'],
   [/\bfootstevjs\b/g, 'footsteps'],
   [/\baithifl\b/g, 'faithful'],
   [/\bgroq\b/g, 'grows'],
@@ -321,12 +512,46 @@ const INVOCATION = new RegExp(
  */
 const RUBRIC = /\s*Let us pray to the Lord\.?\s*/gi;
 
+/**
+ * What is left of that rubric when the extractor cut it off part way - a bare
+ * "Let", "Let us", "us pray to the Lord". At the end of an intention none of
+ * these is ever the book's own words, so they come off.
+ */
+const RUBRIC_REMNANT =
+  /[\s,]*\b(?:Let(?:\s+us(?:\s+pray(?:\s+to(?:\s+the(?:\s+Lord)?)?)?)?)?|us\s+pray(?:\s+to(?:\s+the(?:\s+Lord)?)?)?|pray\s+to\s+the\s+Lord)\s*\.?\s*$/i;
+
+/**
+ * Tails that carry no words of the prayer: the "Amen." the extractor dragged
+ * over, a doxology already present in the conclusion, a running header, or a
+ * page number. Reporting these sends someone to the book for nothing.
+ */
+const TAIL_DEBRIS = new RegExp(
+  '^(?:' +
+    [
+      '[A-Za-z]{0,2}', // A, An, e, I, II, L6 and other scraps
+      'Arne|Arr|Amel|Amen\\.?',
+      '[0-9IlO]{1,4}', // page numbers read as letters
+      '(?:s\\s+)?(?:and\\s+)?(?:now\\s+and\\s+)?(?:for\\s*)?ever(?:\\s+and\\s+ever)?',
+      'now and forever',
+      'Jesus Christ\\.?',
+      '(?:Golemnities|Solemnities)[\\s\\w]*',
+      'NoTE:[\\s\\S]*',
+    ].join('|') +
+  ')[\\s.,]*$',
+  'i',
+);
+
 /* ------------------------------------------------------------------ passes */
 
 function applyRules(text, rules) {
   let out = text;
   for (const [re, to] of rules) out = out.replace(re, to);
   return out;
+}
+
+/** Separate the curated glued pairs, matching the token exactly. */
+function splitGluedPairs(text) {
+  return text.replace(/\b[A-Za-z]+\b/g, (w) => GLUED_PAIRS[w] ?? w);
 }
 
 /**
@@ -352,12 +577,24 @@ function splitConclusion(text) {
   const MIN_BODY = 60;
   let tail = '';
   const end = /(?:(?:for ?)?ever and ever|now and for ?ever|through (?:the same )?Christ our Lord|by the (?:strength|power) of Jesus Christ our Lord|in the name of Jesus Christ our Lord|of Jesus Christ our Lord|Jesus Christ our Lord|our Lord)[\s,.]*(?:Amen\.?)?/gi;
+  let cut = -1;
   for (const m of body.matchAll(end)) {
     const stop = m.index + m[0].length;
     if (stop < MIN_BODY) continue;
-    if (stop < body.length) tail = body.slice(stop).trim();
-    body = body.slice(0, stop).trim();
+    cut = stop;
     break;
+  }
+
+  // Where the doxology itself is mangled past recognition, the "Amen." the
+  // extractor carried over still marks where the prayer stopped.
+  if (cut < 0) {
+    const amen = body.search(/\bAmen\.?/i);
+    if (amen >= MIN_BODY) cut = amen + body.slice(amen).match(/\bAmen\.?/i)[0].length;
+  }
+
+  if (cut > 0 && cut <= body.length) {
+    if (cut < body.length) tail = body.slice(cut).trim();
+    body = body.slice(0, cut).trim();
   }
 
   return { lead, body, tail };
@@ -370,15 +607,32 @@ function repairPrayer(p, flags) {
   const id = (p.title ?? `W${p.week} ${p.dayOfWeek}`).replace(/\s*\(Orillo\)\s*$/, '');
   const note = (kind, detail) => flags.push({ id, kind, detail });
   const out = { ...p };
-  const fix = (s) => unglue(applyRules(applyRules(s, LIGATURES), WORDS), note);
+  // Order matters: the whole-token ligature fixes need the original
+  // characters, before the character pass rewrites them.
+  const fix = (s) =>
+    applyRules(
+      splitGluedPairs(
+        unglue(
+          applyRules(applyRules(applyRules(s, AMBIGUOUS_TOKENS), LIGATURES), WORDS),
+          note,
+        ),
+      ),
+      AFTER_SPLIT,
+    );
 
+  // Flagged on the repaired text, not the original: the whole-token list above
+  // resolves most of these, and reporting the ones it already fixed would send
+  // someone to the book for nothing.
   for (const k of ['priestInvitation', 'priestConclusion']) {
-    if (AMBIGUOUS.test(p[k])) note('ambiguous ligature', `${k}: ${p[k].match(AMBIGUOUS)[0]}`);
     out[k] = fix(p[k]);
+    if (AMBIGUOUS.test(out[k])) note('ambiguous ligature', `${k}: ${out[k].match(AMBIGUOUS)[0]}`);
   }
   out.intentions = p.intentions.map((t, i) => {
-    if (AMBIGUOUS.test(t)) note('ambiguous ligature', `intention ${i + 1}: ${t.match(AMBIGUOUS)[0]}`);
-    return fix(t);
+    const fixed = fix(t);
+    if (AMBIGUOUS.test(fixed)) {
+      note('ambiguous ligature', `intention ${i + 1}: ${fixed.match(AMBIGUOUS)[0]}`);
+    }
+    return fixed;
   });
   out.responseOptions = p.responseOptions.map(fix);
 
@@ -387,12 +641,22 @@ function repairPrayer(p, flags) {
   const concl = body.replace(RUBRIC, ' ').replace(/\s+/g, ' ').trim();
   out.priestConclusion = stripTrailingAmen(concl).trim();
 
-  if (lead) note('bleed before conclusion', lead);
-  if (tail) note('bleed after conclusion', tail);
-
   out.intentions = out.intentions.map((t) =>
-    t.replace(RUBRIC, ' ').replace(/\s+/g, ' ').trim(),
+    t.replace(RUBRIC, ' ').replace(/\s+/g, ' ').replace(RUBRIC_REMNANT, '').trim(),
   );
+  out.priestConclusion = out.priestConclusion.replace(RUBRIC_REMNANT, '').trim();
+
+  // Done after the rubric is off the intentions, so that "unfinished" means
+  // the sentence really is unfinished and not just missing its rubric.
+  if (lead) reattachLead(out, lead, id, note);
+  if (tail && !TAIL_DEBRIS.test(tail)) {
+    // A tail long enough to hold a whole prayer is the facing page read twice;
+    // the prayer it duplicates is stored under its own day already.
+    const kind = /\d[.,]\s*That\b/.test(tail)
+      ? 'bleed after conclusion holds part of another day - check it is stored there'
+      : 'bleed after conclusion';
+    note(kind, tail);
+  }
 
   // What still needs a human and the book.
   if (!/[.!?:"]$/.test(out.priestInvitation.trim())) {
@@ -420,8 +684,9 @@ function repairPrayer(p, flags) {
   };
   out.intentions.forEach((t, i) => { scan[`intention ${i + 1}`] = t; });
   for (const [k, v] of Object.entries(scan)) {
-    const glue = v.match(/\b\w*[a-z][A-Z]\w*\b|\b[a-z]{15,}\b/g);
-    if (glue) note('possible glued words', `${k}: ${[...new Set(glue)].join(', ')}`);
+    const glue = (v.match(/\b\w*[a-z][A-Z]\w*\b|\b[a-z]{15,}\b/g) ?? [])
+      .filter((w) => !VOCAB.has(w.toLowerCase()));
+    if (glue.length) note('possible glued words', `${k}: ${[...new Set(glue)].join(', ')}`);
     const orphan = v.match(/(?:^|\s)[b-hj-z](?=\s)/g);
     if (orphan) note('orphan letter', `${k}: ${v.slice(0, 90)}`);
     const digit = v.match(/\b\w*(?:[A-Za-z]\d|\d[A-Za-z])\w*\b/g);
@@ -475,9 +740,19 @@ if (process.argv.includes('--explain')) {
   for (const [run, joined] of [...SPLITS].sort()) {
     console.log(`  ${run}\n    -> ${joined}`);
   }
+  console.log(`\nintentions rejoined with their tail (${REJOINED.length}):`);
+  for (const line of REJOINED) console.log(`  ${line}`);
 }
 
-if (write) {
+if (write && !changed) {
+  // Running again over a section already repaired would replace the worksheet
+  // with a shorter one, and the column bleed it records is the office's only
+  // copy of that text - it was taken out of the conclusion where it did not
+  // belong. Refuse rather than quietly lose it. Repair from the .bak to
+  // rebuild both together.
+  console.log('\nalready repaired: nothing to write, worksheet left as it is.');
+  console.log(`to redo it from scratch, restore ${path.basename(file)}.bak first.`);
+} else if (write) {
   fs.copyFileSync(file, `${file}.bak`);
   fs.writeFileSync(file, `${JSON.stringify(doc, null, 2)}\n`, 'utf8');
   console.log(`\nwrote ${file} (backup at ${path.basename(file)}.bak)`);
