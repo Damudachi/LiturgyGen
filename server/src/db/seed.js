@@ -31,7 +31,10 @@ function collectSeeds(log) {
     log(`  no Orillo transcriptions for: ${missing.join(', ')}`);
     log(`  (expected in ${ORILLO_DATA_DIR} - placeholders will be used instead)`);
   }
-  return [...POTF_SEEDS, ...seeds];
+  return [
+    ...POTF_SEEDS.map((seed) => ({ ...seed, placeholder: true })),
+    ...seeds.map((seed) => ({ ...seed, placeholder: false })),
+  ];
 }
 
 function signature(seed) {
@@ -85,10 +88,12 @@ export function seedPotfTemplates({ force = false, log = () => {} } = {}) {
   const insert = db.prepare(`
     INSERT INTO potf_templates
       (title, season, week, day_of_week, celebration_id, fixed_date, priest_invitation,
-       response_options, intentions, priest_conclusion, notes, origin, is_active, seed_hash)
+       response_options, intentions, priest_conclusion, notes, origin, is_active, seed_hash,
+       is_placeholder)
     VALUES
       (@title, @season, @week, @dayOfWeek, @celebrationId, @fixedDate, @priestInvitation,
-       @responseOptions, @intentions, @priestConclusion, @notes, 'seed', 1, @seedHash)
+       @responseOptions, @intentions, @priestConclusion, @notes, 'seed', 1, @seedHash,
+       @isPlaceholder)
   `);
 
   const update = db.prepare(`
@@ -101,6 +106,7 @@ export function seedPotfTemplates({ force = false, log = () => {} } = {}) {
       priest_conclusion = @priestConclusion,
       notes = @notes,
       seed_hash = @seedHash,
+      is_placeholder = @isPlaceholder,
       updated_at = datetime('now')
     WHERE id = @id
   `);
@@ -125,6 +131,11 @@ export function seedPotfTemplates({ force = false, log = () => {} } = {}) {
         notes: seed.notes ?? null,
       };
       params.seedHash = fingerprint(params);
+      // Outside the fingerprint on purpose: it describes where the text came
+      // from, not the text, and changing it must not make a row look edited.
+      // A placeholder the office has rewritten is skipped below and keeps the
+      // flag its edit cleared - it is their prayer now.
+      params.isPlaceholder = seed.placeholder ? 1 : 0;
 
       const existing = findExisting.get(params);
       if (!existing) {

@@ -28,6 +28,7 @@ export default function SettingsPanel({ settings, onSaved }) {
         appendIntentionSuffix: form.appendIntentionSuffix,
         spaceBetweenIntentions: form.spaceBetweenIntentions,
         font: form.font,
+        usePlaceholderPotf: form.usePlaceholderPotf,
         schoolWideIntentions: form.schoolWideIntentions
           .split('\n')
           .map((line) => line.trim())
@@ -129,6 +130,18 @@ export default function SettingsPanel({ settings, onSaved }) {
             <Input value={form.font} onChange={(event) => set('font', event.target.value)} />
           </Field>
         </div>
+      </Card>
+
+      <Card
+        title="Prayers of the Faithful"
+        subtitle="The Proper of Seasons, Solemnities and Feasts book first, then the Ordinary Time book for the same day."
+      >
+        <Checkbox
+          label="Use a placeholder prayer when neither book has one"
+          hint="Off by default. Both books are for weekday Masses, so Sundays have no prayer in either; those days are printed without intercessions and flagged, unless you choose a prayer for the day yourself."
+          checked={Boolean(form.usePlaceholderPotf)}
+          onChange={(event) => set('usePlaceholderPotf', event.target.checked)}
+        />
       </Card>
 
       <Card title="Standing school-wide intentions" subtitle="Added to every generated day.">

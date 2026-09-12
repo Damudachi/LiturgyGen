@@ -49,6 +49,7 @@ function rowToTemplate(row) {
     priestConclusion: row.priest_conclusion,
     notes: row.notes,
     origin: row.origin,
+    isPlaceholder: Boolean(row.is_placeholder),
     isActive: Boolean(row.is_active),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -258,6 +259,13 @@ export function updateTemplate(id, input) {
     params.intentions = JSON.stringify(data.intentions);
   }
 
+  // Rewriting a placeholder's text makes it the office's own prayer, so dates
+  // may resolve to it from now on without the placeholder setting.
+  const textKeys = ['priestInvitation', 'priestConclusion', 'responseOptions', 'intentions'];
+  if (existing.isPlaceholder && textKeys.some((key) => key in data)) {
+    sets.push('is_placeholder = 0');
+  }
+
   if (!sets.length) return existing;
 
   sets.push("updated_at = datetime('now')");
@@ -277,12 +285,20 @@ export function duplicateTemplate(id) {
     err.status = 404;
     throw err;
   }
-  return createTemplate({ ...source, title: `${source.title} (copy)`, origin: 'custom' });
+  const copy = createTemplate({ ...source, title: `${source.title} (copy)`, origin: 'custom' });
+  // A copy of a placeholder is still the placeholder's text until someone edits it.
+  if (source.isPlaceholder) {
+    getDb().prepare('UPDATE potf_templates SET is_placeholder = 1 WHERE id = ?').run(copy.id);
+    return getTemplate(copy.id);
+  }
+  return copy;
 }
 
 /* ------------------------------------------------------------------ *
  * Resolution
  * ------------------------------------------------------------------ */
+
+const UNKEYED = 'AND celebration_id IS NULL AND fixed_date IS NULL';
 
 const MATCH_RULES = [
   {
@@ -314,27 +330,32 @@ const MATCH_RULES = [
     sql: 'season = @season AND week = @week AND day_of_week = @dayOfWeek',
     needs: (l) => l.week != null,
   },
+  // The looser rules below only take rows that belong to no particular feast
+  // or date. A feast's prayer also has no week and no weekday, so without this
+  // the "season" rule printed the Conversion of St Paul on Easter Sunday and
+  // "17 December" on every Sunday of Advent - hidden for as long as a
+  // placeholder happened to win the tie.
   {
     reason: 'season + week',
-    sql: 'season = @season AND week = @week AND day_of_week IS NULL',
+    sql: `season = @season AND week = @week AND day_of_week IS NULL ${UNKEYED}`,
     needs: (l) => l.week != null,
   },
   {
     reason: 'season + day',
-    sql: 'season = @season AND week IS NULL AND day_of_week = @dayOfWeek',
+    sql: `season = @season AND week IS NULL AND day_of_week = @dayOfWeek ${UNKEYED}`,
     needs: () => true,
   },
   {
     reason: 'season',
     // The whole-season catch-all. Deliberately last, and skipped on the first
     // pass - see resolveForDay.
-    sql: 'season = @season AND week IS NULL AND day_of_week IS NULL',
+    sql: `season = @season AND week IS NULL AND day_of_week IS NULL ${UNKEYED}`,
     needs: () => true,
     catchAll: true,
   },
 ];
 
-function findBy(lookup, season, { includeCatchAll = true } = {}) {
+function findBy(lookup, season, { includeCatchAll = true, allowPlaceholders = false } = {}) {
   const db = getDb();
   const params = {
     season,
@@ -343,6 +364,7 @@ function findBy(lookup, season, { includeCatchAll = true } = {}) {
     celebrationId: lookup.celebrationId ?? null,
     fixedDate: lookup.fixedDate ?? null,
   };
+  const source = allowPlaceholders ? '' : 'AND is_placeholder = 0';
 
   // The celebrations that may be kept today, bound one placeholder each.
   // Older callers that pass only a celebrationId still behave as they did.
@@ -362,7 +384,7 @@ function findBy(lookup, season, { includeCatchAll = true } = {}) {
     if (!rule.needs(lookup)) continue;
     const sql = typeof rule.sql === 'function' ? rule.sql({ availableIds }) : rule.sql;
     const row = db
-      .prepare(`SELECT * FROM potf_templates WHERE is_active = 1 AND ${sql} LIMIT 1`)
+      .prepare(`SELECT * FROM potf_templates WHERE is_active = 1 ${source} AND ${sql} LIMIT 1`)
       .get(params);
     if (row) return { template: rowToTemplate(row), reason: rule.reason };
   }
@@ -372,21 +394,28 @@ function findBy(lookup, season, { includeCatchAll = true } = {}) {
 /**
  * Pick the template for a liturgical day. `lookup` is `potfLookup` from
  * calendarService. Returns { template, matchedBy } or { template: null }.
+ *
+ * The office works from two volumes: the Proper of Seasons, Solemnities and
+ * Feasts first, the Ordinary Time volume when that has nothing for the day.
+ * Placeholders written for this tool are skipped unless `allowPlaceholders`
+ * is set - by default a day neither book covers resolves to nothing, and the
+ * document says so rather than printing a prayer the office never chose.
  */
-export function resolveForDay(lookup) {
+export function resolveForDay(lookup, { allowPlaceholders = false } = {}) {
   if (!lookup) return { template: null, matchedBy: 'none' };
 
+  const find = (l, season, options = {}) => findBy(l, season, { allowPlaceholders, ...options });
   const hasFerial = Boolean(lookup.ferialSeason) && lookup.ferialSeason !== lookup.season;
 
   // Anything specific wins first, in both seasons. Without this, an ordinary
   // memorial in Advent matched the generic "Feast" catch-all and printed a
   // placeholder, even though the book has a proper prayer for that Advent
   // weekday - which is the one the office actually prays.
-  const specific = findBy(lookup, lookup.season, { includeCatchAll: false });
+  const specific = find(lookup, lookup.season, { includeCatchAll: false });
   if (specific) return { template: specific.template, matchedBy: specific.reason };
 
   if (hasFerial) {
-    const ferialSpecific = findBy(lookup, lookup.ferialSeason, { includeCatchAll: false });
+    const ferialSpecific = find(lookup, lookup.ferialSeason, { includeCatchAll: false });
     if (ferialSpecific) {
       return {
         template: ferialSpecific.template,
@@ -396,31 +425,37 @@ export function resolveForDay(lookup) {
   }
 
   // When the occasion has no prayer of its own, the office prays the Ordinary
-  // Time prayer for that weekday. This sits above the whole-season catch-alls
-  // on purpose: a real prayer for the right weekday is closer to what the
-  // office wants than a generic "any day in Lent" placeholder.
+  // Time prayer for that day. This sits above the whole-season catch-alls on
+  // purpose: a real prayer for the right weekday is closer to what the office
+  // wants than a generic "any day in Lent" text.
   //
-  // The week number is dropped deliberately - "Advent, week 1" and "Ordinary
-  // Time, week 1" are unrelated, so only the day of the week carries over.
+  // "Advent, week 1" and "Ordinary Time, week 1" are unrelated, so the day's
+  // own week number cannot be used. calendarService supplies `ordinaryWeek`,
+  // the nearest Ordinary Time week on the same weekday, which is what reaches
+  // the book: every one of its prayers belongs to a numbered week.
   const isOrdinary = lookup.season === ORDINARY_TIME || lookup.ferialSeason === ORDINARY_TIME;
-  if (!isOrdinary) {
-    const ordinaryDay = findBy({ ...lookup, week: null }, ORDINARY_TIME, {
-      includeCatchAll: false,
-    });
+  // Not in the Triduum: Good Friday has its own Solemn Intercessions and Holy
+  // Saturday no Mass, so a weekday prayer from Ordinary Time never belongs.
+  const borrowsOrdinary = !isOrdinary && lookup.ferialSeason !== 'Triduum';
+  const ordinaryLookup = { ...lookup, week: lookup.ordinaryWeek ?? null };
+  const ordinaryReason = (reason) =>
+    ordinaryLookup.week
+      ? `${reason} (Ordinary Time fallback, week ${ordinaryLookup.week})`
+      : `${reason} (Ordinary Time fallback)`;
+
+  if (borrowsOrdinary) {
+    const ordinaryDay = find(ordinaryLookup, ORDINARY_TIME, { includeCatchAll: false });
     if (ordinaryDay) {
-      return {
-        template: ordinaryDay.template,
-        matchedBy: `${ordinaryDay.reason} (Ordinary Time fallback)`,
-      };
+      return { template: ordinaryDay.template, matchedBy: ordinaryReason(ordinaryDay.reason) };
     }
   }
 
   // Only now the whole-season catch-alls, proper season before ferial.
-  const primary = findBy(lookup, lookup.season);
+  const primary = find(lookup, lookup.season);
   if (primary) return { template: primary.template, matchedBy: primary.reason };
 
   if (hasFerial) {
-    const ferial = findBy(lookup, lookup.ferialSeason);
+    const ferial = find(lookup, lookup.ferialSeason);
     if (ferial) {
       return { template: ferial.template, matchedBy: `${ferial.reason} (ferial fallback)` };
     }
@@ -428,13 +463,10 @@ export function resolveForDay(lookup) {
 
   // Nothing at all for the season: the Ordinary Time catch-all is still better
   // than printing no prayers.
-  if (!isOrdinary) {
-    const ordinary = findBy({ ...lookup, week: null }, ORDINARY_TIME);
+  if (borrowsOrdinary) {
+    const ordinary = find(ordinaryLookup, ORDINARY_TIME);
     if (ordinary) {
-      return {
-        template: ordinary.template,
-        matchedBy: `${ordinary.reason} (Ordinary Time fallback)`,
-      };
+      return { template: ordinary.template, matchedBy: ordinaryReason(ordinary.reason) };
     }
   }
 

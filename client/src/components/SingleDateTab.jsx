@@ -310,7 +310,7 @@ export default function SingleDateTab({ settings, templates }) {
                 <option value="">Choose for me</option>
                 {templates.map((template) => (
                   <option key={template.id} value={template.id}>
-                    {template.title}
+                    {template.isPlaceholder ? `${template.title} (placeholder)` : template.title}
                   </option>
                 ))}
               </Select>

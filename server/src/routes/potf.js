@@ -3,6 +3,7 @@ import potfService, { POTF_DAYS, POTF_SEASONS } from '../services/potfService.js
 import { parseOrilloPage } from '../lib/orilloParser.js';
 import { isIsoDate } from '../lib/dates.js';
 import { getLiturgicalDay } from '../services/calendarService.js';
+import { getSettings } from '../db/index.js';
 
 const router = Router();
 
@@ -66,7 +67,9 @@ router.get('/resolve/:date', async (req, res, next) => {
   try {
     if (!isIsoDate(req.params.date)) return res.status(400).json({ error: 'Date must be YYYY-MM-DD.' });
     const liturgy = await getLiturgicalDay(req.params.date);
-    const resolved = potfService.resolveForDay(liturgy.potfLookup);
+    const resolved = potfService.resolveForDay(liturgy.potfLookup, {
+      allowPlaceholders: Boolean(getSettings().usePlaceholderPotf),
+    });
     res.json({
       date: req.params.date,
       occasionTitle: liturgy.occasionTitle,

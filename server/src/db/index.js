@@ -94,6 +94,17 @@ const MIGRATIONS = [
       database.exec('CREATE INDEX IF NOT EXISTS idx_potf_fixed_date ON potf_templates (fixed_date);');
     },
   },
+  {
+    id: '005-placeholder',
+    up: (database) => {
+      /* Placeholders are prayers written for this tool, not taken from either
+         book. They stay in the database so the office can pick one by hand, but
+         a date only resolves to one when the office has asked for that - the
+         default for a day the books miss is no prayer and a warning, never a
+         made-up text passed off as the book's. The seeder sets the flag. */
+      database.exec('ALTER TABLE potf_templates ADD COLUMN is_placeholder INTEGER NOT NULL DEFAULT 0;');
+    },
+  },
 ];
 
 function runMigrations(database) {
@@ -152,6 +163,12 @@ export const DEFAULT_SETTINGS = {
   font: 'Book Antiqua',
   /** Intentions appended to every generated day, e.g. for the school patron. */
   schoolWideIntentions: [],
+  /**
+   * When neither book has a prayer for a day (Sundays, most often - both
+   * volumes are for weekday Masses), fall back to a placeholder written for
+   * this tool. Off by default: such a day prints no prayers and says so.
+   */
+  usePlaceholderPotf: false,
   /** Provider order used when fetching readings. */
   providerOrder: ['usccb', 'evangelizo'],
 };

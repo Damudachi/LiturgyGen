@@ -213,18 +213,54 @@ function shape(iso, entries) {
   };
 }
 
+async function entriesFor(iso, calendarKey) {
+  const calendar = await calendarForYear(Number(iso.slice(0, 4)), calendarKey);
+  return calendar[iso];
+}
+
+function addDays(iso, days) {
+  const date = new Date(`${iso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function ordinaryWeekOf(entries) {
+  const primary = entries && entries[0];
+  if (!primary || !primary.seasons || primary.seasons[0] !== 'ORDINARY_TIME') return null;
+  return (primary.calendar && primary.calendar.weekOfSeason) || null;
+}
+
+/**
+ * The Ordinary Time week whose prayer stands in for a day outside Ordinary
+ * Time: the nearest Ordinary Time date falling on the same weekday, looking a
+ * week either way at a time and preferring the week ahead on a tie. The
+ * weekdays after Epiphany take week 1; a weekday of Advent takes week 34.
+ * The longest stretch without Ordinary Time (Lent through Pentecost) is under
+ * fifteen weeks, so the search always ends well inside its limit.
+ */
+async function nearestOrdinaryWeek(iso, calendarKey) {
+  for (let weeks = 1; weeks <= 26; weeks += 1) {
+    for (const days of [7 * weeks, -7 * weeks]) {
+      const week = ordinaryWeekOf(await entriesFor(addDays(iso, days), calendarKey));
+      if (week) return week;
+    }
+  }
+  return null;
+}
+
 /** Liturgical information for a single "YYYY-MM-DD" date. */
 export async function getLiturgicalDay(iso, calendarKey) {
   assertIsoDate(iso);
-  const year = Number(iso.slice(0, 4));
-  const calendar = await calendarForYear(year, calendarKey);
-  const entries = calendar[iso];
+  const entries = await entriesFor(iso, calendarKey);
   if (!entries || !entries.length) {
     const err = new Error(`romcal produced no liturgical day for ${iso}.`);
     err.status = 500;
     throw err;
   }
-  return shape(iso, entries);
+  const day = shape(iso, entries);
+  day.potfLookup.ordinaryWeek =
+    ordinaryWeekOf(entries) ?? (await nearestOrdinaryWeek(iso, calendarKey));
+  return day;
 }
 
 /** Liturgical information for many dates, reusing each generated year. */

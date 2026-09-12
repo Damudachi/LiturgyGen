@@ -58,7 +58,9 @@ export async function buildDay(iso, options = {}) {
       });
       potfMatch = 'chosen manually';
     } else {
-      const resolved = resolveForDay(liturgy.potfLookup);
+      const resolved = resolveForDay(liturgy.potfLookup, {
+        allowPlaceholders: Boolean(settings.usePlaceholderPotf),
+      });
       potfMatch = resolved.matchedBy;
       potf = composePotf(resolved.template, {
         extraIntentions: extraIntentions ?? settings.schoolWideIntentions ?? [],
@@ -70,8 +72,9 @@ export async function buildDay(iso, options = {}) {
   if (readingsError) warnings.push(readingsError.message);
   if (!potf) {
     warnings.push(
-      `No Prayers of the Faithful template matched ${liturgy.occasionTitle}. ` +
-        'Add one in the Template Manager, or the document will be printed without intercessions.',
+      `Neither book has Prayers of the Faithful for ${liturgy.occasionTitle}, so the document ` +
+        'will be printed without them. Choose a prayer for this day, add one in the Template ' +
+        'Manager, or turn on placeholder prayers in Settings.',
     );
   }
 

@@ -15,7 +15,9 @@ process.env.DB_FILE = path.join(
 );
 
 const { seedPotfTemplates } = await import('../src/db/seed.js');
-const { resolveForDay, createTemplate } = await import('../src/services/potfService.js');
+const { resolveForDay, createTemplate, listTemplates, updateTemplate } = await import(
+  '../src/services/potfService.js'
+);
 const { getLiturgicalDay } = await import('../src/services/calendarService.js');
 const { parseOrilloPage } = await import('../src/lib/orilloParser.js');
 const { loadOrilloSeeds } = await import('../src/db/seeds/orillo.seed.js');
@@ -30,9 +32,10 @@ const needsOrillo = loadOrilloSeeds().missing.length
   ? { skip: 'requires the office transcriptions in server/data/orillo' }
   : {};
 
-const resolveIso = async (iso) => resolveForDay((await getLiturgicalDay(iso)).potfLookup);
+const resolveIso = async (iso, options) =>
+  resolveForDay((await getLiturgicalDay(iso)).potfLookup, options);
 
-test('a transcribed weekday is matched exactly', async () => {
+test('a transcribed weekday is matched exactly', needsOrillo, async () => {
   const wednesday = await resolveIso('2024-12-04');
   assert.equal(wednesday.matchedBy, 'season + week + day');
   assert.match(wednesday.template.title, /Advent, Week 1 - Wednesday/);
@@ -56,16 +59,10 @@ test('a memorial in a season keeps that season’s weekday prayer', needsOrillo,
   assert.match(ambrose.template.title, /Advent, Week 1 - Saturday/);
 });
 
-test('a day with nothing transcribed still resolves to something printable', async () => {
-  const week2 = await resolveIso('2024-12-09');
-  assert.ok(week2.template, 'every day must yield a template');
-  assert.ok(week2.template.intentions.length >= 4);
-  assert.ok(week2.template.priestInvitation.length > 0);
-  assert.ok(week2.template.priestConclusion.length > 0);
-});
-
 test('intentions carry no trailing response - the document adds it', async () => {
-  const monday = await resolveIso('2024-12-02');
+  // Placeholders allowed so a checkout without the transcriptions has a prayer
+  // to inspect; with them, this is the book's own Advent Monday.
+  const monday = await resolveIso('2024-12-02', { allowPlaceholders: true });
   for (const intention of monday.template.intentions) {
     assert.ok(
       !/let us pray to the lord/i.test(intention),
@@ -79,29 +76,107 @@ test('intentions carry no trailing response - the document adds it', async () =>
  * Ordinary Time fallback
  * ------------------------------------------------------------------ */
 
-test('a day with no prayer of its own takes the Ordinary Time prayer for that weekday', async () => {
-  // A day with no proper template should fall back to
-  // the Ordinary Time prayer for the same day of the week - not to the generic
-  // whole-season placeholder.
-  const unseeded = resolveForDay({
-    season: 'Triduum',
-    ferialSeason: 'Triduum',
-    week: null,
+test('a day with no prayer of its own takes the Ordinary Time prayer for that day', async () => {
+  // Every prayer in the Ordinary Time book belongs to a numbered week, so the
+  // fallback has to carry one. Typed in here so the test does not depend on the
+  // office's transcriptions being present.
+  createTemplate({
+    title: 'Ordinary Time, Week 3 - Tuesday (test)',
+    season: 'Ordinary Time',
+    week: 3,
+    dayOfWeek: 'Tuesday',
+    priestInvitation: 'Let us pray.',
+    responseOptions: ['LORD, HEAR OUR PRAYER.'],
+    intentions: ['That the Church may be one'],
+    priestConclusion: 'Through Christ our Lord',
+  });
+
+  const resolved = resolveForDay({
+    season: 'Christmas',
+    ferialSeason: 'Christmas',
+    week: 2,
+    ordinaryWeek: 3,
     dayOfWeek: 'Tuesday',
     celebrationId: 'untranscribed_day',
   });
-  assert.match(unseeded.matchedBy, /Ordinary Time fallback/);
-  assert.equal(unseeded.template.title, 'Ordinary Time - Tuesday');
+  assert.match(resolved.matchedBy, /Ordinary Time fallback, week 3/);
+  assert.equal(resolved.template.season, 'Ordinary Time');
+  assert.equal(resolved.template.week, 3);
+  assert.equal(resolved.template.dayOfWeek, 'Tuesday');
+  assert.equal(resolved.template.isPlaceholder, false);
+});
 
-  const unseededFriday = resolveForDay({
+test('a day outside Ordinary Time borrows the nearest Ordinary Time week', async () => {
+  // The weekdays after Epiphany lead into week 1.
+  assert.equal((await getLiturgicalDay('2027-01-05')).potfLookup.ordinaryWeek, 1);
+  // An Advent weekday sits just after week 34.
+  assert.equal((await getLiturgicalDay('2026-12-02')).potfLookup.ordinaryWeek, 34);
+  // A day in Ordinary Time is simply its own week.
+  assert.equal((await getLiturgicalDay('2026-06-19')).potfLookup.ordinaryWeek, 11);
+});
+
+test('a Christmas weekday with no proper prayer uses the Ordinary Time book', needsOrillo, async () => {
+  const day = await resolveIso('2026-01-06');
+  assert.match(day.matchedBy, /Ordinary Time fallback, week 1/);
+  assert.match(day.template.title, /Ordinary Time, Week 1 - Tuesday \(Orillo\)/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Placeholders
+ * ------------------------------------------------------------------ */
+
+test('placeholders are never chosen for a date unless the office asks for them', async () => {
+  // Both books are for weekday Masses, so a Sunday in Ordinary Time has no
+  // prayer in either.
+  const sunday = await resolveIso('2026-09-13');
+  assert.equal(sunday.template, null);
+  assert.equal(sunday.matchedBy, 'none');
+
+  const allowed = await resolveIso('2026-09-13', { allowPlaceholders: true });
+  assert.equal(allowed.template.title, 'Ordinary Time - Sunday');
+  assert.equal(allowed.template.isPlaceholder, true);
+});
+
+test('a feast or dated prayer never stands in for the whole season', async () => {
+  createTemplate({
+    title: 'A feast of the Lord (test)',
+    season: 'Feast',
+    celebrationId: 'some_feast_of_the_lord',
+    priestInvitation: 'Let us pray.',
+    responseOptions: ['LORD, HEAR OUR PRAYER.'],
+    intentions: ['That the feast be kept'],
+    priestConclusion: 'Through Christ our Lord',
+  });
+
+  // Easter Sunday has no prayer in either book. It must not borrow another
+  // feast's prayer just because that row has no week and no weekday.
+  const easter = await resolveIso('2026-04-05');
+  assert.doesNotMatch(easter.template?.title ?? '', /feast of the Lord \(test\)/);
+  assert.equal(easter.template?.celebrationId ?? null, null);
+});
+
+test('the Triduum never borrows an Ordinary Time weekday prayer', async () => {
+  const goodFriday = await resolveIso('2026-04-03');
+  assert.equal(goodFriday.template, null);
+  assert.doesNotMatch(goodFriday.matchedBy, /Ordinary Time/);
+});
+
+test('a placeholder the office rewrites becomes its own prayer', async () => {
+  const [placeholder] = listTemplates({ search: 'Paschal Triduum - any day' });
+  assert.equal(placeholder.isPlaceholder, true);
+
+  const edited = updateTemplate(placeholder.id, { priestInvitation: 'Our own words.' });
+  assert.equal(edited.isPlaceholder, false);
+
+  const goodFriday = resolveForDay({
     season: 'Triduum',
     ferialSeason: 'Triduum',
     week: null,
+    ordinaryWeek: null,
     dayOfWeek: 'Friday',
     celebrationId: 'untranscribed_day',
   });
-  assert.match(unseededFriday.matchedBy, /Ordinary Time fallback/);
-  assert.equal(unseededFriday.template.title, 'Ordinary Time - Friday');
+  assert.equal(goodFriday.template.id, placeholder.id);
 });
 
 test('the fallback never displaces a prayer the day actually has', needsOrillo, async () => {
