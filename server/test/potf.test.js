@@ -119,7 +119,8 @@ test('the fallback never displaces a prayer the day actually has', needsOrillo, 
 
   // A day already in Ordinary Time matches directly, not through the fallback.
   const ordinary = await resolveIso('2026-06-19');
-  assert.equal(ordinary.matchedBy, 'season + day');
+  assert.equal(ordinary.matchedBy, 'season + week + day');
+  assert.match(ordinary.template.title, /Ordinary Time, Week 11 - Friday/);
 });
 
 /* ------------------------------------------------------------------ *

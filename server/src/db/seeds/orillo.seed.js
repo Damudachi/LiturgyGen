@@ -42,7 +42,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** Sections in the order the book prints them. */
-const SECTIONS = ['advent', 'christmas', 'lent', 'easter', 'solemnities'];
+const SECTIONS = ['advent', 'christmas', 'lent', 'easter', 'solemnities', 'ordinary-time'];
 
 export const ORILLO_DATA_DIR = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
