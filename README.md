@@ -1,26 +1,68 @@
 # LiturgyGen
 
 Mass readings missalette and Prayers of the Faithful generator for the Campus Ministry
-Office. Pick a date (or a whole month), and LiturgyGen works out the liturgical day,
-fetches that day's readings, attaches the right Prayers of the Faithful, and hands back a
-`.docx` laid out exactly like the office's printed missalette.
+Office. Pick a day on the calendar (or several at once), and LiturgyGen works out the
+liturgical day, fetches that day's readings, attaches the right Prayers of the Faithful,
+and hands back a `.docx` laid out exactly like the office's printed missalette.
 
 ---
 
-## Requirements
+## For the office: installing on a computer
+
+The office computers run LiturgyGen as an ordinary Windows program — no Node.js, no
+command line, no administrator needed.
+
+1. Run `LiturgyGen-Setup-<version>.exe` (see [Building the installer](#building-the-office-installer)).
+   Windows may say *"Windows protected your PC"* because the installer is not signed:
+   choose **More info → Run anyway**.
+2. Open **LiturgyGen** from the desktop icon. It opens in the browser at
+   <http://localhost:4000> and puts an icon beside the clock.
+3. To close it, right-click that icon and choose **Quit LiturgyGen**.
+
+Each computer keeps its own prayers, corrections and saved readings in
+`%LOCALAPPDATA%\LiturgyGen`, and updating or uninstalling never touches them. The full
+guide, including backups and where the log is, is in [`desktop/README.md`](desktop/README.md).
+
+## Using it
+
+**Calendar.** The month as tiles, each with its liturgical colour and what the day keeps.
+
+- **Click a day** to open it as a book: the day and its steps on the left, the missalette
+  exactly as it will print on the right. From there you can edit the page, choose other
+  prayers, fetch the readings again, paste the USCCB page by hand, and download the Word
+  file.
+- **Select several days** turns clicks into ticks, with shortcuts for the month's
+  weekdays, Mon/Wed/Fri, First Friday and your saved Mass schedule. Days that need a
+  look — a missing psalm response, no Gospel Acclamation, no Prayers of the Faithful —
+  are marked on the calendar and listed first in the side panel with what is wrong, so
+  you can fix them before making anything. Days whose readings were never fetched can be
+  fetched from the panel without making files. **Make Word files** then produces a ZIP of
+  one file per day, or one master document.
+
+**Prayers.** The Prayers of the Faithful templates: search, edit, and **Type in** a page
+straight from the General Intercessions books.
+
+**Settings.** Font and page layout, which optional parts print, school-wide intentions,
+and whether a placeholder prayer is used when neither book has one (off by default).
+
+---
+
+## Development
+
+### Requirements
 
 - Node.js 20.10 or newer
-- Windows, macOS or Linux (developed on Windows 11)
-- An internet connection when fetching readings for a date that is not already cached
+- Windows, macOS or Linux (developed on Windows 11); building the office installer needs Windows
+- An internet connection when fetching readings for a date that is not already saved
 
-## Setup
+### Setup
 
 ```bash
 npm install     # installs the root, server and client workspaces
 npm run seed    # creates the SQLite database and loads the POTF templates
 ```
 
-### The office's transcriptions are not in this repository
+#### The office's transcriptions are not in this repository
 
 The prayers transcribed from the office's General Intercessions volumes are
 copyrighted, so they are kept out of version control. They live in
@@ -29,17 +71,16 @@ copyrighted, so they are kept out of version control. They live in
 server/data/orillo/*.json     # gitignored, one file per section of the book
 ```
 
-A checkout without them still runs: `npm run seed` loads the placeholder set,
-says which sections it could not find, and every date still resolves to
-something printable. To get the real prayers onto a machine, copy the office's
-`server/data/orillo` directory into place and re-run `npm run seed`, or type the
-pages in through the Templates tab (see [The intercession books have to be
-entered by hand](#3-the-intercession-books-have-to-be-entered-by-hand)).
+A checkout without them still runs: `npm run seed` loads the placeholder set and says
+which sections it could not find. To get the real prayers onto a machine, copy the
+office's `server/data/orillo` directory into place and re-run `npm run seed`, or type the
+pages in on the Prayers screen (see [The intercession books have to be entered by
+hand](#3-the-intercession-books-have-to-be-entered-by-hand)).
 
 Please keep it that way. Do not commit the transcriptions, the scanned PDFs or
 the ORDO - see `LICENSE` for what this project does and does not cover.
 
-## Running
+### Running
 
 ```bash
 npm run dev     # server on :4000, Vite dev server on :5173 with /api proxied
@@ -56,22 +97,51 @@ npm start       # Express serves the API and the built client on :4000
 
 Open <http://localhost:4000>.
 
-## Tests
+### Tests
 
 ```bash
 npm run test:server
+npm run test:client
 ```
 
-74 tests covering the date helpers, the citation/lectionary tables, the USCCB and
-Evangelizo parsers (against captured fixtures, including a day with optional readings),
-the cache-reuse and bot-check-cooldown rules, the liturgical-title rules, the Philippine
-ORDO overlay and POTF template resolution, and the generated `.docx` — its section order,
-tab-stop alignment, psalm-response casing, intention numbering and page geometry, read
-straight out of the generated file.
+**Server — 82 tests** covering the date helpers, the citation/lectionary tables, the
+USCCB and Evangelizo parsers (against captured fixtures, including a day with optional
+readings), the cache-reuse and bot-check-cooldown rules, the offline day check, the
+liturgical-title rules, the Philippine ORDO overlay and POTF template resolution, and the
+generated `.docx` — its section order, tab-stop alignment, psalm-response casing,
+intention numbering and page geometry, read straight out of the generated file.
 
-Two of them assert against the office's own transcriptions and are skipped automatically
-when `server/data/orillo/` is absent, so a clean checkout and CI both run green. CI runs
-this suite plus the client build on Node 20.10 and 22 (`.github/workflows/ci.yml`).
+**Client — 10 tests** covering the pure logic behind the calendar: selecting days,
+the shortcuts, tile labels and keyboard movement, and which chosen days need a look.
+
+Two server tests assert against the office's own transcriptions and are skipped
+automatically when `server/data/orillo/` is absent, so a clean checkout and CI both run
+green. CI runs both suites plus the client build on Node 20.10 and 22
+(`.github/workflows/ci.yml`).
+
+### Building the office installer
+
+On Windows, with [Inno Setup 6](https://jrsoftware.org/isinfo.php) installed
+(`winget install JRSoftware.InnoSetup`):
+
+```bash
+npm run package:desktop
+```
+
+This writes `desktop/dist/LiturgyGen-Setup-<version>.exe`, about 32 MB. It bundles:
+
+- the Node that ran the build, so the database driver always matches it;
+- the server with its dependencies pinned to the exact versions installed here;
+- the built client;
+- `LiturgyGen.exe`, a small tray launcher compiled with the C# compiler that ships with
+  Windows. It starts the server hidden on `127.0.0.1` only, opens the browser, reuses a
+  running copy when opened twice, and stops the server when it quits;
+- **a starting copy of this machine's data** — the database and saved readings, plus the
+  `server/data/orillo` books. A computer installing for the first time starts from it;
+  one that already has LiturgyGen keeps its own.
+
+Raise `version` in the root `package.json` before building an update. The installer
+is per-user (`%LOCALAPPDATA%\Programs\LiturgyGen`) and never needs an administrator.
 
 ---
 
@@ -82,7 +152,7 @@ date ──► calendarService ──► liturgical day (season, week, weekday, 
                 │
                 ├──► scraperService ──► readings   (override ► cache ► USCCB ► Evangelizo)
                 │
-                └──► potfService    ──► prayers    (5-level template cascade)
+                └──► potfService    ──► prayers    (template cascade, then Ordinary Time)
                           │
                           ▼
                   compositionService ──► docxService ──► .docx
@@ -100,11 +170,18 @@ and memorials. It also returns the lookup key the POTF cascade uses.
 
 Readings are resolved through a chain, first hit wins:
 
-1. **Manual override** stored in SQLite for that date (anything you edit in the UI).
-2. **Disk cache** of previously fetched pages (`server/.cache/usccb/`).
+1. **Manual override** stored in SQLite for that date (anything you save in the editor or
+   paste from USCCB).
+2. **Saved readings** from an earlier fetch — the raw pages in `server/.cache/usccb/` and
+   the parsed readings in `server/.cache/readings/`.
 3. **USCCB** — `https://bible.usccb.org/bible/readings/MMDDYY.cfm`, the authoritative
    source and the one the office's own documents follow.
 4. **Evangelizo** — a public feed used only as a partial fallback (see the caveats below).
+
+Readings for a date never change, so anything fetched is kept permanently: once a day
+has been fetched, opening or making it again sends no request at all, across restarts.
+The one exception is a partial copy from the fallback, which is re-fetched from USCCB the
+next time it is needed.
 
 When the lectionary offers a choice, USCCB prints each further option as its own block
 headed only `or` — 8 September, the Nativity of the BVM, offers a choice of First Reading
@@ -113,10 +190,9 @@ section above them. **The first option is always the one used**, as the office p
 the rest are recorded in `alternatives` against the right section for the editor. An
 option only ever displaces the first if the first arrived with no text at all.
 
-Parsed readings are cached alongside the raw pages and stamped with
-`PARSER_VERSION`. Bumping it when a parser changes invalidates every stale entry, so
-a fix reaches dates that were already fetched — and because the raw page is still on
-disk, re-parsing costs nothing and sends no new request.
+Parsed readings are stamped with `PARSER_VERSION`. Bumping it when a parser changes
+invalidates every stale entry, so a fix reaches dates that were already fetched — and
+because the raw page is still on disk, re-parsing costs nothing and sends no new request.
 
 All outbound requests go through a single serialised queue (`lib/httpQueue.js`) that
 enforces a minimum spacing between hits — 800 ms by default, tunable with
@@ -129,13 +205,28 @@ Templates are matched from most to least specific, so a hand-written prayer for 
 day always beats the generic one:
 
 ```
-celebration id  ►  season + week + weekday  ►  season + week
-                ►  season + weekday         ►  season  ►  ferial fallback
+celebration id  ►  calendar date (MM-DD)  ►  season + week + weekday
+                ►  season + week          ►  season + weekday
 ```
 
-Seeded with the office's own Advent and Ordinary Time sets, plus fallbacks for Christmas,
-Lent, the Triduum, Easter and feasts. Re-running `npm run seed` refreshes only the rows
-you have never edited; anything you have touched in the Templates tab is left alone.
+tried in the day's own season, then its ferial season (a memorial falls back to the
+weekday it sits on). When the occasion has no prayer of its own, the office prays the
+**Ordinary Time** prayer for the nearest matching week and weekday, and its heading is
+printed above the intercessions so the page names the day the prayer was written for.
+Only after that come the whole-season catch-alls.
+
+Placeholder prayers written for this tool are skipped unless *Use a placeholder prayer*
+is on in Settings: by default a day neither book covers prints without Prayers of the
+Faithful and says so, rather than printing a prayer the office never chose. Re-running
+`npm run seed` refreshes only the rows you have never edited; anything you have touched on
+the Prayers screen is left alone.
+
+### `services/compositionService.js`
+
+Assembles the day and lists everything that stands between it and a finished page. The
+same composition runs **offline** for `POST /api/readings/check`, which reports for each
+date what is missing from what is already on hand, without asking any source — that is
+what lets *Select several days* mark a whole month's problem days in a moment.
 
 ### `services/docxService.js`
 
@@ -147,15 +238,20 @@ the optional bits (Gospel, sequence, refrain repetition) come from Settings.
 
 ### `services/batchService.js`
 
-Runs a month sequentially with per-date error isolation — one date failing never stops the
-run — and streams progress over Server-Sent Events (*"Processing date 4 of 22: October 6,
-2026…"*). Exports either a ZIP of one file per date, or a single combined document with
-page breaks between days. A ZIP always includes `NOT-GENERATED.txt` listing anything that
-failed and why.
+Runs a set of dates sequentially with per-date error isolation — one date failing never
+stops the run — and streams progress over Server-Sent Events (*"Processing date 4 of 22:
+October 6, 2026…"*). If USCCB serves its bot check mid-run, the run waits out the
+cooldown (up to 15 minutes in total) instead of spending the remaining dates on the
+fallback, then makes a second pass over any day that still came out thin.
+
+Exports either a ZIP of one file per date, or a single combined document with page breaks
+between days. A ZIP always includes `NOT-GENERATED.txt` listing anything that failed and
+why. A run started with `checkOnly` fetches the readings without building documents —
+the side panel's *Get readings* button.
 
 ---
 
-## Two things to know before relying on it
+## Things to know before relying on it
 
 ### 1. USCCB actively blocks scrapers
 
@@ -164,6 +260,9 @@ returns a "Checking connection" page instead of readings, and LiturgyGen surface
 a `USCCB_CHALLENGE` error rather than retrying — retrying is what deepens the block, and
 solving the challenge would mean circumventing an access control the site owner put there
 on purpose. **LiturgyGen does not attempt to bypass it.**
+
+You only meet it for dates that have never been fetched: saved readings are served
+without contacting USCCB at all.
 
 Two ordinary client manners keep a batch out of the challenge for as long as possible,
 neither of which touches the proof-of-work:
@@ -176,40 +275,39 @@ neither of which touches the proof-of-work:
   Acclamation.
 - **A challenge opens a cooldown.** The block is a state, not a per-request verdict, and
   asking again renews it. For `USCCB_COOLDOWN_MS` after a challenge, USCCB is left
-  completely alone: cached pages still serve, everything else falls back immediately.
+  completely alone: saved pages still serve, everything else falls back immediately.
   The first date after the cooldown lapses probes USCCB again, and a success re-opens the
   tap for the rest of the run.
 
-In practice the challenge is triggered by bursts and lapses on its own within the hour.
-When you hit it, you have three ways forward:
+Left alone, the block usually lifts within a few minutes. When you hit it, you have three
+ways forward:
 
-- **Wait** and re-run the batch; already-fetched dates come from cache and are not re-hit.
-  A day that came from the fallback is *not* treated as settled — it is re-fetched on the
-  next run, so running the same batch twice is the normal way to close the gaps.
-- **Import the page by hand** — open the USCCB page in your browser, save or copy the
-  HTML, and paste it into *Import HTML* on the Single Date tab. It parses identically.
+- **Wait** and run the same days again; already-fetched dates are not re-hit. A day that
+  came from the fallback is *not* treated as settled — it is re-fetched on the next run,
+  so running the same days twice is the normal way to close the gaps.
+- **Paste the page by hand** — in the day's book choose *Paste from USCCB*, open the
+  linked USCCB page in your browser, and paste its page source (right-click → View page
+  source). It parses identically.
 - **Let the Evangelizo fallback fill in**, with the gaps below.
 
 ### 2. The Evangelizo fallback is partial, by design
 
 Evangelizo carries the reading texts but **not** the psalm response or the Gospel
 Acclamation, and it only serves roughly ±30 days around today. When a page is built from
-it, LiturgyGen marks the document and warns in the UI listing exactly what is missing, so
+it, LiturgyGen marks the day as needing a look and lists exactly what is missing, so
 those two lines can be typed in before printing. It is a safety net for a blocked
 weekday — not a substitute for USCCB.
 
 ### 3. The intercession books have to be entered by hand
 
-LiturgyGen ships with a small set of placeholder Prayers of the Faithful so every date
-resolves to something printable. None of the office's General Intercessions volumes are
-bundled: they are published books that ST PAULS still sells, and shipping a digital copy
-inside the app would be redistributing them.
+None of the office's General Intercessions volumes are bundled: they are published books
+that ST PAULS still sells, and shipping a digital copy inside the app would be
+redistributing them. The office's own transcriptions are loaded from
+`server/data/orillo/`, which is outside version control - see
+[Setup](#the-offices-transcriptions-are-not-in-this-repository).
 
-The office's own transcriptions are loaded from `server/data/orillo/`, which is outside
-version control - see [Setup](#the-offices-transcriptions-are-not-in-this-repository).
-
-Entering a day takes about a minute. On the **Templates** tab press **Type in**, then type
-the page as it is printed:
+Entering a day takes about a minute. On the **Prayers** screen press **Type in**, then
+type the page as it is printed:
 
 ```
 SECOND OF FEBRUARY              <- optional heading
@@ -253,18 +351,28 @@ in Settings.
 LiturgyGen/
 ├── server/
 │   ├── src/
-│   │   ├── config.js              port, cache and calendar settings
+│   │   ├── config.js              port, data folder, cache and calendar settings
 │   │   ├── index.js               Express app; serves client/dist in production
 │   │   ├── db/                    migrations, settings, POTF seeds
 │   │   ├── lib/                   dates, Bible book tables, request queue, readings shape
 │   │   ├── routes/                calendar, readings, generate, batch, potf, settings
 │   │   └── services/              calendar, scraper + providers, potf, composition, docx, batch
 │   ├── test/                      tests and captured HTML fixtures
-│   ├── data/                      SQLite database (gitignored)
-│   └── .cache/                    fetched USCCB pages (gitignored)
-└── client/
-    └── src/components/            SingleDateTab, BatchTab, TemplatesTab, SettingsPanel,
-                                   LiturgicalCalendar, DocumentPreview
+│   ├── data/                      SQLite database and the office's books (gitignored)
+│   └── .cache/                    saved USCCB pages and parsed readings (gitignored)
+├── client/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── calendar/          month grid, day tiles, selection, the making panel
+│   │   │   ├── day/               a day's book: its page, editor, prayer picker, preview
+│   │   │   ├── prayers/           template list, form, Type in
+│   │   │   ├── Book.jsx           the open-book layout
+│   │   │   ├── SettingsPanel.jsx
+│   │   │   └── ui.jsx             buttons, fields, alerts
+│   │   └── lib/                   dates, selection, tiles, issues - pure, tested
+│   └── test/
+├── desktop/                       office installer: launcher, Inno Setup script, build
+└── docs/                          design notes
 ```
 
 ## Configuration
@@ -272,15 +380,17 @@ LiturgyGen/
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `PORT` | `4000` | API/server port |
-| `DB_FILE` | `server/data/liturgygen.sqlite` | SQLite location |
+| `HOST` | all interfaces | Address to listen on; the installed app uses `127.0.0.1` |
+| `LITURGYGEN_DATA_DIR` | unset | Folder for the database and saved readings; unset uses `server/data` and `server/.cache` |
+| `DB_FILE` | `<data>/liturgygen.sqlite` | SQLite location, overriding the data folder |
 | `USCCB_DELAY_MS` | `800` | Minimum spacing between outbound requests |
 | `USCCB_TIMEOUT_MS` | `20000` | Per-request timeout |
 | `USCCB_COOLDOWN_MS` | `180000` | How long USCCB is left alone after it serves its bot check |
-| `USCCB_CACHE` | `true` | Set `false` to disable the raw-HTML cache |
+| `USCCB_CACHE` | `true` | Set `false` to stop saving and reusing fetched readings |
 | `ROMCAL_CALENDAR` | `philippines` | Particular calendar |
 
 ## Output names
 
 - Single date — `READINGS-December-04-2024-Wednesday.docx`
-- Batch ZIP — `Mass-Readings-December-2024.zip`
-- Batch combined — `Mass-Readings-December-2024.docx`
+- Several days, ZIP — `Mass-Readings-December-2024.zip`
+- Several days, one master file — `Mass-Readings-December-2024.docx`
