@@ -1,25 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BookOpen, CalendarDays, Church, Layers, Settings2 } from 'lucide-react';
 import api from './api';
-import SingleDateTab from './components/SingleDateTab';
-import BatchTab from './components/BatchTab';
-import TemplatesTab from './components/TemplatesTab';
+import seal from './assets/seal-128.png';
+import CalendarScreen from './components/calendar/CalendarScreen';
+import PrayersScreen from './components/prayers/PrayersScreen';
 import SettingsPanel from './components/SettingsPanel';
 import { Alert, Spinner, cx } from './components/ui';
 
 const TABS = [
-  { id: 'single', label: 'One day', icon: CalendarDays },
-  { id: 'batch', label: 'Many days', icon: Layers },
-  { id: 'templates', label: 'Prayers', icon: BookOpen },
-  { id: 'settings', label: 'Settings', icon: Settings2 },
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'prayers', label: 'Prayers' },
+  { id: 'settings', label: 'Settings' },
 ];
 
 export default function App() {
-  const [tab, setTab] = useState('single');
+  const [tab, setTab] = useState('calendar');
   const [settings, setSettings] = useState(null);
   const [templates, setTemplates] = useState([]);
   const [seasons, setSeasons] = useState([]);
-  const [health, setHealth] = useState(null);
   const [bootError, setBootError] = useState(null);
 
   const loadTemplates = useCallback(async () => {
@@ -29,8 +26,7 @@ export default function App() {
 
   useEffect(() => {
     Promise.all([api.health(), api.settings(), api.potfMeta(), api.potfList()])
-      .then(([healthPayload, settingsPayload, meta, list]) => {
-        setHealth(healthPayload);
+      .then(([, settingsPayload, meta, list]) => {
         setSettings(settingsPayload.settings);
         setSeasons(meta.seasons);
         setTemplates(list.templates);
@@ -41,11 +37,10 @@ export default function App() {
   if (bootError) {
     return (
       <div className="mx-auto max-w-xl p-8">
-        <Alert tone="error" title="Cannot reach the LiturgyGen server">
+        <Alert tone="error" title="LiturgyGen's server is not running">
           <p>{bootError}</p>
           <p className="mt-2">
-            Start it with <code className="rounded bg-red-100 px-1 py-0.5">npm run dev</code> from
-            the project folder, then reload this page.
+            Start it with <code className="rounded bg-page-hi px-1 py-0.5">npm run dev</code> from the project folder, then reload this page.
           </p>
         </Alert>
       </div>
@@ -54,55 +49,39 @@ export default function App() {
 
   if (!settings) {
     return (
-      <div className="flex h-full items-center justify-center gap-2 text-sm text-stone-500">
-        <Spinner /> Loading LiturgyGen…
+      <div className="flex h-full items-center justify-center gap-2 text-muted">
+        <Spinner /> Opening LiturgyGen…
       </div>
     );
   }
 
   return (
     <div className="min-h-full">
-      <header className="border-b border-stone-200 bg-white">
-        <div className="mx-auto flex max-w-[100rem] items-center gap-3 px-4 py-3">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-stone-900 text-white">
-            <Church className="size-5" />
-          </span>
-          <div className="min-w-0">
-            <h1 className="text-base leading-tight font-semibold text-stone-900">LiturgyGen</h1>
-            <p className="truncate text-xs text-stone-500">
-              Campus Ministry Office · daily Mass missalettes and Prayers of the Faithful
-            </p>
-          </div>
-          {/* The calendar and request-spacing details live in Settings; they are
-              not something the office needs on screen while working. */}
-        </div>
-
-        <nav className="mx-auto flex max-w-[100rem] gap-1 px-3">
+      <header className="on-dark sticky top-0 z-50 flex h-[60px] items-center gap-3 bg-ink px-6 text-page">
+        <img src={seal} alt="Chapel of the Holy Guardian Angel seal" className="size-9 rounded-full" />
+        <span className="font-serif text-xl font-bold">LiturgyGen</span>
+        <nav className="ml-auto flex h-full gap-1" aria-label="Main">
           {TABS.map((entry) => (
             <button
               key={entry.id}
               type="button"
               onClick={() => setTab(entry.id)}
+              aria-current={tab === entry.id ? 'page' : undefined}
               className={cx(
-                'flex items-center gap-2 border-b-2 px-4 py-3 text-base font-medium transition-colors',
-                tab === entry.id
-                  ? 'border-amber-700 text-stone-900'
-                  : 'border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-800',
+                'relative h-full cursor-pointer px-4 text-base font-medium transition-colors',
+                tab === entry.id ? 'text-gold' : 'text-[#c9d3dc] hover:text-page',
               )}
             >
-              <entry.icon className="size-5" />
               {entry.label}
+              {tab === entry.id && <span aria-hidden="true" className="absolute inset-x-4 bottom-0 h-[3px] rounded-t bg-gold" />}
             </button>
           ))}
         </nav>
       </header>
 
-      <main className="mx-auto max-w-[100rem] p-4">
-        {tab === 'single' && <SingleDateTab settings={settings} templates={templates} />}
-        {tab === 'batch' && <BatchTab settings={settings} />}
-        {tab === 'templates' && (
-          <TemplatesTab templates={templates} seasons={seasons} reload={loadTemplates} />
-        )}
+      <main>
+        {tab === 'calendar' && <CalendarScreen settings={settings} templates={templates} />}
+        {tab === 'prayers' && <PrayersScreen templates={templates} seasons={seasons} reload={loadTemplates} />}
         {tab === 'settings' && <SettingsPanel settings={settings} onSaved={setSettings} />}
       </main>
     </div>

@@ -40,6 +40,7 @@ function publicJob(job) {
   return {
     id: job.id,
     status: job.status,
+    checkOnly: Boolean(job.options.checkOnly),
     total: job.total,
     completed: job.completed,
     failed: job.failed,
@@ -100,7 +101,7 @@ export function cancelJob(id) {
 export function jobDocuments(id) {
   const job = jobs.get(id);
   if (!job) return null;
-  return job.results.filter((result) => result.ok);
+  return job.results.filter((result) => result.ok && result.buffer);
 }
 
 /**
@@ -219,7 +220,9 @@ async function run(job) {
 
       if (day.readingsError) throw new Error(day.readingsError.message);
 
-      const buffer = await buildDayDocx(day, style);
+      // A check only fetches the readings, so the days that need a look show up
+      // before anyone makes the files.
+      const buffer = job.options.checkOnly ? null : await buildDayDocx(day, style);
 
       job.results.push({
         date,
@@ -297,7 +300,7 @@ async function fillGaps(job, style) {
       });
       if (day.readingsError || day.warnings.length >= result.warnings.length) continue;
 
-      result.buffer = await buildDayDocx(day, style);
+      result.buffer = job.options.checkOnly ? null : await buildDayDocx(day, style);
       result.warnings = day.warnings;
       result.occasionTitle = day.occasionTitle;
       result.day = day;
@@ -322,6 +325,14 @@ async function fillGaps(job, style) {
 function summarise(job) {
   const parts = [];
 
+  if (job.options.checkOnly) {
+    const thin = job.results.filter((result) => result.ok && result.warnings.length).length;
+    parts.push(`Checked ${job.completed} of ${job.total} days.`);
+    if (job.failed) parts.push(`${job.failed} could not be fetched.`);
+    if (thin) parts.push(`${thin} ${thin === 1 ? 'needs' : 'need'} a look.`);
+    return parts.join(' ');
+  }
+
   if (job.failed === 0) parts.push(`Generated all ${job.completed} documents.`);
   else parts.push(`Generated ${job.completed} of ${job.total} documents; ${job.failed} could not be built.`);
 
@@ -345,7 +356,7 @@ function summarise(job) {
 /** Option A: every document zipped, streamed so nothing large sits in memory. */
 export function zipStreamFor(id) {
   const documents = jobDocuments(id);
-  if (!documents) return null;
+  if (!documents || !documents.length) return null;
 
   const archive = archiver('zip', { zlib: { level: 9 } });
   const stream = new PassThrough();
@@ -371,7 +382,7 @@ export function zipStreamFor(id) {
 /** Option B: one master document, each date on its own page. */
 export async function combinedDocxFor(id) {
   const job = jobs.get(id);
-  if (!job) return null;
+  if (!job || job.options.checkOnly) return null;
   const days = job.results.filter((result) => result.ok).map((result) => result.day);
   if (!days.length) return null;
   const style = styleFromSettings(job.settings, job.options.style || {});

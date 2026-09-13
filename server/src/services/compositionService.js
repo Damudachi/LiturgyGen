@@ -6,7 +6,7 @@
 import { getSettings } from '../db/index.js';
 import { assertIsoDate, formatHeaderDate, readingsFileName } from '../lib/dates.js';
 import { getLiturgicalDay, ordinaryTimeTitle } from './calendarService.js';
-import { getReadings } from './scraperService.js';
+import { getReadings, peekReadings } from './scraperService.js';
 import { composePotf, getTemplate, resolveForDay } from './potfService.js';
 
 /**
@@ -42,6 +42,7 @@ export async function buildDay(iso, options = {}) {
     occasionTitle = null,
     potfTitle = null,
     settings = getSettings(),
+    offline = false,
   } = options;
 
   const liturgy = await getLiturgicalDay(iso);
@@ -49,7 +50,16 @@ export async function buildDay(iso, options = {}) {
   let readings;
   let readingsError = null;
   try {
-    readings = await getReadings(iso, { force, providers });
+    if (offline) {
+      readings = peekReadings(iso, { providers });
+      if (!readings) {
+        const err = new Error('The readings for this day have not been fetched yet.');
+        err.code = 'NOT_FETCHED';
+        throw err;
+      }
+    } else {
+      readings = await getReadings(iso, { force, providers });
+    }
   } catch (error) {
     readingsError = { code: error.code || 'ERROR', message: error.message };
     readings = null;
@@ -89,8 +99,8 @@ export async function buildDay(iso, options = {}) {
   if (!potf) {
     warnings.push(
       `Neither book has Prayers of the Faithful for ${liturgy.occasionTitle}, so the document ` +
-        'will be printed without them. Choose a prayer for this day, add one in the Template ' +
-        'Manager, or turn on placeholder prayers in Settings.',
+        'will be printed without them. Choose a prayer for this day, add one under Prayers, ' +
+        'or turn on placeholder prayers in Settings.',
     );
   }
 
@@ -107,6 +117,27 @@ export async function buildDay(iso, options = {}) {
     potfMatch,
     warnings,
     isComplete: !readingsError && warnings.length === 0,
+  };
+}
+
+/**
+ * What stands between a day and a finished document, from what is already on
+ * hand - no source is asked, so a whole month is checked in a moment. This is
+ * what lets "Select several days" flag the days that need a look before anyone
+ * makes the files.
+ *
+ * `fetched` is false for a day whose readings were never fetched; its warnings
+ * then cover only what can be known without them (the prayers). `refetchable`
+ * marks a partial fallback copy that fetching again may complete.
+ */
+export async function checkDay(iso, options = {}) {
+  const day = await buildDay(iso, { ...options, offline: true });
+  const fetched = !(day.readingsError && day.readingsError.code === 'NOT_FETCHED');
+  return {
+    date: iso,
+    fetched,
+    refetchable: Boolean(day.readings && day.readings.refetchable),
+    warnings: fetched ? day.warnings : day.warnings.filter((warning) => warning !== day.readingsError.message),
   };
 }
 
@@ -132,4 +163,4 @@ export function styleFromSettings(settings = getSettings(), extra = {}) {
   };
 }
 
-export default { buildDay, styleFromSettings, potfHeading };
+export default { buildDay, checkDay, styleFromSettings, potfHeading };

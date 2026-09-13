@@ -1,16 +1,48 @@
 @import 'tailwindcss';
+@import '@fontsource/newsreader/500.css';
+@import '@fontsource/newsreader/600.css';
+@import '@fontsource/newsreader/700.css';
+@import '@fontsource/source-sans-3/400.css';
+@import '@fontsource/source-sans-3/500.css';
+@import '@fontsource/source-sans-3/600.css';
+@import '@fontsource/source-sans-3/700.css';
+@import '@fontsource/source-sans-3/800.css';
 
+/*
+ * Palette "Vellum", taken from the Chapel of the Holy Guardian Angel seal:
+ * navy ink and gold on the paper of a missal, with the seal's silver-blue
+ * warmed toward the paper so the two sit at one temperature.
+ */
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-serif: 'Book Antiqua', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-print: 'Book Antiqua', 'Palatino Linotype', Palatino, Georgia, serif;
 
-  /* Liturgical colours, used for calendar day chips and season badges. */
-  --color-lit-green: #15803d;
+  --color-ink: #1b2740;
+  --color-navy: #263551;
+  --color-gold: #f2bc1b;
+  --color-gold-edge: #c99500;
+  --color-bg: #f4efe3;
+  --color-page: #f7f2e6;
+  --color-page-hi: #fcfaf4;
+  --color-edge: #dcd3be;
+  --color-tile: #e7e8df;
+  --color-tile-edge: #cfd1c5;
+  --color-tile-sun: #dadcd1;
+  --color-muted: #4f5669;
+  --color-note: #fbefc4;
+  --color-note-ink: #3f3300;
+  --color-ok: #2e7d4f;
+  --color-bad: #b3261e;
+
+  /* Liturgical colours. White is an ivory stripe with an edge so it shows. */
+  --color-lit-green: #2e7d4f;
   --color-lit-violet: #6d28d9;
-  --color-lit-white: #a1a1aa;
-  --color-lit-red: #b91c1c;
+  --color-lit-red: #b3261e;
   --color-lit-rose: #db7093;
   --color-lit-gold: #ca8a04;
+  --color-lit-white: #fffdf6;
+  --color-lit-black: #27272a;
 }
 
 html,
@@ -20,19 +52,110 @@ body,
 }
 
 body {
-  @apply bg-stone-100 text-stone-900 antialiased;
+  @apply bg-bg font-sans text-base text-ink antialiased;
+  line-height: 1.5;
 }
 
-/* The document preview reproduces the printed missalette, so it uses the same
-   serif face and page proportions as the generated .docx. */
+h1,
+h2,
+h3,
+.font-serif {
+  line-height: 1.15;
+}
+
+/* Three elevations only: nothing, a panel, the lifted book. */
+.shadow-panel {
+  box-shadow: 0 1px 2px rgba(27, 39, 64, 0.06), 0 4px 12px rgba(27, 39, 64, 0.06);
+}
+.shadow-book {
+  box-shadow: 0 20px 50px rgba(27, 39, 64, 0.35), inset 0 0 0 1px var(--color-edge);
+}
+
+/* The one visible focus ring, with a paper gap so it reads on navy and gold. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-navy);
+  outline-offset: 2px;
+}
+.on-dark :where(button, a):focus-visible {
+  outline-color: var(--color-gold);
+}
+
+/* The printed page reproduces the Word file, so it uses the same face. */
 .missalette {
-  font-family: var(--font-serif);
-  line-height: 1.35;
+  font-family: var(--font-print);
+  font-size: 15px;
+  line-height: 1.45;
+  color: #1a1a1a;
 }
 
-.missalette .doc-page {
-  width: 100%;
-  max-width: 46rem;
+/* The gutter of an open book. */
+.book-gutter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 44px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, rgba(120, 95, 40, 0), rgba(120, 95, 40, 0.12) 50%, rgba(120, 95, 40, 0));
+  pointer-events: none;
+}
+@media (max-width: 899px) {
+  .book-gutter::before {
+    display: none;
+  }
+}
+
+.ribbon {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
+}
+
+@keyframes book-open {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-book {
+  animation: book-open 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.animate-dim {
+  animation: dim-in 160ms ease-out both;
+}
+.animate-panel {
+  animation: panel-in 150ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-book,
+  .animate-dim,
+  .animate-panel {
+    animation: none;
+  }
+  * {
+    transition-duration: 0ms !important;
+  }
 }
 
 @media print {
@@ -41,16 +164,13 @@ body {
   }
 }
 
-/* A calmer scrollbar for the long preview and template panes. */
 .scroll-slim::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 .scroll-slim::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-stone-300;
-}
-.scroll-slim::-webkit-scrollbar-thumb:hover {
-  @apply bg-stone-400;
+  border-radius: 9999px;
+  background: var(--color-tile-edge);
 }
 .scroll-slim::-webkit-scrollbar-track {
   background: transparent;

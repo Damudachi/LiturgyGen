@@ -1,5 +1,5 @@
-import { formatHeader } from '../lib/dates';
-import { cx } from './ui';
+import { formatHeader } from '../../lib/dates';
+import { cx } from '../ui';
 
 /**
  * An on-screen facsimile of the generated .docx. It deliberately mirrors
@@ -51,7 +51,7 @@ function PsalmBlock({ psalm, repeatRefrain = true, firstUppercase = true }) {
             R. <span className="font-bold">{firstUppercase ? refrain.toUpperCase() : refrain}</span>
           </p>
         ) : (
-          <p className="rounded bg-amber-100 px-1 text-amber-900">
+          <p className="rounded bg-note px-1 text-note-ink">
             R. [no response found — add one before printing]
           </p>
         )}
@@ -88,7 +88,7 @@ function AcclamationBlock({ acclamation }) {
           </p>
         ))
       ) : (
-        <p className="rounded bg-amber-100 px-1 text-amber-900">
+        <p className="rounded bg-note px-1 text-note-ink">
           Commentator : [no acclamation verse found — add one before printing]
         </p>
       )}
@@ -103,8 +103,8 @@ function AcclamationBlock({ acclamation }) {
 function PotfBlock({ potf, occasionTitle, appendSuffix = true }) {
   if (!potf) {
     return (
-      <div className="mt-6 rounded bg-amber-100 px-2 py-1.5 text-sm text-amber-900">
-        No Prayers of the Faithful template matched this day. Add one in the Template Manager.
+      <div className="mt-6 rounded bg-note px-2 py-1.5 font-sans text-sm text-note-ink">
+        No Prayers of the Faithful will be printed for this day. Use other prayers to choose some.
       </div>
     );
   }
@@ -158,7 +158,7 @@ export default function DocumentPreview({ day, settings = {}, className }) {
   return (
     <article
       className={cx(
-        'missalette doc-page mx-auto rounded-lg bg-white px-10 py-8 text-[15px] leading-snug shadow-sm ring-1 ring-stone-200',
+        'missalette mx-auto w-full max-w-[46rem]',
         className,
       )}
     >

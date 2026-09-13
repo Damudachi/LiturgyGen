@@ -273,6 +273,29 @@ export async function getReadings(iso, options = {}) {
 }
 
 /**
+ * The readings already on hand for a date - a saved correction or a cached
+ * fetch - without asking any source. Null when the date was never fetched.
+ *
+ * `refetchable` marks a partial copy from the fallback feed: getReadings would
+ * go back to the preferred source for it, so fetching again may fill the gaps.
+ */
+export function peekReadings(iso, { providers = null } = {}) {
+  assertIsoDate(iso);
+  const override = getOverride(iso);
+  if (override) {
+    return { ...override, warnings: auditReadings(override), origin: 'override', refetchable: false };
+  }
+  const cached = readParsedCache(iso);
+  if (!cached) return null;
+  return {
+    ...cached,
+    warnings: auditReadings(cached),
+    origin: 'cache',
+    refetchable: !canServeFromCache(cached, resolveProviderOrder(providers)[0]),
+  };
+}
+
+/**
  * How long the preferred source wants to be left alone before it is asked again,
  * in milliseconds; 0 when it may be asked now.
  *
@@ -296,6 +319,7 @@ export const providers = PROVIDERS;
 
 export default {
   getReadings,
+  peekReadings,
   getOverride,
   saveOverride,
   deleteOverride,

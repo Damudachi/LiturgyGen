@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { isIsoDate } from '../lib/dates.js';
+import { isIsoDate, sortUnique } from '../lib/dates.js';
 import {
   deleteOverride,
   getOverride,
@@ -9,7 +9,7 @@ import {
   saveOverride,
   clearCache,
 } from '../services/scraperService.js';
-import { buildDay } from '../services/compositionService.js';
+import { buildDay, checkDay } from '../services/compositionService.js';
 
 const router = Router();
 
@@ -24,6 +24,27 @@ router.get('/providers', (_req, res) => res.json({ providers: providerStatus() }
 router.delete('/cache', (req, res) => {
   const date = req.query.date;
   res.json({ cleared: clearCache(date && isIsoDate(date) ? date : null) });
+});
+
+/**
+ * What each day still needs, from what is already on hand - nothing is fetched.
+ * Body: { dates: ["2026-10-01", ...] }
+ */
+router.post('/check', async (req, res, next) => {
+  try {
+    const { dates } = req.body || {};
+    if (!Array.isArray(dates) || dates.some((date) => !isIsoDate(date))) {
+      return res.status(400).json({ error: 'Provide "dates" as an array of YYYY-MM-DD strings.' });
+    }
+    const unique = sortUnique(dates);
+    if (unique.length > 400) return res.status(400).json({ error: 'Check at most 400 days at a time.' });
+
+    const days = [];
+    for (const date of unique) days.push(await checkDay(date));
+    res.json({ days });
+  } catch (error) {
+    next(error);
+  }
 });
 
 /** Readings only. `?force=1` bypasses the cache and re-fetches. */

@@ -59,7 +59,8 @@ export default function SettingsPanel({ settings, onSaved }) {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="mx-auto max-w-3xl space-y-5 px-5 py-6">
+      <h1 className="font-serif text-[32px] font-semibold">Settings</h1>
       {notice && (
         <Alert tone={notice.tone} onDismiss={() => setNotice(null)}>
           {notice.text}
@@ -122,7 +123,7 @@ export default function SettingsPanel({ settings, onSaved }) {
           />
         </div>
 
-        <div className="mt-4 border-t border-stone-200 pt-4">
+        <div className="mt-4 border-t border-edge pt-4">
           <Field
             label="Document font"
             hint="Book Antiqua matches the office's existing missalettes. Whatever you choose must be installed on the computer that opens the file."
@@ -151,7 +152,7 @@ export default function SettingsPanel({ settings, onSaved }) {
           onChange={(event) => set('schoolWideIntentions', event.target.value)}
           placeholder={'For our benefactors, living and departed\nFor the intentions of our school community'}
         />
-        <p className="mt-2 text-xs text-stone-500">
+        <p className="mt-2 text-sm text-muted">
           One per line. A batch can add its own on top of these.
         </p>
       </Card>
@@ -160,7 +161,7 @@ export default function SettingsPanel({ settings, onSaved }) {
         <Button icon={Trash2} onClick={clearCache} loading={busy === 'cache'}>
           Clear the readings cache
         </Button>
-        <p className="mt-2 text-xs text-stone-500">
+        <p className="mt-2 text-sm text-muted">
           Hand-typed corrections are stored separately and are not affected.
         </p>
       </Card>

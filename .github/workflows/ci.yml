@@ -32,4 +32,6 @@ jobs:
       # takes, which is exactly what is worth testing here.
       - run: npm run test:server
 
+      - run: npm run test:client
+
       - run: npm run build
