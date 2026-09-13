@@ -419,7 +419,7 @@ function potfSection(style, potf, occasionTitle, { pageBreakBefore } = {}) {
 
 /**
  * All paragraphs for one date. `day` is:
- *   { date, occasionTitle, readings, potf }
+ *   { date, occasionTitle, potfTitle?, readings, potf }
  */
 export function buildDayParagraphs(day, styleOverrides = {}) {
   const style = resolveStyle(styleOverrides);
@@ -495,7 +495,7 @@ export function buildDayParagraphs(day, styleOverrides = {}) {
   }
 
   paragraphs.push(
-    ...potfSection(style, day.potf, day.occasionTitle, {
+    ...potfSection(style, day.potf, day.potfTitle || day.occasionTitle, {
       pageBreakBefore: day.potf ? breakBefore() : undefined,
     }),
   );

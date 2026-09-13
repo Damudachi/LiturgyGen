@@ -139,6 +139,11 @@ export function formatOccasionTitle(day, iso) {
   return `${ordinal} WEEK ${season.preposition} ${season.name.toUpperCase()} - ${upperDay}`;
 }
 
+/** "14th WEEK IN ORDINARY TIME - MONDAY", the house style for an Ordinary Time weekday. */
+export function ordinaryTimeTitle(week, dayOfWeek) {
+  return `${numericOrdinal(week)} WEEK IN ORDINARY TIME - ${String(dayOfWeek).toUpperCase()}`;
+}
+
 function toColor(colorKey) {
   const color = LITURGICAL_COLORS[colorKey];
   return { key: colorKey, name: color ? color.name : colorKey, hex: color ? color.hex : '#71717a' };
@@ -286,6 +291,7 @@ export default {
   getLiturgicalDays,
   getMonth,
   formatOccasionTitle,
+  ordinaryTimeTitle,
   availableCalendars,
   numericOrdinal,
   wordOrdinal,

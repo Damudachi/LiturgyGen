@@ -12,7 +12,7 @@ const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingm
  * Generate one .docx.
  *
  * Body: { date, potfTemplateId?, potfOverride?, readingsOverride?,
- *         extraIntentions?, occasionTitle?, style? }
+ *         extraIntentions?, occasionTitle?, potfTitle?, style? }
  * Everything but `date` is optional and comes from whatever the user edited in
  * the preview pane, so the download always matches what they are looking at.
  */
@@ -25,6 +25,7 @@ router.post('/', async (req, res, next) => {
       readingsOverride = null,
       extraIntentions = null,
       occasionTitle = null,
+      potfTitle = null,
       style = {},
       force = false,
     } = req.body || {};
@@ -39,6 +40,7 @@ router.post('/', async (req, res, next) => {
       readingsOverride,
       extraIntentions,
       occasionTitle,
+      potfTitle,
       settings,
     });
 

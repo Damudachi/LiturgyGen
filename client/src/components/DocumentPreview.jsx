@@ -202,7 +202,7 @@ export default function DocumentPreview({ day, settings = {}, className }) {
 
       <PotfBlock
         potf={day.potf}
-        occasionTitle={day.occasionTitle}
+        occasionTitle={day.potfTitle || day.occasionTitle}
         appendSuffix={settings.appendIntentionSuffix !== false}
       />
     </article>

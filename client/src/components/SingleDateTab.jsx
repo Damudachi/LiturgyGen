@@ -121,7 +121,7 @@ export default function SingleDateTab({ settings, templates }) {
         .join('\n\n'),
       acclamationRefrain: (readings.acclamation && readings.acclamation.refrain) || 'Alleluia, alleluia.',
       acclamationVerse: linesToText(readings.acclamation && readings.acclamation.verse),
-      occasionTitle: day.occasionTitle || '',
+      potfTitle: day.potfTitle || day.occasionTitle || '',
       priestInvitation: (day.potf && day.potf.priestInvitation) || '',
       responseOptions: ((day.potf && day.potf.responseOptions) || []).join('\n'),
       intentions: ((day.potf && day.potf.intentions) || []).join('\n'),
@@ -161,7 +161,7 @@ export default function SingleDateTab({ settings, templates }) {
           verse: textToLines(draft.acclamationVerse).filter(Boolean),
         },
       },
-      occasionTitle: draft.occasionTitle,
+      potfTitle: draft.potfTitle,
       potfOverride: {
         priestInvitation: draft.priestInvitation,
         responseOptions: draft.responseOptions.split('\n').map((s) => s.trim()).filter(Boolean),
@@ -177,7 +177,7 @@ export default function SingleDateTab({ settings, templates }) {
     if (!editing || !draftPayload) return day;
     return {
       ...day,
-      occasionTitle: draftPayload.occasionTitle,
+      potfTitle: draftPayload.potfTitle,
       readings: draftPayload.readingsOverride,
       potf: draftPayload.potfOverride,
     };
@@ -333,7 +333,7 @@ export default function SingleDateTab({ settings, templates }) {
               <dl className="space-y-1 border-t border-stone-200 pt-3 text-xs text-stone-600">
                 <div className="flex justify-between gap-2">
                   <dt>Heading printed</dt>
-                  <dd className="text-right font-medium text-stone-800">{day.occasionTitle}</dd>
+                  <dd className="text-right font-medium text-stone-800">{day.potfTitle || day.occasionTitle}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt>Readings came from</dt>
@@ -481,8 +481,8 @@ export default function SingleDateTab({ settings, templates }) {
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="Heading above the intercessions" className="md:col-span-2">
                 <Input
-                  value={draft.occasionTitle}
-                  onChange={(event) => setDraft({ ...draft, occasionTitle: event.target.value })}
+                  value={draft.potfTitle}
+                  onChange={(event) => setDraft({ ...draft, potfTitle: event.target.value })}
                 />
               </Field>
 

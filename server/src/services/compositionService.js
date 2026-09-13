@@ -5,9 +5,23 @@
 
 import { getSettings } from '../db/index.js';
 import { assertIsoDate, formatHeaderDate, readingsFileName } from '../lib/dates.js';
-import { getLiturgicalDay } from './calendarService.js';
+import { getLiturgicalDay, ordinaryTimeTitle } from './calendarService.js';
 import { getReadings } from './scraperService.js';
 import { composePotf, getTemplate, resolveForDay } from './potfService.js';
+
+/**
+ * The heading printed above the intercessions. It names the day the prayer was
+ * written for: when an occasion borrows an Ordinary Time prayer - a memorial
+ * with no proper of its own, or a Christmas weekday - the heading is that
+ * Ordinary Time day, not the occasion, so it matches the prayer beneath it.
+ */
+export function potfHeading(template, liturgy, occasionTitle) {
+  const isOccasion = liturgy.potfLookup.season !== 'Ordinary Time';
+  if (isOccasion && template && template.season === 'Ordinary Time' && template.week && template.dayOfWeek) {
+    return ordinaryTimeTitle(template.week, template.dayOfWeek);
+  }
+  return occasionTitle;
+}
 
 /**
  * Build one day.
@@ -26,6 +40,7 @@ export async function buildDay(iso, options = {}) {
     readingsOverride = null,
     extraIntentions = null,
     occasionTitle = null,
+    potfTitle = null,
     settings = getSettings(),
   } = options;
 
@@ -46,27 +61,28 @@ export async function buildDay(iso, options = {}) {
 
   let potf = null;
   let potfMatch = 'none';
+  let template = null;
 
   if (potfOverride) {
     potf = potfOverride;
     potfMatch = 'supplied by the editor';
   } else {
-    const template = potfTemplateId ? getTemplate(potfTemplateId) : null;
+    template = potfTemplateId ? getTemplate(potfTemplateId) : null;
     if (template) {
-      potf = composePotf(template, {
-        extraIntentions: extraIntentions ?? settings.schoolWideIntentions ?? [],
-      });
       potfMatch = 'chosen manually';
     } else {
       const resolved = resolveForDay(liturgy.potfLookup, {
         allowPlaceholders: Boolean(settings.usePlaceholderPotf),
       });
       potfMatch = resolved.matchedBy;
-      potf = composePotf(resolved.template, {
-        extraIntentions: extraIntentions ?? settings.schoolWideIntentions ?? [],
-      });
+      template = resolved.template;
     }
+    potf = composePotf(template, {
+      extraIntentions: extraIntentions ?? settings.schoolWideIntentions ?? [],
+    });
   }
+
+  const heading = occasionTitle || liturgy.occasionTitle;
 
   const warnings = [...((readings && readings.warnings) || [])];
   if (readingsError) warnings.push(readingsError.message);
@@ -82,7 +98,8 @@ export async function buildDay(iso, options = {}) {
     date: iso,
     headerDate: formatHeaderDate(iso),
     fileName: readingsFileName(iso),
-    occasionTitle: occasionTitle || liturgy.occasionTitle,
+    occasionTitle: heading,
+    potfTitle: potfTitle || potfHeading(template, liturgy, heading),
     liturgy,
     readings,
     readingsError,
@@ -115,4 +132,4 @@ export function styleFromSettings(settings = getSettings(), extra = {}) {
   };
 }
 
-export default { buildDay, styleFromSettings };
+export default { buildDay, styleFromSettings, potfHeading };

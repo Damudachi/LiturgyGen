@@ -121,6 +121,39 @@ test('a Christmas weekday with no proper prayer uses the Ordinary Time book', ne
   assert.match(day.template.title, /Ordinary Time, Week 1 - Tuesday \(Orillo\)/);
 });
 
+test('an occasion using an Ordinary Time prayer is headed with that Ordinary Time day', async () => {
+  const { potfHeading } = await import('../src/services/compositionService.js');
+  const ordinaryTuesday = { season: 'Ordinary Time', week: 1, dayOfWeek: 'Tuesday' };
+
+  // A Christmas weekday borrowing week 1.
+  const christmas = await getLiturgicalDay('2026-01-06');
+  assert.equal(
+    potfHeading(ordinaryTuesday, christmas, christmas.occasionTitle),
+    '1st WEEK IN ORDINARY TIME - TUESDAY',
+  );
+
+  // A memorial in Ordinary Time (Saints Cornelius and Cyprian, 16 September
+  // 2026) praying the weekday of week 24.
+  const memorial = await getLiturgicalDay('2026-09-16');
+  assert.equal(memorial.potfLookup.season, 'Feast');
+  assert.equal(
+    potfHeading({ season: 'Ordinary Time', week: 24, dayOfWeek: 'Wednesday' }, memorial, memorial.occasionTitle),
+    '24th WEEK IN ORDINARY TIME - WEDNESDAY',
+  );
+
+  // The occasion keeps its own heading when the prayer is its own.
+  const feastPrayer = { season: 'Feast', week: null, dayOfWeek: null };
+  assert.equal(potfHeading(feastPrayer, memorial, memorial.occasionTitle), memorial.occasionTitle);
+
+  // A plain Ordinary Time weekday is unchanged, including an edited heading.
+  const weekday = await getLiturgicalDay('2026-06-19');
+  const own = { season: 'Ordinary Time', week: 11, dayOfWeek: 'Friday' };
+  assert.equal(potfHeading(own, weekday, 'EDITED HEADING'), 'EDITED HEADING');
+
+  // No prayer at all: nothing to rename.
+  assert.equal(potfHeading(null, memorial, memorial.occasionTitle), memorial.occasionTitle);
+});
+
 /* ------------------------------------------------------------------ *
  * Placeholders
  * ------------------------------------------------------------------ */
