@@ -9,15 +9,14 @@ and hands back a `.docx` laid out exactly like the office's printed missalette.
 
 ## For the office: installing on a computer
 
-The office computers run LiturgyGen as an ordinary Windows program — no Node.js, no
-command line, no administrator needed.
+The office computers run LiturgyGen as an ordinary Windows program in a window of its
+own — no browser tabs, no Node.js, no command line, no administrator needed.
 
 1. Run `LiturgyGen-Setup-<version>.exe` (see [Building the installer](#building-the-office-installer)).
    Windows may say *"Windows protected your PC"* because the installer is not signed:
    choose **More info → Run anyway**.
-2. Open **LiturgyGen** from the desktop icon. It opens in the browser at
-   <http://localhost:4000> and puts an icon beside the clock.
-3. To close it, right-click that icon and choose **Quit LiturgyGen**.
+2. Open **LiturgyGen** from the desktop icon. It opens in its own window.
+3. To close it, close the window. If days are still being made, it asks first.
 
 Each computer keeps its own prayers, corrections and saved readings in
 `%LOCALAPPDATA%\LiturgyGen`, and updating or uninstalling never touches them. The full
@@ -122,20 +121,28 @@ green. CI runs both suites plus the client build on Node 20.10 and 22
 ### Building the office installer
 
 On Windows, with [Inno Setup 6](https://jrsoftware.org/isinfo.php) installed
-(`winget install JRSoftware.InnoSetup`):
+(`winget install JRSoftware.InnoSetup`). The first build also downloads the pinned
+WebView2 SDK from NuGet into `desktop/.cache`.
 
 ```bash
 npm run package:desktop
 ```
 
-This writes `desktop/dist/LiturgyGen-Setup-<version>.exe`, about 32 MB. It bundles:
+This writes `desktop/dist/LiturgyGen-Setup-<version>.exe`, about 33 MB. It bundles:
 
 - the Node that ran the build, so the database driver always matches it;
 - the server with its dependencies pinned to the exact versions installed here;
 - the built client;
-- `LiturgyGen.exe`, a small tray launcher compiled with the C# compiler that ships with
-  Windows. It starts the server hidden on `127.0.0.1` only, opens the browser, reuses a
-  running copy when opened twice, and stops the server when it quits;
+- `LiturgyGen.exe`, a small launcher compiled with the C# compiler that ships with
+  Windows. It starts the server hidden on `127.0.0.1` only and shows the app in its own
+  window through [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/) —
+  the web view built into Windows — so there is no browser tab to lose. The navbar is the
+  window's title bar (`client/src/components/WindowControls.jsx`): the page reports drags
+  and button presses over WebView2's message channel and the launcher moves, sizes and
+  closes the window, so snapping and drag-to-restore behave as in any Windows app. In a
+  normal browser tab none of this appears. Opening it twice
+  brings the window forward; closing the window stops the server. Without WebView2 it
+  falls back to the browser and an icon beside the clock;
 - **a starting copy of this machine's data** — the database and saved readings, plus the
   `server/data/orillo` books. A computer installing for the first time starts from it;
   one that already has LiturgyGen keeps its own.

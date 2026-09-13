@@ -25,3 +25,6 @@ server/tmp/
 # smuggle removed history back in at worst.
 git(old)/
 *.git/
+
+# Downloaded while building the office installer.
+desktop/.cache/

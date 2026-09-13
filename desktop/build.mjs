@@ -11,7 +11,8 @@
  *
  * Needs, on the computer that builds (not the office's): Windows, and Inno
  * Setup 6 (`winget install JRSoftware.InnoSetup`). The launcher is compiled by
- * the C# compiler that ships with Windows.
+ * the C# compiler that ships with Windows, against the WebView2 SDK, which is
+ * downloaded from NuGet once and kept in desktop/.cache.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -27,6 +28,10 @@ const DIST = path.join(HERE, 'dist');
 const STAGE = path.join(DIST, 'stage');
 const APP = path.join(STAGE, 'app');
 const DATA = path.join(STAGE, 'data');
+const CACHE = path.join(HERE, '.cache');
+
+/** The WebView2 SDK the launcher's window is built on. The runtime itself is part of Windows. */
+const WEBVIEW2_VERSION = '1.0.4191.47';
 
 const version = JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'), 'utf8')).version;
 const isWindows = process.platform === 'win32';
@@ -138,15 +143,38 @@ for (const folder of ['readings', 'usccb']) {
   if (fs.existsSync(path.join(cache, folder))) copy(path.join(cache, folder), path.join(DATA, 'cache', folder));
 }
 
+step(`Fetching the WebView2 SDK ${WEBVIEW2_VERSION}`);
+const webview = path.join(CACHE, `webview2-${WEBVIEW2_VERSION}`);
+if (!fs.existsSync(path.join(webview, 'lib', 'net462', 'Microsoft.Web.WebView2.WinForms.dll'))) {
+  fs.mkdirSync(webview, { recursive: true });
+  const response = await fetch(
+    `https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/${WEBVIEW2_VERSION}/microsoft.web.webview2.${WEBVIEW2_VERSION}.nupkg`,
+  );
+  if (!response.ok) throw new Error(`Could not download the WebView2 SDK (HTTP ${response.status}).`);
+  const nupkg = path.join(webview, 'webview2.nupkg');
+  fs.writeFileSync(nupkg, Buffer.from(await response.arrayBuffer()));
+  // A .nupkg is a zip; the tar that ships with Windows reads zips.
+  run(path.join(process.env.WINDIR || 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', nupkg, '-C', webview]);
+}
+const webviewLibraries = [
+  path.join(webview, 'lib', 'net462', 'Microsoft.Web.WebView2.Core.dll'),
+  path.join(webview, 'lib', 'net462', 'Microsoft.Web.WebView2.WinForms.dll'),
+];
+for (const file of [...webviewLibraries, path.join(webview, 'runtimes', 'win-x64', 'native', 'WebView2Loader.dll')]) {
+  fs.copyFileSync(file, path.join(APP, path.basename(file)));
+}
+
 step('Compiling the launcher');
 run(csc, [
   '/nologo',
   '/target:winexe',
+  '/platform:x64',
   '/optimize+',
   `/win32icon:${path.join(HERE, 'LiturgyGen.ico')}`,
   `/out:${path.join(APP, 'LiturgyGen.exe')}`,
   '/r:System.Windows.Forms.dll',
   '/r:System.Drawing.dll',
+  ...webviewLibraries.map((file) => `/r:${file}`),
   path.join(HERE, 'launcher', 'LiturgyGen.cs'),
 ]);
 

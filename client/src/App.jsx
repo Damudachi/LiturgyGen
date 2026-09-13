@@ -5,6 +5,7 @@ import CalendarScreen from './components/calendar/CalendarScreen';
 import PrayersScreen from './components/prayers/PrayersScreen';
 import SettingsPanel from './components/SettingsPanel';
 import { Alert, Spinner, cx } from './components/ui';
+import WindowControls, { inDesktopWindow, titleBarProps } from './components/WindowControls';
 
 const TABS = [
   { id: 'calendar', label: 'Calendar' },
@@ -56,9 +57,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-full">
-      <header className="on-dark sticky top-0 z-50 flex h-[60px] items-center gap-3 bg-ink px-6 text-page">
-        <img src={seal} alt="Chapel of the Holy Guardian Angel seal" className="size-9 rounded-full" />
+    // In the desktop window the navbar is the title bar, so only the page below it
+    // scrolls; its scrollbar never runs up beside the window buttons.
+    <div className={inDesktopWindow ? 'flex h-full flex-col' : 'min-h-full'}>
+      <header
+        {...titleBarProps()}
+        className={cx('on-dark sticky top-0 z-50 flex h-[60px] shrink-0 items-center gap-3 bg-ink px-6 text-page', inDesktopWindow && 'select-none')}
+      >
+        <img src={seal} alt="Chapel of the Holy Guardian Angel seal" draggable={false} className="size-9 rounded-full" />
         <span className="font-serif text-xl font-bold">LiturgyGen</span>
         <nav className="ml-auto flex h-full gap-1" aria-label="Main">
           {TABS.map((entry) => (
@@ -77,9 +83,10 @@ export default function App() {
             </button>
           ))}
         </nav>
+        <WindowControls />
       </header>
 
-      <main>
+      <main className={inDesktopWindow ? 'min-h-0 flex-1 overflow-y-auto' : undefined}>
         {tab === 'calendar' && <CalendarScreen settings={settings} templates={templates} />}
         {tab === 'prayers' && <PrayersScreen templates={templates} seasons={seasons} reload={loadTemplates} />}
         {tab === 'settings' && <SettingsPanel settings={settings} onSaved={setSettings} />}
