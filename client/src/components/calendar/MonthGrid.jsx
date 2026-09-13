@@ -9,7 +9,7 @@ import DayTile from './DayTile';
  * The month as tiles. Arrow keys move between days; Enter or a click activates
  * (opens the book, or ticks the day while selecting several).
  */
-export default function MonthGrid({ year, month, days, loading, error, onRetry, ticked, currentIso, onActivate }) {
+export default function MonthGrid({ year, month, days, loading, error, onRetry, ticked, flagged, currentIso, onActivate }) {
   const cells = useMemo(() => monthGrid(year, month), [year, month]);
   const refs = useRef([]);
   const defaultIndex = () => {
@@ -73,6 +73,7 @@ export default function MonthGrid({ year, month, days, loading, error, onRetry, 
               iso={iso}
               day={days[iso]}
               ticked={ticked.has(iso)}
+              flagged={Boolean(flagged && flagged.has(iso))}
               current={iso === currentIso}
               focusable={index === focusIndex}
               onActivate={(date) => {

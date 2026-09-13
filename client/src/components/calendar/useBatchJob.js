@@ -18,13 +18,13 @@ export default function useBatchJob() {
   useEffect(() => closeStream, [closeStream]);
 
   const start = useCallback(
-    async ({ dates, extraIntentions }) => {
+    async ({ dates, extraIntentions, checkOnly = false }) => {
       if (!dates.length) return;
       setStarting(true);
       setError(null);
       closeStream();
       try {
-        const started = await api.startBatch({ dates, extraIntentions });
+        const started = await api.startBatch({ dates, extraIntentions, checkOnly });
         setJob(started);
         // Server-Sent Events give the "Making day 4 of 22" counter without polling.
         const stream = new EventSource(`/api/batch/${started.id}/events`);

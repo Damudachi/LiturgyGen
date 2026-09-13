@@ -46,13 +46,14 @@ export function tileLabel(day) {
 }
 
 /** Everything a screen reader needs, since the stripe is colour alone. */
-export function tileAriaLabel(day, iso, { ticked = false } = {}) {
+export function tileAriaLabel(day, iso, { ticked = false, needsLook = false } = {}) {
   const parts = [formatLong(iso)];
   if (day && day.celebration) {
     parts.push(day.occasionTitle ? titleCase(day.occasionTitle) : day.celebration.name);
     if (day.celebration.rankLabel) parts.push(day.celebration.rankLabel);
     if (day.celebration.color && day.celebration.color.name) parts.push(day.celebration.color.name);
   }
+  if (needsLook) parts.push('needs a look');
   if (ticked) parts.push('chosen');
   return parts.filter(Boolean).join(', ');
 }

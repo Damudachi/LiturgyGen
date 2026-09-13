@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Archive, CheckCircle2, FileStack, Play, TriangleAlert, X, XCircle } from 'lucide-react';
+import { Archive, CheckCircle2, CircleDashed, CloudDownload, FileStack, Play, TriangleAlert, X, XCircle } from 'lucide-react';
 import api from '../../api';
 import { formatLong, parseIso, WEEKDAY_SHORT, MONTH_NAMES } from '../../lib/dates';
+import { datesToFetch, needsLook, sortByNeed } from '../../lib/issues';
 import { countLabel } from '../../lib/selection';
 import { tileLabel } from '../../lib/tiles';
 import { Alert, Button, LinkButton, Textarea, cx } from '../ui';
@@ -12,14 +13,22 @@ const rowDate = (iso) => {
   return `${WEEKDAY_SHORT[weekday]} ${day} ${name === 'September' ? 'Sept' : name.slice(0, 3)}`;
 };
 
+const STATUS_ICON = {
+  issues: { Icon: TriangleAlert, cls: 'text-gold-edge', label: 'Needs a look' },
+  failed: { Icon: XCircle, cls: 'text-bad', label: 'Readings could not be fetched' },
+  ok: { Icon: CheckCircle2, cls: 'text-ok', label: 'Ready' },
+  unfetched: { Icon: CircleDashed, cls: 'text-muted', label: 'Readings not fetched yet' },
+};
+
 /**
  * The right-hand panel while several days are chosen: the list, this batch's
  * intentions, saving the schedule, making the files, progress and results.
  */
-export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay, intentions, onIntentionsChange, batch }) {
+export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay, intentions, onIntentionsChange, batch, fetchJob, statusOf }) {
   const [editingIntentions, setEditingIntentions] = useState(false);
   const [notice, setNotice] = useState(null);
   const { job, starting, error, running, finished, percent } = batch;
+  const busy = running || fetchJob.running;
   const intentionCount = intentions.split('\n').filter((line) => line.trim()).length;
 
   const act = (fn, success) => async () => {
@@ -32,8 +41,9 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
     }
   };
 
-  const resultsByDate = new Map((job ? job.results : []).map((result) => [result.date, result]));
-  const needsWork = job ? job.results.filter((result) => !result.ok || result.warnings.length) : [];
+  const needsWork = selection.filter((iso) => needsLook(statusOf(iso)));
+  const toFetch = datesToFetch(selection, statusOf);
+  const unfetched = selection.filter((iso) => statusOf(iso).unfetched).length;
 
   return (
     <aside
@@ -46,30 +56,67 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
         <p className="text-sm text-muted">Click days in the month, or use the buttons above it, to choose which days to make.</p>
       )}
 
-      {needsWork.length > 0 && finished && (
+      {needsWork.length > 0 && (
         <Alert tone="warn" title={`${needsWork.length} ${needsWork.length === 1 ? 'day needs' : 'days need'} a look`}>
-          Open a day to paste its readings or choose its prayers, then make it again.
+          {finished
+            ? 'Open a day to fix its readings or choose its prayers, then make it again.'
+            : 'They are listed first. Open a day to fix its readings or choose its prayers before making the files.'}
         </Alert>
       )}
 
+      {fetchJob.running ? (
+        <div className="space-y-1.5 text-sm" aria-live="polite">
+          <div className="flex justify-between gap-2 text-muted">
+            <span>
+              Getting readings for day {Math.min(fetchJob.job.completed + fetchJob.job.failed + 1, fetchJob.job.total)} of {fetchJob.job.total}…
+            </span>
+            <LinkButton onClick={fetchJob.cancel}>Stop</LinkButton>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-edge" role="progressbar" aria-valuenow={fetchJob.percent} aria-valuemin={0} aria-valuemax={100}>
+            <div className="h-full rounded-full bg-gold-edge transition-all" style={{ width: `${fetchJob.percent}%` }} />
+          </div>
+          {fetchJob.job.message && /Waiting/.test(fetchJob.job.message) && <p className="text-muted">{fetchJob.job.message}</p>}
+        </div>
+      ) : (
+        toFetch.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-page-hi p-3 text-sm ring-1 ring-edge ring-inset">
+            <span className="text-muted">
+              {[
+                unfetched > 0 &&
+                  `${unfetched} ${unfetched === 1 ? 'day has' : 'days have'} no readings fetched yet, so ${unfetched === 1 ? 'it' : 'they'} cannot be fully checked.`,
+                toFetch.length > unfetched &&
+                  `${toFetch.length - unfetched} ${toFetch.length - unfetched === 1 ? 'day is' : 'days are'} missing lines that fetching again may fill.`,
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            </span>
+            <Button
+              size="sm"
+              icon={CloudDownload}
+              loading={fetchJob.starting}
+              disabled={busy}
+              onClick={() => fetchJob.start({ dates: toFetch, checkOnly: true })}
+            >
+              Get readings for {toFetch.length}
+            </Button>
+          </div>
+        )
+      )}
+      {fetchJob.error && <Alert tone="error">{fetchJob.error}</Alert>}
+
       <ul className="min-h-0 flex-1 overflow-y-auto scroll-slim">
-        {[...selection]
-          .sort((a, b) => {
-            // Days needing work first once a run has finished.
-            const rank = (iso) => (finished && needsWork.some((r) => r.date === iso) ? 0 : 1);
-            return rank(a) - rank(b) || a.localeCompare(b);
-          })
-          .map((iso) => {
-            const result = resultsByDate.get(iso);
-            const Icon = result ? (result.ok ? (result.warnings.length ? TriangleAlert : CheckCircle2) : XCircle) : null;
+        {sortByNeed(selection, statusOf).map((iso) => {
+            const status = statusOf(iso);
+            const icon = STATUS_ICON[status.state];
             return (
               <li key={iso} className="border-b border-edge py-2">
                 <div className="flex items-center gap-2">
-                  {Icon && (
-                    <Icon
-                      aria-label={result.ok ? (result.warnings.length ? 'Needs a look' : 'Made') : 'Could not be made'}
-                      className={cx('size-4 shrink-0', result.ok ? (result.warnings.length ? 'text-gold-edge' : 'text-ok') : 'text-bad')}
-                    />
+                  {icon ? (
+                    <icon.Icon role="img" aria-label={icon.label} className={cx('size-4 shrink-0', icon.cls)}>
+                      <title>{icon.label}</title>
+                    </icon.Icon>
+                  ) : (
+                    <span className="size-4 shrink-0" />
                   )}
                   <button
                     type="button"
@@ -83,17 +130,20 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
                   <button
                     type="button"
                     onClick={() => onRemove(iso)}
-                    disabled={running}
+                    disabled={busy}
                     aria-label={`Remove ${formatLong(iso)}`}
                     className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-muted hover:bg-tile hover:text-ink disabled:opacity-40"
                   >
                     <X className="size-4" />
                   </button>
                 </div>
-                {result && (!result.ok || result.warnings.length > 0) && (
-                  <p className={cx('mt-1 pl-6 text-sm', result.ok ? 'text-note-ink' : 'text-bad')}>
-                    {result.ok ? result.warnings.join(' ') : result.error}
-                  </p>
+                {needsLook(status) && (
+                  <ul className={cx('mt-1 space-y-0.5 pl-6 text-sm', status.state === 'failed' ? 'text-bad' : 'text-note-ink')}>
+                    {status.messages.map((message) => (
+                      <li key={message}>{message}</li>
+                    ))}
+                    {status.unfetched && status.state === 'issues' && <li className="text-muted">Readings not fetched yet.</li>}
+                  </ul>
                 )}
               </li>
             );
@@ -175,7 +225,7 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
           size="lg"
           icon={Play}
           loading={starting}
-          disabled={!selection.length}
+          disabled={!selection.length || fetchJob.running}
           onClick={() =>
             batch.start({
               dates: selection,

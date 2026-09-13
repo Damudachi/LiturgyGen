@@ -5,9 +5,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const ROOT = path.resolve(__dirname, '..');
 
+/**
+ * Where the office's own data lives: the database and the saved readings. The
+ * installed app points this outside the program folder, so reinstalling or
+ * updating LiturgyGen never touches the prayers and corrections. Unset, a
+ * development checkout keeps using server/data and server/.cache.
+ */
+const DATA_DIR = process.env.LITURGYGEN_DATA_DIR || null;
+
+
 export const config = {
   port: Number(process.env.PORT || 4000),
-  dbFile: process.env.DB_FILE || path.join(ROOT, 'data', 'liturgygen.sqlite'),
+  /** Unset listens everywhere; the installed app listens on this computer only. */
+  host: process.env.HOST || undefined,
+  dbFile: process.env.DB_FILE || path.join(DATA_DIR || path.join(ROOT, 'data'), 'liturgygen.sqlite'),
 
   usccb: {
     baseUrl: 'https://bible.usccb.org/bible/readings',
@@ -23,7 +34,7 @@ export const config = {
     userAgent:
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
       '(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    cacheDir: path.join(ROOT, '.cache', 'usccb'),
+    cacheDir: path.join(DATA_DIR ? path.join(DATA_DIR, 'cache') : path.join(ROOT, '.cache'), 'usccb'),
     cacheEnabled: process.env.USCCB_CACHE !== 'false',
   },
 

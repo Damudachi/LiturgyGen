@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, TriangleAlert } from 'lucide-react';
 import api from '../../api';
-import { MONTH_NAMES, parseIso, todayIso } from '../../lib/dates';
+import { MONTH_NAMES, monthGrid, parseIso, todayIso } from '../../lib/dates';
+import { dayStatus, mergeChecks, needsLook } from '../../lib/issues';
 import { addDates, removeDate, shortcutRequest, toggleDate } from '../../lib/selection';
 import DayBook from '../day/DayBook';
 import { Alert } from '../ui';
@@ -33,6 +34,56 @@ export default function CalendarScreen({ settings, templates }) {
   const [notice, setNotice] = useState(null);
   const [intentions, setIntentions] = useState((settings.schoolWideIntentions || []).join('\n'));
   const batch = useBatchJob();
+  // Fetching readings only, so days can be checked before anything is made.
+  const fetchJob = useBatchJob();
+  const [checks, setChecks] = useState({});
+
+  const refreshChecks = useCallback(async (dates) => {
+    if (!dates.length) return;
+    try {
+      const payload = await api.checkDays(dates);
+      setChecks((known) => mergeChecks(known, payload.days));
+    } catch {
+      /* the marks are a help, not a requirement; opening a day still shows everything */
+    }
+  }, []);
+
+  const choosing = selecting || selection.length > 0;
+
+  // While choosing days, mark the month's days that need a look.
+  useEffect(() => {
+    if (choosing) refreshChecks(monthGrid(cursor.year, cursor.month).filter(Boolean));
+  }, [choosing, cursor.year, cursor.month, reloadKey, refreshChecks]);
+
+  // Days added from another month (Scheduled Masses) are checked too.
+  useEffect(() => {
+    const unknown = selection.filter((iso) => !checks[iso]);
+    if (unknown.length) refreshChecks(unknown);
+  }, [selection, checks, refreshChecks]);
+
+  // A run changes what is on hand; check its days again when it ends.
+  const makeStatus = batch.job && batch.job.status;
+  const fetchStatus = fetchJob.job && fetchJob.job.status;
+  useEffect(() => {
+    if (batch.finished) refreshChecks(batch.job.dates);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [makeStatus]);
+  useEffect(() => {
+    if (fetchJob.finished) refreshChecks(fetchJob.job.dates);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchStatus]);
+
+  const statusOf = useMemo(() => {
+    // The later run's result wins where both reached a day.
+    const runs = [batch.job, fetchJob.job].filter(Boolean).sort((a, b) => (a.startedAt < b.startedAt ? -1 : 1));
+    const results = new Map(runs.flatMap((job) => job.results.map((result) => [result.date, result])));
+    return (iso) => dayStatus(checks[iso], results.get(iso));
+  }, [checks, batch.job, fetchJob.job]);
+
+  const flagged = useMemo(
+    () => (choosing ? new Set(monthGrid(cursor.year, cursor.month).filter((iso) => iso && needsLook(statusOf(iso)))) : null),
+    [choosing, cursor.year, cursor.month, statusOf],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -94,7 +145,7 @@ export default function CalendarScreen({ settings, templates }) {
   }, [selecting, openIso]);
 
   const ticked = useMemo(() => new Set(selection), [selection]);
-  const showPanel = selecting || selection.length > 0 || Boolean(batch.job);
+  const showPanel = choosing || Boolean(batch.job);
 
   return (
     <div className="flex h-[calc(100vh-60px)] min-h-[36rem] flex-col max-[1023px]:h-auto">
@@ -139,6 +190,14 @@ export default function CalendarScreen({ settings, templates }) {
               onClear={() => setSelection([])}
             />
           )}
+          {flagged && flagged.size > 0 && (
+            <p className="flex items-center gap-2 text-sm text-muted">
+              <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-gold text-ink ring-1 ring-gold-edge">
+                <TriangleAlert className="size-3" strokeWidth={2.5} />
+              </span>
+              {flagged.size} {flagged.size === 1 ? 'day' : 'days'} this month {flagged.size === 1 ? 'needs' : 'need'} a look. Open one to see why.
+            </p>
+          )}
           {notice && (
             <Alert tone="warn" onDismiss={() => setNotice(null)}>
               {notice}
@@ -153,6 +212,7 @@ export default function CalendarScreen({ settings, templates }) {
             error={error}
             onRetry={() => setReloadKey((key) => key + 1)}
             ticked={ticked}
+            flagged={flagged}
             currentIso={lastOpenIso}
             onActivate={activate}
           />
@@ -167,11 +227,25 @@ export default function CalendarScreen({ settings, templates }) {
             intentions={intentions}
             onIntentionsChange={setIntentions}
             batch={batch}
+            fetchJob={fetchJob}
+            statusOf={statusOf}
           />
         )}
       </div>
 
-      {openIso && <DayBook key={openIso} iso={openIso} settings={settings} templates={templates} onClose={() => setOpenIso(null)} />}
+      {openIso && (
+        <DayBook
+          key={openIso}
+          iso={openIso}
+          settings={settings}
+          templates={templates}
+          onClose={() => {
+            // Corrections made in the book change what the day needs.
+            if (choosing) refreshChecks([openIso]);
+            setOpenIso(null);
+          }}
+        />
+      )}
     </div>
   );
 }

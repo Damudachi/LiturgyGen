@@ -89,6 +89,7 @@ export const api = {
   importReadings: (date, html) => request(`/readings/${date}/import`, { method: 'POST', body: { html } }),
   clearCache: (date) => request(`/readings/cache${date ? `?date=${date}` : ''}`, { method: 'DELETE' }),
   providers: () => request('/readings/providers'),
+  checkDays: (dates) => request('/readings/check', { method: 'POST', body: { dates } }),
 
   // Generation
   preview: (payload) => request('/generate/preview', { method: 'POST', body: payload }),

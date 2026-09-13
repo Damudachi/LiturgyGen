@@ -68,7 +68,21 @@ if (isDirectRun) {
     console.log(`Seeded ${seeded.inserted} Prayers of the Faithful templates.`);
   }
 
-  createApp().listen(config.port, () => {
+  // The desktop launcher owns this process. If the launcher goes away without
+  // stopping it - killed, or the office signed out - stop too, rather than
+  // hold the port so the next launch cannot start.
+  const parentPid = Number(process.env.LITURGYGEN_PARENT_PID);
+  if (parentPid) {
+    setInterval(() => {
+      try {
+        process.kill(parentPid, 0);
+      } catch {
+        process.exit(0);
+      }
+    }, 5000).unref();
+  }
+
+  createApp().listen(config.port, config.host, () => {
     console.log(`LiturgyGen API listening on http://localhost:${config.port}`);
     console.log(`  calendar   : ${config.calendar.particularCalendar}`);
     console.log(`  database   : ${config.dbFile}`);
