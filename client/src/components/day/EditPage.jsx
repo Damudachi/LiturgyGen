@@ -69,7 +69,7 @@ export default function EditPage({ draft, setDraft, busy, onSave, onRevert, onBa
       <Button variant="ghost" size="sm" icon={ArrowLeft} onClick={onBack} className="-ml-3">
         Back to the day
       </Button>
-      <h2 className="mt-2 font-serif text-2xl font-bold">Edit this page</h2>
+      <h2 className="mt-2 font-serif text-[26px] font-bold">Edit this page</h2>
       <p className="mt-1 text-sm text-muted">Changes show on the right straight away and go into the download.</p>
 
       <div className="mt-5 space-y-4">

@@ -14,7 +14,7 @@ const rowDate = (iso) => {
 };
 
 const STATUS_ICON = {
-  issues: { Icon: TriangleAlert, cls: 'text-gold-edge', label: 'Needs a look' },
+  issues: { Icon: TriangleAlert, cls: 'text-rubric', label: 'Needs a look' },
   failed: { Icon: XCircle, cls: 'text-bad', label: 'Readings could not be fetched' },
   ok: { Icon: CheckCircle2, cls: 'text-ok', label: 'Ready' },
   unfetched: { Icon: CircleDashed, cls: 'text-muted', label: 'Readings not fetched yet' },
@@ -50,7 +50,7 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
       aria-label="Days chosen"
       className="animate-panel flex min-h-0 w-full flex-col gap-3 border-edge bg-page p-5 max-[1023px]:border-t min-[1024px]:w-[29%] min-[1024px]:min-w-[20rem] min-[1024px]:border-l"
     >
-      <h2 className="font-serif text-xl font-semibold">{countLabel(selection.length)}</h2>
+      <h2 className="figures-lining font-serif text-[22px] font-bold">{countLabel(selection.length)}</h2>
 
       {selection.length === 0 && !job && (
         <p className="text-sm text-muted">Click days in the month, or use the buttons above it, to choose which days to make.</p>
@@ -72,14 +72,14 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
             </span>
             <LinkButton onClick={fetchJob.cancel}>Stop</LinkButton>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-edge" role="progressbar" aria-valuenow={fetchJob.percent} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-full rounded-full bg-gold-edge transition-all" style={{ width: `${fetchJob.percent}%` }} />
+          <div className="h-1.5 overflow-hidden rounded-[2px] bg-edge" role="progressbar" aria-valuenow={fetchJob.percent} aria-valuemin={0} aria-valuemax={100}>
+            <div className="h-full bg-gold transition-all" style={{ width: `${fetchJob.percent}%` }} />
           </div>
           {fetchJob.job.message && /Waiting/.test(fetchJob.job.message) && <p className="text-muted">{fetchJob.job.message}</p>}
         </div>
       ) : (
         toFetch.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-page-hi p-3 text-sm ring-1 ring-edge ring-inset">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-l-[3px] border-navy bg-page-hi py-2.5 pr-3 pl-3.5 text-sm">
             <span className="text-muted">
               {[
                 unfetched > 0 &&
@@ -124,15 +124,15 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
                     className="min-w-0 flex-1 cursor-pointer text-left hover:underline"
                     title={`Open ${formatLong(iso)}`}
                   >
-                    <span className="font-medium">{rowDate(iso)}</span>
-                    <span className="text-muted"> · {tileLabel(daysByDate[iso]) || formatLong(iso)}</span>
+                    <span className="figures-lining block font-semibold">{rowDate(iso)}</span>
+                    <span className="block truncate font-serif text-[14px] text-muted">{tileLabel(daysByDate[iso]) || formatLong(iso)}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => onRemove(iso)}
                     disabled={busy}
                     aria-label={`Remove ${formatLong(iso)}`}
-                    className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-muted hover:bg-tile hover:text-ink disabled:opacity-40"
+                    className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-[5px] text-muted hover:bg-page-hi hover:text-ink disabled:opacity-40"
                   >
                     <X className="size-4" />
                   </button>
@@ -198,8 +198,8 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
             </span>
             <span>{percent}%</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-edge" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
-            <div className={cx('h-full rounded-full bg-navy transition-all', job.status === 'failed' && 'bg-bad')} style={{ width: `${percent}%` }} />
+          <div className="h-1.5 overflow-hidden rounded-[2px] bg-edge" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
+            <div className={cx('h-full bg-navy transition-all', job.status === 'failed' && 'bg-bad')} style={{ width: `${percent}%` }} />
           </div>
         </div>
       )}

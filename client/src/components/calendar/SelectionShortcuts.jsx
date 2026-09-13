@@ -2,7 +2,7 @@ import { SHORTCUTS } from '../../lib/selection';
 import { cx } from '../ui';
 
 const chip =
-  'inline-flex min-h-10 cursor-pointer items-center rounded-full px-4 text-sm font-semibold ring-1 ring-inset transition-colors disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex min-h-9 cursor-pointer items-center rounded-[5px] px-3.5 text-sm font-semibold ring-1 ring-inset transition-colors disabled:cursor-not-allowed disabled:opacity-50';
 
 /** Weekdays, Mon Wed Fri, First Friday, Scheduled Masses, Clear. */
 export default function SelectionShortcuts({ busy, onShortcut, onScheduled, onClear, canClear }) {
@@ -15,19 +15,19 @@ export default function SelectionShortcuts({ busy, onShortcut, onScheduled, onCl
           type="button"
           disabled={busy}
           onClick={() => onShortcut(shortcut.id)}
-          className={cx(chip, 'bg-tile text-navy ring-tile-edge hover:bg-tile-sun')}
+          className={cx(chip, 'bg-page text-navy ring-[#b9c0cc] hover:ring-navy/60')}
         >
           {shortcut.label}
         </button>
       ))}
-      <button type="button" disabled={busy} onClick={onScheduled} className={cx(chip, 'bg-tile text-navy ring-tile-edge hover:bg-tile-sun')}>
+      <button type="button" disabled={busy} onClick={onScheduled} className={cx(chip, 'bg-page text-navy ring-[#b9c0cc] hover:ring-navy/60')}>
         Scheduled Masses
       </button>
       <button
         type="button"
         disabled={busy || !canClear}
         onClick={onClear}
-        className={cx(chip, 'bg-transparent text-navy ring-edge hover:bg-page-hi')}
+        className={cx(chip, 'text-navy ring-transparent hover:underline')}
       >
         Clear
       </button>

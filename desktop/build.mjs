@@ -164,6 +164,9 @@ for (const file of [...webviewLibraries, path.join(webview, 'runtimes', 'win-x64
   fs.copyFileSync(file, path.join(APP, path.basename(file)));
 }
 
+// The seal on the splash shown while LiturgyGen starts.
+fs.copyFileSync(path.join(REPO, 'client', 'src', 'assets', 'seal-128.png'), path.join(APP, 'splash.png'));
+
 step('Compiling the launcher');
 run(csc, [
   '/nologo',

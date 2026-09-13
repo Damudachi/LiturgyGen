@@ -59,17 +59,17 @@ export default function Book({ variant = 'overlay', label, onClose, left, right,
       aria-label={label}
       tabIndex={-1}
       className={cx(
-        'book-gutter relative grid rounded-[10px] bg-page shadow-book outline-none min-[900px]:grid-cols-2 min-[900px]:grid-rows-[minmax(0,1fr)]',
+        'book-gutter relative grid rounded-md bg-page shadow-book outline-none min-[900px]:grid-cols-2 min-[900px]:grid-rows-[minmax(0,1fr)]',
         overlay && 'animate-book h-full rounded-b-none max-[899px]:overflow-y-auto',
         className,
       )}
     >
-      <div aria-hidden="true" className="ribbon pointer-events-none absolute -top-2 left-5 z-10 h-28 w-5 bg-gold" />
+      <div aria-hidden="true" className="ribbon pointer-events-none absolute -top-1.5 left-6 z-10 h-24 w-4 bg-rubric" />
       {onClose && (
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3 right-3 z-10 inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full bg-page-hi px-3.5 text-sm font-medium text-navy ring-1 ring-edge hover:bg-tile"
+          className="absolute top-3 right-3 z-10 inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-[5px] bg-page px-3 text-sm font-semibold text-navy ring-1 ring-[#b9c0cc] ring-inset hover:ring-navy/60"
         >
           <X className="size-4" aria-hidden="true" />
           Close book

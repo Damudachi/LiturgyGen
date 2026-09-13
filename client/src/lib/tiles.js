@@ -15,6 +15,28 @@ const COLOUR_CLASS = {
   BLACK: 'bg-lit-black',
 };
 
+/**
+ * How the day's name is set, the way a printed Ordo sets it: a solemnity bold
+ * and a size up, feasts and Sundays bold, memorials plain, optional memorials
+ * in italic, and a plain weekday quietly in the interface face.
+ */
+export function rankClass(day) {
+  const rank = day && day.celebration && day.celebration.rank;
+  switch (rank) {
+    case 'SOLEMNITY':
+      return 'font-serif text-[15px] font-bold text-ink';
+    case 'FEAST':
+    case 'SUNDAY':
+      return 'font-serif text-[14px] font-bold text-ink';
+    case 'MEMORIAL':
+      return 'font-serif text-[14px] text-ink';
+    case 'OPTIONAL_MEMORIAL':
+      return 'font-serif text-[14px] italic text-ink';
+    default:
+      return 'font-sans text-[13px] text-muted';
+  }
+}
+
 /** Tailwind class for the tile's colour stripe. */
 export function stripeClass(day) {
   const key = day && day.celebration && day.celebration.color && day.celebration.color.key;

@@ -6,8 +6,9 @@
 2. Double-click it. No administrator is needed.
    Windows may say *"Windows protected your PC"* because the installer is not
    signed: choose **More info → Run anyway**.
-3. Open **LiturgyGen** from the desktop icon. It opens in a window of its own, with
-   its own taskbar icon. The dark navy bar across the top is the title bar: drag it to
+3. Open **LiturgyGen** from the desktop icon. A small LiturgyGen card shows while it
+   starts (a few seconds), then it opens in a window of its own, with its own taskbar
+   icon. The dark navy bar across the top is the title bar: drag it to
    move the window, double-click it to maximize, and use the minimize, maximize and
    close buttons at its right end. **Closing the window closes LiturgyGen**; if days are still
    being made, it asks first. Opening the icon again while it is open brings the

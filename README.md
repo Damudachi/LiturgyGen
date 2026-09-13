@@ -134,7 +134,8 @@ This writes `desktop/dist/LiturgyGen-Setup-<version>.exe`, about 33 MB. It bundl
 - the server with its dependencies pinned to the exact versions installed here;
 - the built client;
 - `LiturgyGen.exe`, a small launcher compiled with the C# compiler that ships with
-  Windows. It starts the server hidden on `127.0.0.1` only and shows the app in its own
+  Windows. It shows a small splash while it starts the server hidden on `127.0.0.1` only
+  and loads the page out of sight, then shows the app in its own
   window through [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/) —
   the web view built into Windows — so there is no browser tab to lose. The navbar is the
   window's title bar (`client/src/components/WindowControls.jsx`): the page reports drags

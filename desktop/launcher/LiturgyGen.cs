@@ -81,8 +81,7 @@ static class Launcher
 
                 if (WebView2Available())
                 {
-                    window = new MainWindow();
-                    Application.Run(window);
+                    RunInWindow();
                 }
                 else
                 {
@@ -91,6 +90,34 @@ static class Launcher
                 StopServer();
             }
         }
+    }
+
+    /// <summary>
+    /// A small splash while the server starts and the page loads out of sight;
+    /// the main window appears only once the calendar is on screen.
+    /// </summary>
+    static void RunInWindow()
+    {
+        var context = new ApplicationContext();
+        var splash = new SplashWindow();
+        window = new MainWindow();
+
+        window.Opened += delegate
+        {
+            window.Show();
+            window.Activate();
+            splash.Close();
+        };
+        window.Failed += delegate
+        {
+            splash.Close();
+            context.ExitThread();
+        };
+        window.FormClosed += delegate { context.ExitThread(); };
+
+        splash.Show();
+        window.BeginLoading();
+        Application.Run(context);
     }
 
     static string ShowSignalName()
@@ -354,7 +381,8 @@ static class Launcher
 }
 
 /// <summary>
-/// LiturgyGen's own window: a "starting" note, then the app itself.
+/// LiturgyGen's own window. It loads hidden behind the splash and is shown by
+/// the launcher when the page is ready.
 ///
 /// Once the page is up, the Windows title bar is removed and LiturgyGen's navbar
 /// takes its place (client/src/components/WindowControls.jsx). The page reports
@@ -368,7 +396,13 @@ class MainWindow : Form
 {
     readonly Label starting;
     readonly WebView2 web;
-    bool shownOnce;
+    bool opened;
+    System.Windows.Forms.Timer openAnyway;
+
+    /// <summary>The page is on screen: show the window.</summary>
+    public event EventHandler Opened;
+    /// <summary>LiturgyGen could not start; the office has been told why.</summary>
+    public event EventHandler Failed;
     bool navbarIsTitleBar;
     bool lastMaximized;
 
@@ -422,26 +456,36 @@ class MainWindow : Form
         starting.TextAlign = ContentAlignment.MiddleCenter;
         starting.Font = new Font("Segoe UI", 16f);
         starting.ForeColor = ColorTranslator.FromHtml("#1b2740");
-        starting.Text = "Opening LiturgyGen\u2026";
+        starting.Visible = false;
 
         web = new WebView2();
         web.Dock = DockStyle.Fill;
-        web.Visible = false;
         web.DefaultBackgroundColor = BackColor;
 
         Controls.Add(web);
         Controls.Add(starting);
     }
 
-    protected override async void OnShown(EventArgs e)
+    void Open()
     {
-        base.OnShown(e);
+        if (opened) return;
+        opened = true;
+        if (openAnyway != null) openAnyway.Stop();
+        if (Opened != null) Opened(this, EventArgs.Empty);
+        web.Focus();
+    }
+
+    /// <summary>Start the server and load the page, all while the window is still hidden.</summary>
+    public async void BeginLoading()
+    {
+        // The web view needs real window handles, which exist before the window is shown.
+        var handle = Handle;
 
         var error = await Task.Run(() => Launcher.EnsureServer());
         if (error != null)
         {
             Launcher.Fail(error);
-            Close();
+            if (Failed != null) Failed(this, EventArgs.Empty);
             return;
         }
 
@@ -454,9 +498,12 @@ class MainWindow : Form
         {
             // The web view would not start after all: fall back to the browser
             // and keep this window as the way to quit.
+            web.Visible = false;
+            starting.Visible = true;
             starting.Text = "LiturgyGen is open in your browser.\nClose this window to quit LiturgyGen.";
             Launcher.OpenBrowser();
             Debug.WriteLine(failure);
+            Open();
             return;
         }
 
@@ -481,11 +528,13 @@ class MainWindow : Form
         core.WebMessageReceived += OnPageMessage;
         core.NavigationCompleted += delegate
         {
-            if (shownOnce) return;
-            shownOnce = true;
-            web.Visible = true;
-            starting.Visible = false;
-            web.Focus();
+            // The page says "ready" once the calendar is up. If it never does - an
+            // error page, say - show the window anyway rather than leave the splash up.
+            if (opened || openAnyway != null) return;
+            openAnyway = new System.Windows.Forms.Timer();
+            openAnyway.Interval = 8000;
+            openAnyway.Tick += delegate { Open(); };
+            openAnyway.Start();
         };
 
         core.Navigate(Launcher.Url);
@@ -513,6 +562,7 @@ class MainWindow : Form
                     SetWindowPos(Handle, IntPtr.Zero, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
                 }
                 PostWindowState(true);
+                Open();
                 break;
             case "drag":
                 SystemGesture(HTCAPTION);
@@ -614,10 +664,146 @@ class MainWindow : Form
         if (!IsHandleCreated) return;
         BeginInvoke((Action)delegate
         {
+            if (!Visible) return; // still loading behind the splash
             if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
             Activate();
             TopMost = true;
             TopMost = false;
         });
+    }
+}
+
+/// <summary>
+/// The small "Opening LiturgyGen" card shown while it starts: navy, no title bar,
+/// the chapel seal, and a gold bar that keeps moving so it never looks stuck.
+/// </summary>
+class SplashWindow : Form
+{
+    readonly Image seal;
+    readonly float scale;
+    readonly System.Windows.Forms.Timer timer;
+    float phase;
+
+    static readonly Color Navy = ColorTranslator.FromHtml("#1b2740");
+    static readonly Color Gold = ColorTranslator.FromHtml("#f2bc1b");
+    static readonly Color Muted = ColorTranslator.FromHtml("#c9d3dc");
+
+    [DllImport("dwmapi.dll")]
+    static extern int DwmSetWindowAttribute(IntPtr window, int attribute, ref int value, int size);
+
+    public SplashWindow()
+    {
+        Text = "LiturgyGen";
+        Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+        FormBorderStyle = FormBorderStyle.None;
+        StartPosition = FormStartPosition.CenterScreen;
+        ShowInTaskbar = true;
+        BackColor = Navy;
+        DoubleBuffered = true;
+
+        using (var graphics = CreateGraphics()) scale = graphics.DpiX / 96f;
+        ClientSize = new Size(S(380), S(230));
+
+        var sealFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "splash.png");
+        if (File.Exists(sealFile)) seal = Image.FromFile(sealFile);
+
+        timer = new System.Windows.Forms.Timer();
+        timer.Interval = 16;
+        timer.Tick += delegate
+        {
+            phase = (phase + 0.011f) % 1f;
+            Invalidate(new Rectangle(0, S(190), ClientSize.Width, S(12)));
+        };
+    }
+
+    int S(float value)
+    {
+        return (int)Math.Round(value * scale);
+    }
+
+    protected override CreateParams CreateParams
+    {
+        get
+        {
+            var parameters = base.CreateParams;
+            parameters.ClassStyle |= 0x00020000; // CS_DROPSHADOW
+            return parameters;
+        }
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        // Rounded corners on Windows 11; Windows 10 ignores the request.
+        var round = 2; // DWMWCP_ROUND
+        try
+        {
+            DwmSetWindowAttribute(Handle, 33, ref round, sizeof(int));
+        }
+        catch
+        {
+            // Older Windows: square corners.
+        }
+    }
+
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+        timer.Start();
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        var g = e.Graphics;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+        var width = ClientSize.Width;
+
+        if (seal != null)
+        {
+            // The seal image is square; like the navbar, show only its circle.
+            var size = S(76);
+            var bounds = new Rectangle((width - size) / 2, S(30), size, size);
+            using (var circle = new System.Drawing.Drawing2D.GraphicsPath())
+            {
+                circle.AddEllipse(bounds);
+                g.SetClip(circle);
+                g.DrawImage(seal, bounds);
+                g.ResetClip();
+            }
+        }
+
+        var centred = new StringFormat { Alignment = StringAlignment.Center };
+        using (var title = new Font("Georgia", 20f, FontStyle.Bold))
+        using (var brush = new SolidBrush(Color.White))
+        {
+            g.DrawString("LiturgyGen", title, brush, new RectangleF(0, S(116), width, S(40)), centred);
+        }
+        using (var note = new Font("Segoe UI", 10f))
+        using (var brush = new SolidBrush(Muted))
+        {
+            g.DrawString("Opening\u2026", note, brush, new RectangleF(0, S(156), width, S(24)), centred);
+        }
+
+        // An indeterminate bar: a gold segment sliding along a faint track.
+        var track = new Rectangle(S(90), S(194), width - S(180), Math.Max(2, S(3)));
+        using (var brush = new SolidBrush(Color.FromArgb(40, Color.White))) g.FillRectangle(brush, track);
+        var segment = track.Width * 0.32f;
+        var x = track.Left - segment + (track.Width + segment) * phase;
+        var left = Math.Max(track.Left, x);
+        var right = Math.Min(track.Right, x + segment);
+        if (right > left)
+        {
+            using (var brush = new SolidBrush(Gold)) g.FillRectangle(brush, left, track.Top, right - left, track.Height);
+        }
+    }
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        timer.Stop();
+        if (seal != null) seal.Dispose();
+        base.OnFormClosed(e);
     }
 }

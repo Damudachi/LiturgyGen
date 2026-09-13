@@ -8,7 +8,7 @@ import {
   shortcutRequest,
   toggleDate,
 } from '../src/lib/selection.js';
-import { moveFocus, stripeClass, tileAriaLabel, tileLabel } from '../src/lib/tiles.js';
+import { moveFocus, rankClass, stripeClass, tileAriaLabel, tileLabel } from '../src/lib/tiles.js';
 import { monthGrid } from '../src/lib/dates.js';
 
 test('ticking keeps the selection sorted and unique', () => {
@@ -69,4 +69,13 @@ test('arrow keys move through real days only', () => {
   const last = cells.indexOf('2026-09-30');
   assert.equal(moveFocus(cells, last, 'ArrowDown'), last);
   assert.equal(moveFocus(cells, first, 'Enter'), first);
+});
+
+test('a day is set by its rank, as in the Ordo', () => {
+  assert.match(rankClass(day('SOLEMNITY', 'The Nativity of the Lord', 'THE NATIVITY OF THE LORD', 'WHITE')), /font-bold/);
+  assert.match(rankClass(day('FEAST', 'The Holy Innocents', 'THE HOLY INNOCENTS', 'RED')), /font-bold/);
+  assert.doesNotMatch(rankClass(day('MEMORIAL', 'Saint Monica', 'SAINT MONICA', 'WHITE')), /font-bold|italic/);
+  assert.match(rankClass(day('OPTIONAL_MEMORIAL', 'Saint Rose', 'SAINT ROSE', 'WHITE')), /italic/);
+  assert.match(rankClass(day('WEEKDAY', 'Tuesday', 'TUESDAY')), /font-sans/);
+  assert.match(rankClass(undefined), /font-sans/);
 });

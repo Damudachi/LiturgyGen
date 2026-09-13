@@ -60,7 +60,7 @@ export default function SettingsPanel({ settings, onSaved }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-5 px-5 py-6">
-      <h1 className="font-serif text-[32px] font-semibold">Settings</h1>
+      <h1 className="font-serif text-[34px] font-bold">Settings</h1>
       {notice && (
         <Alert tone={notice.tone} onDismiss={() => setNotice(null)}>
           {notice.text}

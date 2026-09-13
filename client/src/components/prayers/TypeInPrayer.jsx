@@ -54,7 +54,7 @@ export default function TypeInPrayer({ seasons, onSaved, onCancel }) {
 
   const left = (
     <div>
-      <h2 className="font-serif text-2xl font-bold">Type in a prayer from the book</h2>
+      <h2 className="font-serif text-[26px] font-bold">Type in a prayer from the book</h2>
       <p className="mt-1 text-sm text-muted">Type it exactly as it is printed. LiturgyGen works out the parts.</p>
       {error && <Alert tone="error" className="mt-3">{error}</Alert>}
       <Field className="mt-4" label="The page" hint="Heading, the invitation, the response in CAPITALS, the numbered intentions, then the closing prayer.">

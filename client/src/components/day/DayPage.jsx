@@ -9,7 +9,7 @@ function Step({ number, state, title, children }) {
       <span
         aria-hidden="true"
         className={cx(
-          'grid size-[1.9rem] place-items-center rounded-full border-[1.5px] text-[15px] font-bold',
+          'figures-lining grid size-[1.9rem] place-items-center rounded-full border-[1.5px] font-serif text-[16px] font-bold',
           state === 'done' && 'border-navy bg-navy text-page',
           state === 'now' && 'border-gold bg-gold text-ink',
           state === 'next' && 'border-navy text-navy',
@@ -46,7 +46,7 @@ export default function DayPage({ iso, day, loading, error, blocked, notice, onD
       </h2>
       {liturgy && (
         <p className="mt-1.5 flex items-center gap-2 text-sm text-muted">
-          <span aria-hidden="true" className={cx('inline-block size-2.5 rounded-full ring-1 ring-black/10', stripeClass(liturgy))} />
+          <span aria-hidden="true" className={cx('inline-block size-2.5 ring-1 ring-black/15 ring-inset', stripeClass(liturgy))} />
           {[liturgy.celebration.color.name, liturgy.celebration.rankLabel, liturgy.season.name && liturgy.season.week ? `week ${liturgy.season.week} of ${liturgy.season.name}` : liturgy.season.name]
             .filter(Boolean)
             .join(', ')}

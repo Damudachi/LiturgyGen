@@ -12,7 +12,7 @@ export default function PasteReadings({ iso, busy, onImport, onBack }) {
       <Button variant="ghost" size="sm" icon={ArrowLeft} onClick={onBack} className="-ml-3">
         Back to the day
       </Button>
-      <h2 className="mt-2 font-serif text-2xl font-bold">Paste from USCCB</h2>
+      <h2 className="mt-2 font-serif text-[26px] font-bold">Paste from USCCB</h2>
       <ol className="mt-3 list-decimal space-y-1 pl-5 text-base">
         <li>
           Open{' '}
