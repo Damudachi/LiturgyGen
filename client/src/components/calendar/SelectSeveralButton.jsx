@@ -12,7 +12,7 @@ export default function SelectSeveralButton({ selecting, count, onToggle }) {
       onClick={onToggle}
       aria-pressed={selecting}
       className={cx(
-        'inline-flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl py-2.5 pr-5 pl-4 text-lg font-extrabold whitespace-nowrap transition-colors',
+        'lift inline-flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl py-2.5 pr-5 pl-4 text-lg font-extrabold whitespace-nowrap',
         selecting
           ? 'bg-navy text-page shadow-[0_3px_0_#111a2e,0_8px_18px_rgba(38,53,81,0.35)] hover:bg-ink'
           : 'bg-gold text-ink shadow-[0_3px_0_var(--color-gold-edge),0_8px_18px_rgba(242,188,27,0.35)] hover:brightness-105',

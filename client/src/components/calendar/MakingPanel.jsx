@@ -48,7 +48,7 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
   return (
     <aside
       aria-label="Days chosen"
-      className="animate-panel flex min-h-0 w-full flex-col gap-3 border-edge bg-page p-5 max-[1023px]:border-t min-[1024px]:w-[29%] min-[1024px]:min-w-[20rem] min-[1024px]:border-l"
+      className="animate-panel relative z-10 flex min-h-0 w-full flex-col gap-3 border-edge bg-page p-5 shadow-float max-[1023px]:border-t min-[1024px]:w-[29%] min-[1024px]:min-w-[20rem] min-[1024px]:border-l"
     >
       <h2 className="font-serif text-xl font-semibold">{countLabel(selection.length)}</h2>
 

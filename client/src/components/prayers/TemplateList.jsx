@@ -8,7 +8,7 @@ export default function TemplateList({ templates, total, seasons, search, onSear
     .filter((group) => group.items.length);
 
   return (
-    <aside aria-label="Prayers" className="flex min-h-0 flex-col gap-3 rounded-xl bg-tile p-4 ring-1 ring-tile-edge">
+    <aside aria-label="Prayers" className="flex min-h-0 flex-col gap-3 rounded-xl bg-tile p-4 shadow-rest ring-1 ring-tile-edge">
       <div className="flex items-baseline justify-between gap-2">
         <h1 className="font-serif text-2xl font-semibold">Prayers</h1>
         <span className="text-sm text-muted">{total} in all</span>

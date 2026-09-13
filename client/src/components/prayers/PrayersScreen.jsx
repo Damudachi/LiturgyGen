@@ -117,7 +117,7 @@ export default function PrayersScreen({ templates, seasons, reload }) {
     );
   } else {
     main = (
-      <div className="grid h-full place-items-center rounded-xl bg-page ring-1 ring-edge">
+      <div className="grid h-full place-items-center rounded-xl bg-page shadow-rest ring-1 ring-edge">
         <EmptyState icon={BookOpen} title="Choose a prayer to open it">
           These are the Prayers of the Faithful LiturgyGen prints. Use Type in to add a day straight from the General Intercessions books.
         </EmptyState>

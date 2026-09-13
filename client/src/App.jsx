@@ -62,7 +62,7 @@ export default function App() {
     <div className={inDesktopWindow ? 'flex h-full flex-col' : 'min-h-full'}>
       <header
         {...titleBarProps()}
-        className={cx('on-dark sticky top-0 z-50 flex h-[60px] shrink-0 items-center gap-3 bg-ink px-6 text-page', inDesktopWindow && 'select-none')}
+        className={cx('on-dark sticky top-0 z-50 flex h-[60px] shrink-0 items-center gap-3 bg-ink px-6 text-page shadow-float', inDesktopWindow && 'select-none')}
       >
         <img src={seal} alt="Chapel of the Holy Guardian Angel seal" draggable={false} className="size-9 rounded-full" />
         <span className="font-serif text-xl font-bold">LiturgyGen</span>

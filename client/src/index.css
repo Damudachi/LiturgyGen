@@ -43,6 +43,18 @@
   --color-lit-gold: #ca8a04;
   --color-lit-white: #fffdf6;
   --color-lit-black: #27272a;
+
+  /*
+   * Depth. Three levels, all tinted with the seal's navy rather than grey so the
+   * shadows sit in the same warm light as the paper:
+   *   rest  - things lying on the page (tiles, cards, buttons, fields)
+   *   raise - whatever is under the pointer, or chosen
+   *   float - the navbar and the side panel, above the page
+   */
+  --shadow-rest: 0 1px 2px rgba(27, 39, 64, 0.08), 0 3px 8px rgba(27, 39, 64, 0.09);
+  --shadow-raise: 0 3px 6px rgba(27, 39, 64, 0.1), 0 12px 26px rgba(27, 39, 64, 0.16);
+  --shadow-float: 0 4px 12px rgba(27, 39, 64, 0.12), 0 18px 40px rgba(27, 39, 64, 0.14);
+  --shadow-well: inset 0 1px 2px rgba(27, 39, 64, 0.07);
 }
 
 html,
@@ -63,9 +75,31 @@ h3,
   line-height: 1.15;
 }
 
-/* Three elevations only: nothing, a panel, the lifted book. */
+/* A card lying on the page. */
 .shadow-panel {
-  box-shadow: 0 1px 2px rgba(27, 39, 64, 0.06), 0 4px 12px rgba(27, 39, 64, 0.06);
+  box-shadow: var(--shadow-rest);
+}
+
+/*
+ * Something you can press lifts a little toward the pointer. The lift is
+ * movement, so it is dropped when the computer asks for reduced motion; the
+ * shadow still changes.
+ */
+.lift {
+  transition: box-shadow 200ms ease-out, transform 200ms ease-out, background-color 150ms ease-out;
+}
+.lift:hover {
+  box-shadow: var(--shadow-raise);
+  transform: translateY(-2px);
+}
+.lift:active {
+  box-shadow: var(--shadow-rest);
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lift:hover {
+    transform: none;
+  }
 }
 .shadow-book {
   box-shadow: 0 20px 50px rgba(27, 39, 64, 0.35), inset 0 0 0 1px var(--color-edge);

@@ -20,12 +20,12 @@ export default function DayTile({ iso, day, ticked, current, flagged, focusable,
       aria-pressed={ticked || undefined}
       title={label || undefined}
       className={cx(
-        'group relative flex min-h-[4.5rem] cursor-pointer flex-col overflow-hidden rounded-lg px-2.5 pt-3 pb-2 text-left transition-colors',
+        'lift group relative flex min-h-[4.5rem] cursor-pointer flex-col overflow-hidden rounded-lg px-2.5 pt-3 pb-2 text-left',
         ticked
-          ? 'bg-[#c9d3e3] ring-2 ring-inset ring-navy'
+          ? 'bg-[#c9d3e3] shadow-raise ring-2 ring-inset ring-navy'
           : current
-            ? 'bg-[#fff3c9] ring-2 ring-inset ring-navy'
-            : cx(weekday === 0 ? 'bg-tile-sun' : 'bg-tile', 'ring-1 ring-inset ring-tile-edge hover:ring-navy/50'),
+            ? 'bg-[#fff3c9] shadow-raise ring-2 ring-inset ring-navy'
+            : cx(weekday === 0 ? 'bg-tile-sun' : 'bg-tile', 'shadow-rest ring-1 ring-inset ring-tile-edge hover:ring-navy/40'),
       )}
     >
       <span

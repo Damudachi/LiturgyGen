@@ -6,8 +6,8 @@ export function cx(...parts) {
 }
 
 const BUTTON_VARIANTS = {
-  primary: 'bg-navy text-page hover:bg-ink disabled:bg-muted/50',
-  secondary: 'bg-tile text-navy ring-1 ring-inset ring-tile-edge hover:bg-tile-sun disabled:text-muted/60',
+  primary: 'bg-navy text-page shadow-rest hover:bg-ink hover:shadow-raise disabled:bg-muted/50 disabled:shadow-none',
+  secondary: 'bg-tile text-navy shadow-rest ring-1 ring-inset ring-tile-edge hover:bg-tile-sun hover:shadow-raise disabled:text-muted/60 disabled:shadow-none',
   ghost: 'text-navy hover:bg-tile disabled:text-muted/50',
   danger: 'bg-bad text-page hover:bg-[#8e1d17] disabled:bg-bad/40',
   /* Gold is for the one thing on screen that matters most. */
@@ -36,7 +36,7 @@ export function Button({
       {...props}
       disabled={props.disabled || loading}
       className={cx(
-        'inline-flex cursor-pointer items-center justify-center font-semibold transition-colors disabled:cursor-not-allowed',
+        'inline-flex cursor-pointer items-center justify-center font-semibold transition-[background-color,box-shadow] duration-200 disabled:cursor-not-allowed',
         pill ? 'rounded-full' : 'rounded-[10px]',
         BUTTON_VARIANTS[variant] || BUTTON_VARIANTS.secondary,
         sizes[size],
@@ -112,7 +112,7 @@ export function Field({ label, hint, htmlFor, children, className }) {
 }
 
 const CONTROL =
-  'w-full rounded-lg bg-page-hi px-3 py-2 text-base text-ink ring-1 ring-inset ring-edge ' +
+  'w-full rounded-lg bg-page-hi px-3 py-2 text-base text-ink shadow-well ring-1 ring-inset ring-edge ' +
   'placeholder:text-muted/70 focus:ring-2 focus:ring-navy focus:outline-none';
 
 export function Input({ className, ...props }) {
@@ -183,7 +183,7 @@ const ALERT_TONES = {
 export function Alert({ tone = 'info', title, onDismiss, children, className }) {
   const { cls, Icon } = ALERT_TONES[tone] || ALERT_TONES.info;
   return (
-    <div role={tone === 'error' ? 'alert' : 'status'} className={cx('flex gap-3 rounded-lg p-3 text-sm ring-1 ring-inset', cls, className)}>
+    <div role={tone === 'error' ? 'alert' : 'status'} className={cx('flex gap-3 rounded-lg p-3 text-sm shadow-rest ring-1 ring-inset', cls, className)}>
       <Icon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <div className="min-w-0 flex-1 leading-normal">
         {title && <p className="font-semibold">{title}</p>}

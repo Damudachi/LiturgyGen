@@ -156,14 +156,14 @@ export default function CalendarScreen({ settings, templates }) {
               {MONTH_NAMES[cursor.month - 1]} {cursor.year}
             </h1>
             <div className="flex items-center gap-1.5">
-              <button type="button" onClick={() => step(-1)} aria-label="Previous month" className="grid size-10 cursor-pointer place-items-center rounded-full bg-tile text-navy ring-1 ring-tile-edge hover:bg-tile-sun">
+              <button type="button" onClick={() => step(-1)} aria-label="Previous month" className="lift grid size-10 cursor-pointer place-items-center rounded-full bg-tile text-navy shadow-rest ring-1 ring-tile-edge hover:bg-tile-sun">
                 <ChevronLeft className="size-5" />
               </button>
-              <button type="button" onClick={() => step(1)} aria-label="Next month" className="grid size-10 cursor-pointer place-items-center rounded-full bg-tile text-navy ring-1 ring-tile-edge hover:bg-tile-sun">
+              <button type="button" onClick={() => step(1)} aria-label="Next month" className="lift grid size-10 cursor-pointer place-items-center rounded-full bg-tile text-navy shadow-rest ring-1 ring-tile-edge hover:bg-tile-sun">
                 <ChevronRight className="size-5" />
               </button>
             </div>
-            <button type="button" onClick={goToday} className="min-h-10 cursor-pointer rounded-full bg-tile px-4 text-sm font-medium text-navy ring-1 ring-tile-edge hover:bg-tile-sun">
+            <button type="button" onClick={goToday} className="lift min-h-10 cursor-pointer rounded-full bg-tile px-4 text-sm font-medium text-navy shadow-rest ring-1 ring-tile-edge hover:bg-tile-sun">
               Today
             </button>
             <div className="flex-1" />
