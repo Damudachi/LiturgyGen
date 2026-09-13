@@ -37,9 +37,9 @@ export default function MonthGrid({ year, month, days, loading, error, onRetry, 
 
   if (error) {
     return (
-      <div className="grid flex-1 place-items-center rounded-md bg-page p-8 text-center ring-1 ring-edge">
+      <div className="grid flex-1 place-items-center rounded-lg bg-tile/60 p-8 text-center">
         <div>
-          <p className="font-serif text-[21px] font-bold">
+          <p className="font-serif text-xl font-semibold">
             Could not load {MONTH_NAMES[month - 1]} {year}
           </p>
           <p className="mt-1 text-sm text-muted">{error}</p>
@@ -53,9 +53,9 @@ export default function MonthGrid({ year, month, days, loading, error, onRetry, 
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <div className="grid grid-cols-7 pb-1.5" aria-hidden="true">
+      <div className="grid grid-cols-7 gap-1.5 pb-1.5" aria-hidden="true">
         {WEEKDAY_SHORT.map((name) => (
-          <div key={name} className="pl-3 text-[13px] font-semibold text-muted">
+          <div key={name} className="pl-2 text-[13px] font-medium text-muted">
             {name}
           </div>
         ))}
@@ -63,7 +63,7 @@ export default function MonthGrid({ year, month, days, loading, error, onRetry, 
       <div
         role="grid"
         aria-label={`${MONTH_NAMES[month - 1]} ${year}`}
-        className="grid min-h-0 flex-1 grid-cols-7 gap-px overflow-hidden rounded-md bg-edge ring-1 ring-edge"
+        className="grid min-h-0 flex-1 grid-cols-7 gap-1.5"
         style={{ gridTemplateRows: `repeat(${rows}, minmax(4.5rem, 1fr))` }}
       >
         {cells.map((iso, index) =>
@@ -86,7 +86,7 @@ export default function MonthGrid({ year, month, days, loading, error, onRetry, 
               }}
             />
           ) : (
-            <div key={`blank-${index}`} aria-hidden="true" className="bg-page-hi" />
+            <div key={`blank-${index}`} aria-hidden="true" />
           ),
         )}
       </div>

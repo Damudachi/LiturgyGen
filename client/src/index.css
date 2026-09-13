@@ -1,53 +1,47 @@
 @import 'tailwindcss';
-@import '@fontsource/gentium-book-plus/400.css';
-@import '@fontsource/gentium-book-plus/400-italic.css';
-@import '@fontsource/gentium-book-plus/700.css';
-@import '@fontsource/libre-franklin/400.css';
-@import '@fontsource/libre-franklin/500.css';
-@import '@fontsource/libre-franklin/600.css';
-@import '@fontsource/libre-franklin/700.css';
+@import '@fontsource/newsreader/500.css';
+@import '@fontsource/newsreader/600.css';
+@import '@fontsource/newsreader/700.css';
+@import '@fontsource/source-sans-3/400.css';
+@import '@fontsource/source-sans-3/500.css';
+@import '@fontsource/source-sans-3/600.css';
+@import '@fontsource/source-sans-3/700.css';
+@import '@fontsource/source-sans-3/800.css';
 
 /*
- * "Ordo". The chapel seal's navy and gold, the white paper of a liturgical
- * book, and its rubric red: in a missal the words to say are black and the
- * directions are red, so here red is kept for directions and problems only.
- * Gold marks what is chosen or current, nothing else.
- *
- * Gentium Book Plus was drawn for scholarly and biblical text; it sets dates
- * and the names of celebrations. Libre Franklin, a Franklin Gothic of the kind
- * parish notices and hymnal indexes are set in, sets everything a student
- * assistant has to operate.
+ * Palette "Vellum", taken from the Chapel of the Holy Guardian Angel seal:
+ * navy ink and gold on the paper of a missal, with the seal's silver-blue
+ * warmed toward the paper so the two sit at one temperature.
  */
 @theme {
-  --font-sans: 'Libre Franklin', 'Segoe UI', system-ui, sans-serif;
-  --font-serif: 'Gentium Book Plus', 'Palatino Linotype', Georgia, serif;
+  --font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
   --font-print: 'Book Antiqua', 'Palatino Linotype', Palatino, Georgia, serif;
 
-  --color-ink: #1b2742;
-  --color-navy: #22304f;
-  --color-gold: #e0a814;
-  --color-gold-edge: #a87c00;
-  --color-rubric: #b3261e;
-  --color-bg: #eef0f3;
-  --color-page: #ffffff;
-  --color-page-hi: #f8f9fb;
-  --color-edge: #d5d9e0;
-  --color-tile: #ffffff;
-  --color-tile-edge: #d5d9e0;
-  --color-tile-sun: #f5f6f9;
-  --color-muted: #566074;
-  --color-note: #fbf2f1;
-  --color-note-ink: #5e1510;
-  --color-ok: #2f7a4b;
+  --color-ink: #1b2740;
+  --color-navy: #263551;
+  --color-gold: #f2bc1b;
+  --color-gold-edge: #c99500;
+  --color-bg: #f4efe3;
+  --color-page: #f7f2e6;
+  --color-page-hi: #fcfaf4;
+  --color-edge: #dcd3be;
+  --color-tile: #e7e8df;
+  --color-tile-edge: #cfd1c5;
+  --color-tile-sun: #dadcd1;
+  --color-muted: #4f5669;
+  --color-note: #fbefc4;
+  --color-note-ink: #3f3300;
+  --color-ok: #2e7d4f;
   --color-bad: #b3261e;
 
-  /* Liturgical colours, as swatches. White is paper with a rule round it. */
-  --color-lit-green: #2f7a4b;
-  --color-lit-violet: #6b3fa0;
+  /* Liturgical colours. White is an ivory stripe with an edge so it shows. */
+  --color-lit-green: #2e7d4f;
+  --color-lit-violet: #6d28d9;
   --color-lit-red: #b3261e;
-  --color-lit-rose: #d46a92;
-  --color-lit-gold: #c9961a;
-  --color-lit-white: #ffffff;
+  --color-lit-rose: #db7093;
+  --color-lit-gold: #ca8a04;
+  --color-lit-white: #fffdf6;
   --color-lit-black: #27272a;
 }
 
@@ -66,23 +60,15 @@ h1,
 h2,
 h3,
 .font-serif {
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
-/* Old-style figures sit in running text the way a printed calendar's do. */
-.font-serif {
-  font-variant-numeric: oldstyle-nums;
-}
-.figures-lining {
-  font-variant-numeric: lining-nums;
-}
-
-/* Paper lies flat; only the open book lifts off the desk. */
+/* Three elevations only: nothing, a panel, the lifted book. */
 .shadow-panel {
-  box-shadow: none;
+  box-shadow: 0 1px 2px rgba(27, 39, 64, 0.06), 0 4px 12px rgba(27, 39, 64, 0.06);
 }
 .shadow-book {
-  box-shadow: 0 24px 60px rgba(17, 26, 46, 0.32), inset 0 0 0 1px var(--color-edge);
+  box-shadow: 0 20px 50px rgba(27, 39, 64, 0.35), inset 0 0 0 1px var(--color-edge);
 }
 
 /* The one visible focus ring, with a paper gap so it reads on navy and gold. */
@@ -102,15 +88,16 @@ h3,
   color: #1a1a1a;
 }
 
-/* The gutter of an open book: the fold, as a single rule. */
+/* The gutter of an open book. */
 .book-gutter::before {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 1px;
-  background: var(--color-edge);
+  width: 44px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, rgba(120, 95, 40, 0), rgba(120, 95, 40, 0.12) 50%, rgba(120, 95, 40, 0));
   pointer-events: none;
 }
 @media (max-width: 899px) {

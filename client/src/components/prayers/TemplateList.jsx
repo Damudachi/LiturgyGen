@@ -8,9 +8,9 @@ export default function TemplateList({ templates, total, seasons, search, onSear
     .filter((group) => group.items.length);
 
   return (
-    <aside aria-label="Prayers" className="flex min-h-0 flex-col gap-3 rounded-md bg-page p-4 ring-1 ring-edge">
+    <aside aria-label="Prayers" className="flex min-h-0 flex-col gap-3 rounded-xl bg-tile p-4 ring-1 ring-tile-edge">
       <div className="flex items-baseline justify-between gap-2">
-        <h1 className="font-serif text-[28px] font-bold">Prayers</h1>
+        <h1 className="font-serif text-2xl font-semibold">Prayers</h1>
         <span className="text-sm text-muted">{total} in all</span>
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -37,7 +37,7 @@ export default function TemplateList({ templates, total, seasons, search, onSear
       <div className="min-h-0 flex-1 overflow-y-auto scroll-slim">
         {groups.map((group) => (
           <section key={group.season} className="mb-3">
-            <h2 className="sticky top-0 bg-page py-1 font-serif text-[15px] font-bold text-ink">{group.season}</h2>
+            <h2 className="sticky top-0 bg-tile py-1 text-sm font-semibold text-muted">{group.season}</h2>
             <ul className="space-y-0.5">
               {group.items.map((template) => {
                 const selected = selectedId === template.id;
@@ -46,12 +46,12 @@ export default function TemplateList({ templates, total, seasons, search, onSear
                     <button
                       type="button"
                       onClick={() => onSelect(template)}
-                      className={cx('w-full cursor-pointer rounded-[4px] px-3 py-2 text-left transition-colors', selected ? 'bg-[#e8edf6] text-ink shadow-[inset_3px_0_0_var(--color-navy)]' : 'hover:bg-page-hi')}
+                      className={cx('w-full cursor-pointer rounded-lg px-3 py-2 text-left transition-colors', selected ? 'bg-navy text-page' : 'hover:bg-tile-sun')}
                     >
                       <span className="block truncate font-medium">{template.title}</span>
-                      <span className="block text-sm text-muted">
+                      <span className={cx('block text-sm', selected ? 'text-page/80' : 'text-muted')}>
                         {[template.week && `week ${template.week}`, template.dayOfWeek, `${template.intentions.length} intentions`].filter(Boolean).join(', ')}
-                        {template.isPlaceholder && <span className="ml-1.5 font-semibold text-rubric">placeholder</span>}
+                        {template.isPlaceholder && <span className={cx('ml-1.5 font-semibold', selected ? 'text-gold' : 'text-note-ink')}>placeholder</span>}
                       </span>
                     </button>
                   </li>

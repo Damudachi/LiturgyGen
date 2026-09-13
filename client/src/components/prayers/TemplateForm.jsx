@@ -51,7 +51,7 @@ export default function TemplateForm({ form, setForm, seasons, isNew, isPlacehol
 
   return (
     <div>
-      <h2 className="font-serif text-[26px] font-bold">{isNew ? 'New prayer' : 'Edit prayer'}</h2>
+      <h2 className="font-serif text-2xl font-bold">{isNew ? 'New prayer' : 'Edit prayer'}</h2>
       <p className="mt-1 text-sm text-muted">The most exact match is used: a prayer for one weekday beats one for the whole season.</p>
       {isPlaceholder && (
         <Alert tone="warn" className="mt-3">

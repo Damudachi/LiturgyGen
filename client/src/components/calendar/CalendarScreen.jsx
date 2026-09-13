@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, TriangleAlert } from 'lucide-react';
 import api from '../../api';
 import { MONTH_NAMES, monthGrid, parseIso, todayIso } from '../../lib/dates';
 import { dayStatus, mergeChecks, needsLook } from '../../lib/issues';
@@ -152,18 +152,18 @@ export default function CalendarScreen({ settings, templates }) {
       <div className="flex min-h-0 flex-1 max-[1023px]:flex-col">
         <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 px-6 pt-5 pb-5" aria-label="Month">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="figures-lining min-w-[11ch] font-serif text-[34px] font-bold text-ink" aria-live="polite">
+            <h1 className="font-serif text-[32px] font-semibold text-ink" aria-live="polite">
               {MONTH_NAMES[cursor.month - 1]} {cursor.year}
             </h1>
             <div className="flex items-center gap-1.5">
-              <button type="button" onClick={() => step(-1)} aria-label="Previous month" className="grid size-9 cursor-pointer place-items-center rounded-[5px] bg-page text-navy ring-1 ring-[#b9c0cc] ring-inset hover:ring-navy/60">
+              <button type="button" onClick={() => step(-1)} aria-label="Previous month" className="grid size-10 cursor-pointer place-items-center rounded-full bg-tile text-navy ring-1 ring-tile-edge hover:bg-tile-sun">
                 <ChevronLeft className="size-5" />
               </button>
-              <button type="button" onClick={() => step(1)} aria-label="Next month" className="grid size-9 cursor-pointer place-items-center rounded-[5px] bg-page text-navy ring-1 ring-[#b9c0cc] ring-inset hover:ring-navy/60">
+              <button type="button" onClick={() => step(1)} aria-label="Next month" className="grid size-10 cursor-pointer place-items-center rounded-full bg-tile text-navy ring-1 ring-tile-edge hover:bg-tile-sun">
                 <ChevronRight className="size-5" />
               </button>
             </div>
-            <button type="button" onClick={goToday} className="min-h-9 cursor-pointer rounded-[5px] px-3 text-sm font-semibold text-navy hover:underline">
+            <button type="button" onClick={goToday} className="min-h-10 cursor-pointer rounded-full bg-tile px-4 text-sm font-medium text-navy ring-1 ring-tile-edge hover:bg-tile-sun">
               Today
             </button>
             <div className="flex-1" />
@@ -191,9 +191,11 @@ export default function CalendarScreen({ settings, templates }) {
             />
           )}
           {flagged && flagged.size > 0 && (
-            <p className="text-sm text-muted">
-              <span className="font-semibold text-rubric">Needs a look</span> is written on {flagged.size}{' '}
-              {flagged.size === 1 ? 'day' : 'days'} this month. Open one to see why.
+            <p className="flex items-center gap-2 text-sm text-muted">
+              <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-gold text-ink ring-1 ring-gold-edge">
+                <TriangleAlert className="size-3" strokeWidth={2.5} />
+              </span>
+              {flagged.size} {flagged.size === 1 ? 'day' : 'days'} this month {flagged.size === 1 ? 'needs' : 'need'} a look. Open one to see why.
             </p>
           )}
           {notice && (
