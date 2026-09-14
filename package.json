@@ -13,7 +13,8 @@
     "seed": "npm run seed --workspace server",
     "test:server": "npm run test --workspace server",
     "test:client": "npm run test --workspace client",
-    "package:desktop": "node desktop/build.mjs"
+    "package:desktop": "node desktop/build.mjs",
+    "package:desktop:public": "node desktop/build.mjs --public"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

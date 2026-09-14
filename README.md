@@ -7,20 +7,42 @@ and hands back a `.docx` laid out exactly like the office's printed missalette.
 
 ---
 
-## For the office: installing on a computer
+## Try it on Windows
 
-The office computers run LiturgyGen as an ordinary Windows program in a window of its
-own — no browser tabs, no Node.js, no command line, no administrator needed.
+**[Download LiturgyGen-Setup-1.0.0.exe](https://github.com/Damudachi/LiturgyGen/raw/main/desktop/release/LiturgyGen-Setup-1.0.0.exe)**
+(about 32 MB, from [`desktop/release/`](desktop/release/)).
 
-1. Run `LiturgyGen-Setup-<version>.exe` (see [Building the installer](#building-the-office-installer)).
-   Windows may say *"Windows protected your PC"* because the installer is not signed:
-   choose **More info → Run anyway**.
+LiturgyGen runs as an ordinary Windows program in a window of its own — no browser tabs,
+no Node.js, no command line, no administrator needed. It needs 64-bit Windows 10 or 11.
+
+1. Run the installer. Windows may say *"Windows protected your PC"* because the installer
+   is not signed: choose **More info → Run anyway**.
 2. Open **LiturgyGen** from the desktop icon. It opens in its own window.
 3. To close it, close the window. If days are still being made, it asks first.
 
+This download is the **public build**: the program only. It does not include the office's
+transcriptions of the General Intercessions books, which are under copyright (see
+[below](#3-the-intercession-books-have-to-be-entered-by-hand)). So a new install starts
+empty:
+
+- **Readings** work straight away. They are fetched from USCCB the first time you open a
+  day, so the computer needs internet access.
+- **Prayers of the Faithful** come only from a small set of placeholder prayers written
+  for this tool. They are left off the page by default. To see them on the missalette,
+  turn on *Use a placeholder prayer when neither book has one* in **Settings**, or add
+  your own prayers on the **Prayers** screen with **Type in**.
+
 Each computer keeps its own prayers, corrections and saved readings in
-`%LOCALAPPDATA%\LiturgyGen`, and updating or uninstalling never touches them. The full
-guide, including backups and where the log is, is in [`desktop/README.md`](desktop/README.md).
+`%LOCALAPPDATA%\LiturgyGen`, and updating or uninstalling never touches them. To remove
+LiturgyGen, use **Settings → Apps** in Windows. The full guide, including backups and
+where the log is, is in [`desktop/README.md`](desktop/README.md).
+
+### For the office
+
+The office computers use the **office build** instead. It is the same program plus a
+starting copy of the office's prayers and saved readings. It is never committed and is
+passed around by USB drive or shared folder only (see
+[Building the installers](#building-the-installers)).
 
 ## Using it
 
@@ -51,7 +73,7 @@ and whether a placeholder prayer is used when neither book has one (off by defau
 ### Requirements
 
 - Node.js 20.10 or newer
-- Windows, macOS or Linux (developed on Windows 11); building the office installer needs Windows
+- Windows, macOS or Linux (developed on Windows 11); building the installers needs Windows
 - An internet connection when fetching readings for a date that is not already saved
 
 ### Setup
@@ -118,17 +140,18 @@ automatically when `server/data/orillo/` is absent, so a clean checkout and CI b
 green. CI runs both suites plus the client build on Node 20.10 and 22
 (`.github/workflows/ci.yml`).
 
-### Building the office installer
+### Building the installers
 
 On Windows, with [Inno Setup 6](https://jrsoftware.org/isinfo.php) installed
 (`winget install JRSoftware.InnoSetup`). The first build also downloads the pinned
-WebView2 SDK from NuGet into `desktop/.cache`.
+WebView2 SDK from NuGet into `desktop/.cache`. There are two builds:
 
-```bash
-npm run package:desktop
-```
+| Command | Writes | Includes the office's books and data | Committed |
+| --- | --- | --- | --- |
+| `npm run package:desktop:public` | `desktop/release/LiturgyGen-Setup-<version>.exe` | No | **Yes**: this is the download linked above |
+| `npm run package:desktop` | `desktop/dist/LiturgyGen-Setup-<version>.exe` | Yes | Never (`dist/` is gitignored) |
 
-This writes `desktop/dist/LiturgyGen-Setup-<version>.exe`, about 33 MB. It bundles:
+Both are about 32 MB. Both bundle:
 
 - the Node that ran the build, so the database driver always matches it;
 - the server with its dependencies pinned to the exact versions installed here;
@@ -143,13 +166,19 @@ This writes `desktop/dist/LiturgyGen-Setup-<version>.exe`, about 33 MB. It bundl
   closes the window, so snapping and drag-to-restore behave as in any Windows app. In a
   normal browser tab none of this appears. Opening it twice
   brings the window forward; closing the window stops the server. Without WebView2 it
-  falls back to the browser and an icon beside the clock;
-- **a starting copy of this machine's data** — the database and saved readings, plus the
-  `server/data/orillo` books. A computer installing for the first time starts from it;
-  one that already has LiturgyGen keeps its own.
+  falls back to the browser and an icon beside the clock.
+
+The office build also bundles **a starting copy of this machine's data**: the database and
+saved readings, plus the `server/data/orillo` books. A computer installing for the first
+time starts from it; one that already has LiturgyGen keeps its own. Because that copy
+holds the copyrighted transcriptions, **never commit the office build or upload it
+anywhere public.** The public build leaves all of it out, and a new install creates its own
+database with the placeholder prayers.
 
 Raise `version` in the root `package.json` before building an update. The installer
 is per-user (`%LOCALAPPDATA%\Programs\LiturgyGen`) and never needs an administrator.
+When you publish a new public build, delete the old `.exe` from `desktop/release/` and
+update the download link at the top of this file.
 
 ---
 
@@ -379,7 +408,8 @@ LiturgyGen/
 │   │   │   └── ui.jsx             buttons, fields, alerts
 │   │   └── lib/                   dates, selection, tiles, issues - pure, tested
 │   └── test/
-├── desktop/                       office installer: launcher, Inno Setup script, build
+├── desktop/                       installers: launcher, Inno Setup script, build
+│   └── release/                   the public installer (committed)
 └── docs/                          design notes
 ```
 

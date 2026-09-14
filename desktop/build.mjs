@@ -9,6 +9,14 @@
  * settings and saved readings. A computer installing for the first time starts
  * from that copy; one that already has LiturgyGen keeps its own data.
  *
+ *   npm run package:desktop:public
+ *
+ * builds the installer anyone may download instead:
+ * desktop/release/LiturgyGen-Setup-<version>.exe, which is committed. It leaves
+ * out everything that is not the program - the office's transcriptions of the
+ * General Intercessions books, the database and the saved readings - so a new
+ * install starts empty, with placeholder prayers only.
+ *
  * Needs, on the computer that builds (not the office's): Windows, and Inno
  * Setup 6 (`winget install JRSoftware.InnoSetup`). The launcher is compiled by
  * the C# compiler that ships with Windows, against the WebView2 SDK, which is
@@ -24,7 +32,10 @@ import Database from 'better-sqlite3';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '..');
+/** A public build carries the program only - never the copyrighted books or this computer's data. */
+const PUBLIC = process.argv.includes('--public');
 const DIST = path.join(HERE, 'dist');
+const OUTPUT = PUBLIC ? path.join(HERE, 'release') : DIST;
 const STAGE = path.join(DIST, 'stage');
 const APP = path.join(STAGE, 'app');
 const DATA = path.join(STAGE, 'data');
@@ -112,35 +123,40 @@ step(`Bundling Node ${process.version}`);
 fs.mkdirSync(path.join(APP, 'node'), { recursive: true });
 fs.copyFileSync(process.execPath, path.join(APP, 'node', 'node.exe'));
 
-step('Copying the prayer books');
-// The office's transcriptions: the seeder refreshes unedited prayers from these
-// on every start. Only the books themselves - not worksheets or backups.
-const orillo = path.join(REPO, 'server', 'data', 'orillo');
-if (fs.existsSync(orillo)) {
-  fs.mkdirSync(path.join(APP, 'server', 'data', 'orillo'), { recursive: true });
-  for (const file of fs.readdirSync(orillo)) {
-    if (file.endsWith('.json') && !file.startsWith('_')) {
-      fs.copyFileSync(path.join(orillo, file), path.join(APP, 'server', 'data', 'orillo', file));
+if (PUBLIC) {
+  // A new install creates its own database and seeds the placeholder prayers.
+  step('Public build: leaving out the prayer books, the database and the saved readings');
+} else {
+  step('Copying the prayer books');
+  // The office's transcriptions: the seeder refreshes unedited prayers from these
+  // on every start. Only the books themselves - not worksheets or backups.
+  const orillo = path.join(REPO, 'server', 'data', 'orillo');
+  if (fs.existsSync(orillo)) {
+    fs.mkdirSync(path.join(APP, 'server', 'data', 'orillo'), { recursive: true });
+    for (const file of fs.readdirSync(orillo)) {
+      if (file.endsWith('.json') && !file.startsWith('_')) {
+        fs.copyFileSync(path.join(orillo, file), path.join(APP, 'server', 'data', 'orillo', file));
+      }
     }
+  } else {
+    console.warn('   server/data/orillo is missing: new installs will start with placeholder prayers only.');
   }
-} else {
-  console.warn('   server/data/orillo is missing: new installs will start with placeholder prayers only.');
-}
 
-step('Taking a starting copy of the data');
-const database = path.join(REPO, 'server', 'data', 'liturgygen.sqlite');
-if (fs.existsSync(database)) {
-  // SQLite's own backup, so a running app's unwritten changes are included and
-  // the copy is one consistent file.
-  const source = new Database(database, { readonly: true, fileMustExist: true });
-  await source.backup(path.join(DATA, 'liturgygen.sqlite'));
-  source.close();
-} else {
-  console.warn('   No database here: new installs will create an empty one.');
-}
-const cache = path.join(REPO, 'server', '.cache');
-for (const folder of ['readings', 'usccb']) {
-  if (fs.existsSync(path.join(cache, folder))) copy(path.join(cache, folder), path.join(DATA, 'cache', folder));
+  step('Taking a starting copy of the data');
+  const database = path.join(REPO, 'server', 'data', 'liturgygen.sqlite');
+  if (fs.existsSync(database)) {
+    // SQLite's own backup, so a running app's unwritten changes are included and
+    // the copy is one consistent file.
+    const source = new Database(database, { readonly: true, fileMustExist: true });
+    await source.backup(path.join(DATA, 'liturgygen.sqlite'));
+    source.close();
+  } else {
+    console.warn('   No database here: new installs will create an empty one.');
+  }
+  const cache = path.join(REPO, 'server', '.cache');
+  for (const folder of ['readings', 'usccb']) {
+    if (fs.existsSync(path.join(cache, folder))) copy(path.join(cache, folder), path.join(DATA, 'cache', folder));
+  }
 }
 
 step(`Fetching the WebView2 SDK ${WEBVIEW2_VERSION}`);
@@ -185,9 +201,9 @@ step('Building the installer');
 run(iscc, [
   '/Q',
   `/DStage=${STAGE}`,
-  `/DOutputDir=${DIST}`,
+  `/DOutputDir=${OUTPUT}`,
   `/DAppVersion=${version}`,
   path.join(HERE, 'LiturgyGen.iss'),
 ]);
 
-console.log(`\nDone: ${path.join(DIST, `LiturgyGen-Setup-${version}.exe`)}`);
+console.log(`\nDone: ${path.join(OUTPUT, `LiturgyGen-Setup-${version}.exe`)}`);

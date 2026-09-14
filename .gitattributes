@@ -8,3 +8,5 @@
 *.jpg  binary
 *.jpeg binary
 *.sqlite binary
+*.exe binary
+*.ico binary

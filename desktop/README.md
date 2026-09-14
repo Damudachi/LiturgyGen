@@ -1,5 +1,17 @@
 # LiturgyGen for the office computers
 
+## Two installers
+
+- **Public build**, `desktop/release/LiturgyGen-Setup-<version>.exe`. The program only,
+  committed to the repository for anyone to try. A new install starts empty, with
+  placeholder prayers only.
+- **Office build**, `desktop/dist/LiturgyGen-Setup-<version>.exe`. The same program plus a
+  starting copy of the office's prayers and saved readings, including the transcriptions
+  of the General Intercessions books. It is never committed or shared publicly: pass it
+  around by USB drive or shared folder only.
+
+Both install and run the same way.
+
 ## Installing on an office computer
 
 1. Copy `LiturgyGen-Setup-<version>.exe` to the computer (USB drive, shared folder).
@@ -37,9 +49,9 @@ To open it, type `%LOCALAPPDATA%\LiturgyGen` into the File Explorer address bar.
 Each computer keeps its own copy. To back one up, close LiturgyGen and copy that
 folder.
 
-A first install starts with a copy of the data from the computer that built the
-installer. Updating (running a newer installer) or uninstalling never touches
-the data folder.
+With the office build, a first install starts with a copy of the data from the
+computer that built the installer. With the public build, it starts empty. Updating
+(running a newer installer) or uninstalling never touches the data folder.
 
 ## Building the installer (developers)
 
@@ -47,9 +59,11 @@ On Windows, with Inno Setup 6 installed (`winget install JRSoftware.InnoSetup`):
 
 ```
 npm install
-npm run package:desktop
+npm run package:desktop           # office build  -> desktop/dist/     (gitignored)
+npm run package:desktop:public    # public build  -> desktop/release/  (committed)
 ```
 
-The first build downloads the WebView2 SDK from NuGet into `desktop/.cache`. The
-result is `desktop/dist/LiturgyGen-Setup-<version>.exe`. Raise `version` in
-the root `package.json` before building an update.
+The first build downloads the WebView2 SDK from NuGet into `desktop/.cache`. Raise
+`version` in the root `package.json` before building an update. When you commit a new
+public build, delete the old `.exe` from `desktop/release/` and update the download link
+in the main README.

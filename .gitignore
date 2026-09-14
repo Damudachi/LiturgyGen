@@ -28,3 +28,8 @@ git(old)/
 
 # Downloaded while building the office installer.
 desktop/.cache/
+
+# The office installer in desktop/dist (matched by dist/ above) bundles the
+# office's books and data, so it stays out. The public installer is committed:
+# `npm run package:desktop:public` writes it, program only, to desktop/release/.
+!desktop/release/

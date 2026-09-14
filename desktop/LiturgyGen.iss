@@ -5,7 +5,8 @@
 ; The program goes in %LOCALAPPDATA%\Programs\LiturgyGen and is replaced on
 ; every update. The office's data - prayers, corrections, saved readings - lives
 ; in %LOCALAPPDATA%\LiturgyGen: a new computer starts from the copy bundled here,
-; and a computer that already has data keeps it untouched.
+; and a computer that already has data keeps it untouched. A public build
+; (--public) bundles no data, so a new computer starts empty.
 
 #ifndef AppVersion
   #define AppVersion "1.0.0"
@@ -37,7 +38,7 @@ RestartApplications=no
 
 [Files]
 Source: "{#Stage}\app\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
-Source: "{#Stage}\data\*"; DestDir: "{localappdata}\LiturgyGen"; Flags: recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall
+Source: "{#Stage}\data\*"; DestDir: "{localappdata}\LiturgyGen"; Flags: recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall skipifsourcedoesntexist
 
 [InstallDelete]
 ; Old program files from an earlier version, so nothing stale is left behind.
