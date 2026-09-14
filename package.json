@@ -17,7 +17,7 @@
     "package:desktop:public": "node desktop/build.mjs --public"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^10.0.5"
   },
   "engines": { "node": ">=20.10" }
 }
