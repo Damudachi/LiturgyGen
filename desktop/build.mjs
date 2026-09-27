@@ -86,11 +86,19 @@ fs.mkdirSync(APP, { recursive: true });
 fs.mkdirSync(DATA, { recursive: true });
 
 step('Building the screens');
-run('npm', ['run', 'build'], { cwd: REPO });
+// The installer is never in demo mode: it ships its own Express process, so the
+// client has to be built against the real API. Vite compiles this in at build
+// time, which is why it is set here and not in a .env the installer carries.
+run('npm', ['run', 'build'], { cwd: REPO, env: { ...process.env, VITE_USE_MOCK_API: 'false', VITE_API_BASE_URL: '' } });
 copy(path.join(REPO, 'client', 'dist'), path.join(APP, 'client', 'dist'));
 
 step('Copying the server');
 copy(path.join(REPO, 'server', 'src'), path.join(APP, 'server', 'src'));
+fs.copyFileSync(path.join(REPO, 'server', 'server.js'), path.join(APP, 'server', 'server.js'));
+// db/ holds the PostgreSQL scaffolding, which the installed app does not use
+// while src/db/index.js is still better-sqlite3. It ships anyway so the folder
+// the office has on disk matches the repository.
+copy(path.join(REPO, 'server', 'db'), path.join(APP, 'server', 'db'));
 
 // Pin every dependency to the exact version tested here. The romcal packages
 // are prereleases, where a caret range could quietly pull a different calendar.

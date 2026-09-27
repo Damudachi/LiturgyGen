@@ -145,6 +145,17 @@ export function closeDb() {
   }
 }
 
+/**
+ * The one query /readyz runs. It is async so that the signature does not change
+ * when this module moves from better-sqlite3 to a pg Pool: everything that
+ * awaits it today keeps working, and the body becomes `await pool.query('SELECT 1')`.
+ * See docs/07-postgres-migration-map.md.
+ */
+export async function checkDatabase() {
+  getDb().prepare('SELECT 1 AS ok').get();
+  return true;
+}
+
 /* ------------------------------------------------------------------ *
  * Settings
  * ------------------------------------------------------------------ */

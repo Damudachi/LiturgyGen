@@ -188,7 +188,7 @@ static class Launcher
 
         var info = new ProcessStartInfo(
             Path.Combine(AppDir, "node", "node.exe"),
-            "\"" + Path.Combine(AppDir, "server", "src", "index.js") + "\"");
+            "\"" + Path.Combine(AppDir, "server", "server.js") + "\"");
         info.WorkingDirectory = Path.Combine(AppDir, "server");
         info.UseShellExecute = false;
         info.CreateNoWindow = true;

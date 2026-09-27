@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "src/index.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "node --watch src/index.js",
-    "start": "node src/index.js",
+    "dev": "node --watch server.js",
+    "start": "node server.js",
     "seed": "node src/db/seed.js",
+    "db:schema": "node db/run.js db/schema.sql",
+    "db:seed": "node db/run.js db/seed.sql",
+    "db:reset": "npm run db:schema && npm run db:seed",
     "test": "node --test"
   },
   "dependencies": {
@@ -20,6 +23,7 @@
     "docx": "^9.1.1",
     "express": "^4.21.2",
     "morgan": "^1.10.0",
+    "pg": "^8.13.1",
     "romcal": "3.0.0-dev.140"
   }
 }

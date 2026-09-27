@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import api from './api';
 import seal from './assets/seal-128.png';
+import DemoNotice from './components/DemoNotice';
 import CalendarScreen from './components/calendar/CalendarScreen';
 import PrayersScreen from './components/prayers/PrayersScreen';
 import SettingsPanel from './components/SettingsPanel';
@@ -87,6 +88,7 @@ export default function App() {
       </header>
 
       <main className={inDesktopWindow ? 'min-h-0 flex-1 overflow-y-auto' : undefined}>
+        <DemoNotice />
         {tab === 'calendar' && <CalendarScreen settings={settings} templates={templates} />}
         {tab === 'prayers' && <PrayersScreen templates={templates} seasons={seasons} reload={loadTemplates} />}
         {tab === 'settings' && <SettingsPanel settings={settings} onSaved={setSettings} />}

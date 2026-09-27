@@ -1,0 +1,56 @@
+# A PostgreSQL and the API, for local development and for self-hosting.
+#
+#   cp .env.example .env      # then set POSTGRES_PASSWORD
+#   docker compose up -d
+#   docker compose logs -f api
+#
+# Nothing here is needed for the GitHub Pages deployment, which builds the
+# client only and needs no server at all.
+#
+# If you only want a database to develop against, `docker compose up -d db`
+# and run the API from your terminal with `npm run dev --workspace server`.
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: liturgygen
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs the FIRST time the volume is created, and never again. Later schema
+      # changes go through their own migration files.
+      - ./server/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./server/db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d liturgygen']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # No ports here on purpose: the database is reachable only from the other
+    # containers. Add "127.0.0.1:5432:5432" if you want psql from the host, and
+    # keep the 127.0.0.1 so it does not listen on your whole network.
+
+  api:
+    build: ./server
+    restart: unless-stopped
+    environment:
+      # "db" is the service name above; Compose resolves it for you.
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/liturgygen
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      NODE_ENV: production
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:3000:3000'   # localhost only; a tunnel reaches it here
+    volumes:
+      # The office's transcriptions and the saved readings live outside the
+      # image, so rebuilding the API never touches them.
+      - ./server/data:/app/data
+      - ./server/.cache:/app/.cache
+
+volumes:
+  pgdata:

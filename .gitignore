@@ -1,14 +1,35 @@
+# Secrets. Never commit these. An .env that reached a public repository is not
+# fixed by deleting the file: rotate the credential first, clean the history
+# second.
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
 node_modules/
 dist/
-*.log
+build/
+
+# Database dumps: a full plain-text copy of the office's data
+*.dump
+backup*.sql
+
+# The SQLite database, while it is still the live one. It holds the office's
+# own prayers and corrections.
 server/data/*.sqlite
 server/data/*.sqlite-journal
 server/data/*.sqlite-wal
 server/data/*.sqlite-shm
+
 server/.cache/
 output/
-.env
+
+# Editor and OS noise
 .DS_Store
+.vscode/
+.idea/
+*.log
+npm-debug.log*
 
 # Copyrighted source material - transcriptions and scans of the office's own
 # liturgical books (General Intercessions for Weekday Masses, Fr. Albert
@@ -33,3 +54,13 @@ desktop/.cache/
 # office's books and data, so it stays out. The public installer is committed:
 # `npm run package:desktop:public` writes it, program only, to desktop/release/.
 !desktop/release/
+
+# The class template, kept locally while its pieces are merged in. It is not
+# part of this project's source.
+final-project-template-main/
+
+# Coursework. This repository is public; the reports, journals and planning
+# documents carry a name and a student number, so they live in the private
+# workspace instead. The versions of these documents that belong in public are
+# in docs/, written without any identity in them.
+Docu/

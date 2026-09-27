@@ -1,0 +1,114 @@
+name: Deploy client to GitHub Pages
+
+# Builds the React client and publishes it to GitHub Pages on every push to
+# main, so the link in the README is always the latest commit.
+#
+# What gets published is the CLIENT ONLY. Pages serves static files and cannot
+# run Node, so the Express API and the PostgreSQL database live elsewhere. Until
+# they do, the published client runs in demo mode against src/api/mockApi.js and
+# says so on the page.
+#
+# TURN PAGES ON ONCE, BY HAND, or this runs green and publishes nothing:
+#   Settings > Pages > Build and deployment > Source: GitHub Actions
+#
+# CONFIG. Everything passed in below is compiled into the built JavaScript,
+# which anyone can download and read. That is fine for these two, and it is why
+# they are repository VARIABLES rather than secrets:
+#
+#   Settings > Secrets and variables > Actions > Variables
+#     VITE_USE_MOCK_API   "false" once the API is deployed. Anything else,
+#                         including unset, keeps demo mode on.
+#     VITE_API_BASE_URL   https://your-api.onrender.com   (no trailing slash)
+#
+# Never put a key, a password or a connection string in a VITE_ variable. Those
+# belong in the server's environment, and the server is not built here.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'client/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# If you push twice quickly, cancel the older run rather than racing it.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: check
+        env:
+          IS_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          if [ -f client/package.json ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No client/package.json, so there is nothing to build yet."
+          fi
+          # GitHub Pages only publishes PUBLIC repositories on a free account.
+          # Say so loudly rather than failing later with a confusing 404.
+          if [ "$IS_PRIVATE" = "true" ]; then
+            echo "::warning::This repository is private, so GitHub Pages cannot publish it and the deploy step will be skipped. Make it public (Settings > General > Danger Zone > Change visibility) to get your live link."
+          fi
+
+      - if: steps.check.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # This repository is one npm workspace, so the install happens at the root
+      # and there is no client/package-lock.json to install from.
+      #
+      # better-sqlite3 is still in the server's dependencies while the
+      # PostgreSQL migration is in progress, and it has no prebuild for every
+      # runner. The client build does not need it, so the workspace install is
+      # limited to the client.
+      - if: steps.check.outputs.ready == 'true'
+        run: npm ci --workspace client --include-workspace-root
+
+      - name: Build
+        if: steps.check.outputs.ready == 'true'
+        env:
+          # Reading the name from the event means this keeps working if the
+          # repository is renamed.
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_USE_MOCK_API: ${{ vars.VITE_USE_MOCK_API }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+        # npm run build also copies index.html to 404.html. Pages serves
+        # 404.html for any path it cannot find, which is how a single-page app
+        # survives someone refreshing on a nested route.
+        run: npm run build
+
+      - if: steps.check.outputs.ready == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+
+  deploy:
+    needs: build
+    # Skipped, not failed, when there is nothing to build or the repo is private.
+    if: needs.build.outputs.ready == 'true' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

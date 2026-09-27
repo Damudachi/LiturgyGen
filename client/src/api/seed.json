@@ -1,0 +1,4187 @@
+{
+ "generatedAt": "2026-09-27",
+ "note": "Demo data for the GitHub Pages build. Scripture text and the office's own prayers are deliberately excluded; see server/tools/build-demo-seed.mjs.",
+ "months": {
+  "2026-9": [
+   {
+    "date": "2026-09-01",
+    "headerDate": "SEPTEMBER 01, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "ordinary_time_22_tuesday",
+     "name": "Tuesday of the twenty-second week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 22,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "22nd WEEK IN ORDINARY TIME - TUESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 22,
+     "dayOfWeek": "Tuesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_22_tuesday",
+     "availableCelebrationIds": [
+      "ordinary_time_22_tuesday"
+     ],
+     "fixedDate": "09-01",
+     "ordinaryWeek": 22
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-02",
+    "headerDate": "SEPTEMBER 02, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "ordinary_time_22_wednesday",
+     "name": "Wednesday of the twenty-second week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 22,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "22nd WEEK IN ORDINARY TIME - WEDNESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 22,
+     "dayOfWeek": "Wednesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_22_wednesday",
+     "availableCelebrationIds": [
+      "ordinary_time_22_wednesday"
+     ],
+     "fixedDate": "09-02",
+     "ordinaryWeek": 22
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-03",
+    "headerDate": "SEPTEMBER 03, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "gregory_i_the_great_pope",
+     "name": "Saint Gregory the Great, Pope and Doctor of the Church",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 22,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "SAINT GREGORY THE GREAT, POPE AND DOCTOR OF THE CHURCH",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 22,
+     "dayOfWeek": "Thursday",
+     "rank": "MEMORIAL",
+     "celebrationId": "gregory_i_the_great_pope",
+     "availableCelebrationIds": [
+      "gregory_i_the_great_pope"
+     ],
+     "fixedDate": "09-03",
+     "ordinaryWeek": 22
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-04",
+    "headerDate": "SEPTEMBER 04, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "ordinary_time_22_friday",
+     "name": "Friday of the twenty-second week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 22,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "22nd WEEK IN ORDINARY TIME - FRIDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 22,
+     "dayOfWeek": "Friday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_22_friday",
+     "availableCelebrationIds": [
+      "ordinary_time_22_friday"
+     ],
+     "fixedDate": "09-04",
+     "ordinaryWeek": 22
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-05",
+    "headerDate": "SEPTEMBER 05, 2026",
+    "dayOfWeek": "Saturday",
+    "celebration": {
+     "id": "ordinary_time_22_saturday",
+     "name": "Saturday of the twenty-second week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 22,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "22nd WEEK IN ORDINARY TIME - SATURDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 22,
+     "dayOfWeek": "Saturday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_22_saturday",
+     "availableCelebrationIds": [
+      "ordinary_time_22_saturday",
+      "teresa_of_calcutta_virgin"
+     ],
+     "fixedDate": "09-05",
+     "ordinaryWeek": 22
+    },
+    "optionalMemorials": [
+     {
+      "id": "teresa_of_calcutta_virgin",
+      "name": "Saint Teresa of Calcutta, Virgin",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-09-06",
+    "headerDate": "SEPTEMBER 06, 2026",
+    "dayOfWeek": "Sunday",
+    "celebration": {
+     "id": "ordinary_time_23_sunday",
+     "name": "twenty-third Sunday in Ordinary Time",
+     "rank": "SUNDAY",
+     "rankLabel": "Sunday",
+     "isHolyDayOfObligation": true,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 23,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "23rd SUNDAY IN ORDINARY TIME",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 23,
+     "dayOfWeek": "Sunday",
+     "rank": "SUNDAY",
+     "celebrationId": "ordinary_time_23_sunday",
+     "availableCelebrationIds": [
+      "ordinary_time_23_sunday"
+     ],
+     "fixedDate": "09-06",
+     "ordinaryWeek": 23
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-07",
+    "headerDate": "SEPTEMBER 07, 2026",
+    "dayOfWeek": "Monday",
+    "celebration": {
+     "id": "ordinary_time_23_monday",
+     "name": "Monday of the twenty-third week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 23,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "23rd WEEK IN ORDINARY TIME - MONDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 23,
+     "dayOfWeek": "Monday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_23_monday",
+     "availableCelebrationIds": [
+      "ordinary_time_23_monday"
+     ],
+     "fixedDate": "09-07",
+     "ordinaryWeek": 23
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-08",
+    "headerDate": "SEPTEMBER 08, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "nativity_of_the_blessed_virgin_mary",
+     "name": "The Nativity of the Blessed Virgin Mary",
+     "rank": "FEAST",
+     "rankLabel": "Feast",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 23,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "THE NATIVITY OF THE BLESSED VIRGIN MARY",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 23,
+     "dayOfWeek": "Tuesday",
+     "rank": "FEAST",
+     "celebrationId": "nativity_of_the_blessed_virgin_mary",
+     "availableCelebrationIds": [
+      "nativity_of_the_blessed_virgin_mary"
+     ],
+     "fixedDate": "09-08",
+     "ordinaryWeek": 23
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-09",
+    "headerDate": "SEPTEMBER 09, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "ordinary_time_23_wednesday",
+     "name": "Wednesday of the twenty-third week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 23,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "23rd WEEK IN ORDINARY TIME - WEDNESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 23,
+     "dayOfWeek": "Wednesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_23_wednesday",
+     "availableCelebrationIds": [
+      "ordinary_time_23_wednesday",
+      "peter_claver_priest"
+     ],
+     "fixedDate": "09-09",
+     "ordinaryWeek": 23
+    },
+    "optionalMemorials": [
+     {
+      "id": "peter_claver_priest",
+      "name": "Saint Peter Claver, Priest",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-09-10",
+    "headerDate": "SEPTEMBER 10, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "ordinary_time_23_thursday",
+     "name": "Thursday of the twenty-third week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 23,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "23rd WEEK IN ORDINARY TIME - THURSDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 23,
+     "dayOfWeek": "Thursday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_23_thursday",
+     "availableCelebrationIds": [
+      "ordinary_time_23_thursday"
+     ],
+     "fixedDate": "09-10",
+     "ordinaryWeek": 23
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-11",
+    "headerDate": "SEPTEMBER 11, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "ordinary_time_23_friday",
+     "name": "Friday of the twenty-third week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 23,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "23rd WEEK IN ORDINARY TIME - FRIDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 23,
+     "dayOfWeek": "Friday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_23_friday",
+     "availableCelebrationIds": [
+      "ordinary_time_23_friday"
+     ],
+     "fixedDate": "09-11",
+     "ordinaryWeek": 23
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-12",
+    "headerDate": "SEPTEMBER 12, 2026",
+    "dayOfWeek": "Saturday",
+    "celebration": {
+     "id": "ordinary_time_23_saturday",
+     "name": "Saturday of the twenty-third week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 23,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "23rd WEEK IN ORDINARY TIME - SATURDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 23,
+     "dayOfWeek": "Saturday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_23_saturday",
+     "availableCelebrationIds": [
+      "ordinary_time_23_saturday",
+      "most_holy_name_of_mary"
+     ],
+     "fixedDate": "09-12",
+     "ordinaryWeek": 23
+    },
+    "optionalMemorials": [
+     {
+      "id": "most_holy_name_of_mary",
+      "name": "The Most Holy Name of Mary",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-09-13",
+    "headerDate": "SEPTEMBER 13, 2026",
+    "dayOfWeek": "Sunday",
+    "celebration": {
+     "id": "ordinary_time_24_sunday",
+     "name": "twenty-fourth Sunday in Ordinary Time",
+     "rank": "SUNDAY",
+     "rankLabel": "Sunday",
+     "isHolyDayOfObligation": true,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 24,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "24th SUNDAY IN ORDINARY TIME",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 24,
+     "dayOfWeek": "Sunday",
+     "rank": "SUNDAY",
+     "celebrationId": "ordinary_time_24_sunday",
+     "availableCelebrationIds": [
+      "ordinary_time_24_sunday"
+     ],
+     "fixedDate": "09-13",
+     "ordinaryWeek": 24
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-14",
+    "headerDate": "SEPTEMBER 14, 2026",
+    "dayOfWeek": "Monday",
+    "celebration": {
+     "id": "exaltation_of_the_holy_cross",
+     "name": "The Exaltation of the Holy Cross",
+     "rank": "FEAST",
+     "rankLabel": "Feast",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "RED",
+      "name": "Red",
+      "hex": "#b91c1c"
+     },
+     "colors": [
+      {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 24,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "THE EXALTATION OF THE HOLY CROSS",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 24,
+     "dayOfWeek": "Monday",
+     "rank": "FEAST",
+     "celebrationId": "exaltation_of_the_holy_cross",
+     "availableCelebrationIds": [
+      "exaltation_of_the_holy_cross"
+     ],
+     "fixedDate": "09-14",
+     "ordinaryWeek": 24
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-15",
+    "headerDate": "SEPTEMBER 15, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "our_lady_of_sorrows",
+     "name": "Our Lady of Sorrows",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 24,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "OUR LADY OF SORROWS",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 24,
+     "dayOfWeek": "Tuesday",
+     "rank": "MEMORIAL",
+     "celebrationId": "our_lady_of_sorrows",
+     "availableCelebrationIds": [
+      "our_lady_of_sorrows"
+     ],
+     "fixedDate": "09-15",
+     "ordinaryWeek": 24
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-16",
+    "headerDate": "SEPTEMBER 16, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "cornelius_i_pope_and_cyprian_of_carthage_bishop_martyrs",
+     "name": "Saints Cornelius, Pope, and Cyprian, Bishop, Martyrs",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "RED",
+      "name": "Red",
+      "hex": "#b91c1c"
+     },
+     "colors": [
+      {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 24,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "SAINTS CORNELIUS, POPE, AND CYPRIAN, BISHOP, MARTYRS",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 24,
+     "dayOfWeek": "Wednesday",
+     "rank": "MEMORIAL",
+     "celebrationId": "cornelius_i_pope_and_cyprian_of_carthage_bishop_martyrs",
+     "availableCelebrationIds": [
+      "cornelius_i_pope_and_cyprian_of_carthage_bishop_martyrs"
+     ],
+     "fixedDate": "09-16",
+     "ordinaryWeek": 24
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-17",
+    "headerDate": "SEPTEMBER 17, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "ordinary_time_24_thursday",
+     "name": "Thursday of the twenty-fourth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 24,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "24th WEEK IN ORDINARY TIME - THURSDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 24,
+     "dayOfWeek": "Thursday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_24_thursday",
+     "availableCelebrationIds": [
+      "ordinary_time_24_thursday",
+      "hildegard_of_bingen_abbess",
+      "robert_bellarmine_bishop"
+     ],
+     "fixedDate": "09-17",
+     "ordinaryWeek": 24
+    },
+    "optionalMemorials": [
+     {
+      "id": "hildegard_of_bingen_abbess",
+      "name": "Saint Hildegard of Bingen, Abbess and Doctor of the Church",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     },
+     {
+      "id": "robert_bellarmine_bishop",
+      "name": "Saint Robert Bellarmine, Bishop and Doctor of the Church",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-09-18",
+    "headerDate": "SEPTEMBER 18, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "ordinary_time_24_friday",
+     "name": "Friday of the twenty-fourth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 24,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "24th WEEK IN ORDINARY TIME - FRIDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 24,
+     "dayOfWeek": "Friday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_24_friday",
+     "availableCelebrationIds": [
+      "ordinary_time_24_friday"
+     ],
+     "fixedDate": "09-18",
+     "ordinaryWeek": 24
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-19",
+    "headerDate": "SEPTEMBER 19, 2026",
+    "dayOfWeek": "Saturday",
+    "celebration": {
+     "id": "ordinary_time_24_saturday",
+     "name": "Saturday of the twenty-fourth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 24,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "24th WEEK IN ORDINARY TIME - SATURDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 24,
+     "dayOfWeek": "Saturday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_24_saturday",
+     "availableCelebrationIds": [
+      "ordinary_time_24_saturday",
+      "januarius_i_of_benevento_bishop"
+     ],
+     "fixedDate": "09-19",
+     "ordinaryWeek": 24
+    },
+    "optionalMemorials": [
+     {
+      "id": "januarius_i_of_benevento_bishop",
+      "name": "Saint Januarius, Bishop and Martyr",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-09-20",
+    "headerDate": "SEPTEMBER 20, 2026",
+    "dayOfWeek": "Sunday",
+    "celebration": {
+     "id": "ordinary_time_25_sunday",
+     "name": "twenty-fifth Sunday in Ordinary Time",
+     "rank": "SUNDAY",
+     "rankLabel": "Sunday",
+     "isHolyDayOfObligation": true,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 25,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "25th SUNDAY IN ORDINARY TIME",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 25,
+     "dayOfWeek": "Sunday",
+     "rank": "SUNDAY",
+     "celebrationId": "ordinary_time_25_sunday",
+     "availableCelebrationIds": [
+      "ordinary_time_25_sunday"
+     ],
+     "fixedDate": "09-20",
+     "ordinaryWeek": 25
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-21",
+    "headerDate": "SEPTEMBER 21, 2026",
+    "dayOfWeek": "Monday",
+    "celebration": {
+     "id": "matthew_apostle",
+     "name": "Saint Matthew, Apostle and Evangelist",
+     "rank": "FEAST",
+     "rankLabel": "Feast",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "RED",
+      "name": "Red",
+      "hex": "#b91c1c"
+     },
+     "colors": [
+      {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 25,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "SAINT MATTHEW, APOSTLE AND EVANGELIST",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 25,
+     "dayOfWeek": "Monday",
+     "rank": "FEAST",
+     "celebrationId": "matthew_apostle",
+     "availableCelebrationIds": [
+      "matthew_apostle"
+     ],
+     "fixedDate": "09-21",
+     "ordinaryWeek": 25
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-22",
+    "headerDate": "SEPTEMBER 22, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "ordinary_time_25_tuesday",
+     "name": "Tuesday of the twenty-fifth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 25,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "25th WEEK IN ORDINARY TIME - TUESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 25,
+     "dayOfWeek": "Tuesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_25_tuesday",
+     "availableCelebrationIds": [
+      "ordinary_time_25_tuesday"
+     ],
+     "fixedDate": "09-22",
+     "ordinaryWeek": 25
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-23",
+    "headerDate": "SEPTEMBER 23, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "pius_francesco_forgione_priest",
+     "name": "Saint Pius of Pietrelcina, Priest",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 25,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "SAINT PIUS OF PIETRELCINA, PRIEST",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 25,
+     "dayOfWeek": "Wednesday",
+     "rank": "MEMORIAL",
+     "celebrationId": "pius_francesco_forgione_priest",
+     "availableCelebrationIds": [
+      "pius_francesco_forgione_priest"
+     ],
+     "fixedDate": "09-23",
+     "ordinaryWeek": 25
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-24",
+    "headerDate": "SEPTEMBER 24, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "ordinary_time_25_thursday",
+     "name": "Thursday of the twenty-fifth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 25,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "25th WEEK IN ORDINARY TIME - THURSDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 25,
+     "dayOfWeek": "Thursday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_25_thursday",
+     "availableCelebrationIds": [
+      "ordinary_time_25_thursday"
+     ],
+     "fixedDate": "09-24",
+     "ordinaryWeek": 25
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-25",
+    "headerDate": "SEPTEMBER 25, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "ordinary_time_25_friday",
+     "name": "Friday of the twenty-fifth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 25,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "25th WEEK IN ORDINARY TIME - FRIDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 25,
+     "dayOfWeek": "Friday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_25_friday",
+     "availableCelebrationIds": [
+      "ordinary_time_25_friday"
+     ],
+     "fixedDate": "09-25",
+     "ordinaryWeek": 25
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-26",
+    "headerDate": "SEPTEMBER 26, 2026",
+    "dayOfWeek": "Saturday",
+    "celebration": {
+     "id": "ordinary_time_25_saturday",
+     "name": "Saturday of the twenty-fifth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 25,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "25th WEEK IN ORDINARY TIME - SATURDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 25,
+     "dayOfWeek": "Saturday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_25_saturday",
+     "availableCelebrationIds": [
+      "ordinary_time_25_saturday",
+      "cosmas_of_cilicia_and_damian_of_cilicia_martyrs"
+     ],
+     "fixedDate": "09-26",
+     "ordinaryWeek": 25
+    },
+    "optionalMemorials": [
+     {
+      "id": "cosmas_of_cilicia_and_damian_of_cilicia_martyrs",
+      "name": "Saints Cosmas and Damian, Martyrs",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-09-27",
+    "headerDate": "SEPTEMBER 27, 2026",
+    "dayOfWeek": "Sunday",
+    "celebration": {
+     "id": "ordinary_time_26_sunday",
+     "name": "twenty-sixth Sunday in Ordinary Time",
+     "rank": "SUNDAY",
+     "rankLabel": "Sunday",
+     "isHolyDayOfObligation": true,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 26,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "26th SUNDAY IN ORDINARY TIME",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 26,
+     "dayOfWeek": "Sunday",
+     "rank": "SUNDAY",
+     "celebrationId": "ordinary_time_26_sunday",
+     "availableCelebrationIds": [
+      "ordinary_time_26_sunday"
+     ],
+     "fixedDate": "09-27",
+     "ordinaryWeek": 26
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-28",
+    "headerDate": "SEPTEMBER 28, 2026",
+    "dayOfWeek": "Monday",
+    "celebration": {
+     "id": "lawrence_ruiz_and_companions_martyrs",
+     "name": "Saint Lawrence Ruiz and Companions, Martyrs",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "RED",
+      "name": "Red",
+      "hex": "#b91c1c"
+     },
+     "colors": [
+      {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 26,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "SAINT LAWRENCE RUIZ AND COMPANIONS, MARTYRS",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 26,
+     "dayOfWeek": "Monday",
+     "rank": "MEMORIAL",
+     "celebrationId": "lawrence_ruiz_and_companions_martyrs",
+     "availableCelebrationIds": [
+      "lawrence_ruiz_and_companions_martyrs"
+     ],
+     "fixedDate": "09-28",
+     "ordinaryWeek": 26
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-29",
+    "headerDate": "SEPTEMBER 29, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "michael_gabriel_and_raphael_archangels",
+     "name": "Saints Michael, Gabriel and Raphael, Archangels",
+     "rank": "FEAST",
+     "rankLabel": "Feast",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 26,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "SAINTS MICHAEL, GABRIEL AND RAPHAEL, ARCHANGELS",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 26,
+     "dayOfWeek": "Tuesday",
+     "rank": "FEAST",
+     "celebrationId": "michael_gabriel_and_raphael_archangels",
+     "availableCelebrationIds": [
+      "michael_gabriel_and_raphael_archangels"
+     ],
+     "fixedDate": "09-29",
+     "ordinaryWeek": 26
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-09-30",
+    "headerDate": "SEPTEMBER 30, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "jerome_of_stridon_priest",
+     "name": "Saint Jerome, Priest and Doctor of the Church",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 26,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "SAINT JEROME, PRIEST AND DOCTOR OF THE CHURCH",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 26,
+     "dayOfWeek": "Wednesday",
+     "rank": "MEMORIAL",
+     "celebrationId": "jerome_of_stridon_priest",
+     "availableCelebrationIds": [
+      "jerome_of_stridon_priest"
+     ],
+     "fixedDate": "09-30",
+     "ordinaryWeek": 26
+    },
+    "optionalMemorials": []
+   }
+  ],
+  "2026-10": [
+   {
+    "date": "2026-10-01",
+    "headerDate": "OCTOBER 01, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "therese_of_the_child_jesus_and_the_holy_face_of_lisieux_virgin",
+     "name": "Saint Thérèse of the Child Jesus, Virgin and Doctor of the Church",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 26,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "SAINT THÉRÈSE OF THE CHILD JESUS, VIRGIN AND DOCTOR OF THE CHURCH",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 26,
+     "dayOfWeek": "Thursday",
+     "rank": "MEMORIAL",
+     "celebrationId": "therese_of_the_child_jesus_and_the_holy_face_of_lisieux_virgin",
+     "availableCelebrationIds": [
+      "therese_of_the_child_jesus_and_the_holy_face_of_lisieux_virgin"
+     ],
+     "fixedDate": "10-01",
+     "ordinaryWeek": 26
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-02",
+    "headerDate": "OCTOBER 02, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "holy_guardian_angels",
+     "name": "The Holy Guardian Angels",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 26,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "THE HOLY GUARDIAN ANGELS",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 26,
+     "dayOfWeek": "Friday",
+     "rank": "MEMORIAL",
+     "celebrationId": "holy_guardian_angels",
+     "availableCelebrationIds": [
+      "holy_guardian_angels"
+     ],
+     "fixedDate": "10-02",
+     "ordinaryWeek": 26
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-03",
+    "headerDate": "OCTOBER 03, 2026",
+    "dayOfWeek": "Saturday",
+    "celebration": {
+     "id": "ordinary_time_26_saturday",
+     "name": "Saturday of the twenty-sixth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 26,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "26th WEEK IN ORDINARY TIME - SATURDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 26,
+     "dayOfWeek": "Saturday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_26_saturday",
+     "availableCelebrationIds": [
+      "ordinary_time_26_saturday"
+     ],
+     "fixedDate": "10-03",
+     "ordinaryWeek": 26
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-04",
+    "headerDate": "OCTOBER 04, 2026",
+    "dayOfWeek": "Sunday",
+    "celebration": {
+     "id": "ordinary_time_27_sunday",
+     "name": "twenty-seventh Sunday in Ordinary Time",
+     "rank": "SUNDAY",
+     "rankLabel": "Sunday",
+     "isHolyDayOfObligation": true,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 27,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "27th SUNDAY IN ORDINARY TIME",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 27,
+     "dayOfWeek": "Sunday",
+     "rank": "SUNDAY",
+     "celebrationId": "ordinary_time_27_sunday",
+     "availableCelebrationIds": [
+      "ordinary_time_27_sunday"
+     ],
+     "fixedDate": "10-04",
+     "ordinaryWeek": 27
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-05",
+    "headerDate": "OCTOBER 05, 2026",
+    "dayOfWeek": "Monday",
+    "celebration": {
+     "id": "ordinary_time_27_monday",
+     "name": "Monday of the twenty-seventh week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 27,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "27th WEEK IN ORDINARY TIME - MONDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 27,
+     "dayOfWeek": "Monday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_27_monday",
+     "availableCelebrationIds": [
+      "ordinary_time_27_monday",
+      "faustina_kowalska_virgin"
+     ],
+     "fixedDate": "10-05",
+     "ordinaryWeek": 27
+    },
+    "optionalMemorials": [
+     {
+      "id": "faustina_kowalska_virgin",
+      "name": "Saint Faustina Kowalska, Virgin",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-10-06",
+    "headerDate": "OCTOBER 06, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "ordinary_time_27_tuesday",
+     "name": "Tuesday of the twenty-seventh week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 27,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "27th WEEK IN ORDINARY TIME - TUESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 27,
+     "dayOfWeek": "Tuesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_27_tuesday",
+     "availableCelebrationIds": [
+      "ordinary_time_27_tuesday",
+      "bruno_of_cologne_priest"
+     ],
+     "fixedDate": "10-06",
+     "ordinaryWeek": 27
+    },
+    "optionalMemorials": [
+     {
+      "id": "bruno_of_cologne_priest",
+      "name": "Saint Bruno, Priest",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-10-07",
+    "headerDate": "OCTOBER 07, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "our_lady_of_the_rosary",
+     "name": "Our Lady of the Rosary",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 27,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "OUR LADY OF THE ROSARY",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 27,
+     "dayOfWeek": "Wednesday",
+     "rank": "MEMORIAL",
+     "celebrationId": "our_lady_of_the_rosary",
+     "availableCelebrationIds": [
+      "our_lady_of_the_rosary"
+     ],
+     "fixedDate": "10-07",
+     "ordinaryWeek": 27
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-08",
+    "headerDate": "OCTOBER 08, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "ordinary_time_27_thursday",
+     "name": "Thursday of the twenty-seventh week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 27,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "27th WEEK IN ORDINARY TIME - THURSDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 27,
+     "dayOfWeek": "Thursday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_27_thursday",
+     "availableCelebrationIds": [
+      "ordinary_time_27_thursday"
+     ],
+     "fixedDate": "10-08",
+     "ordinaryWeek": 27
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-09",
+    "headerDate": "OCTOBER 09, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "ordinary_time_27_friday",
+     "name": "Friday of the twenty-seventh week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 27,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "27th WEEK IN ORDINARY TIME - FRIDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 27,
+     "dayOfWeek": "Friday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_27_friday",
+     "availableCelebrationIds": [
+      "ordinary_time_27_friday",
+      "denis_of_paris_bishop_and_companions_martyrs",
+      "john_leonardi_priest",
+      "john_henry_newman_priest"
+     ],
+     "fixedDate": "10-09",
+     "ordinaryWeek": 27
+    },
+    "optionalMemorials": [
+     {
+      "id": "denis_of_paris_bishop_and_companions_martyrs",
+      "name": "Saint Denis, Bishop, and Companions, Martyrs",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     },
+     {
+      "id": "john_leonardi_priest",
+      "name": "Saint John Leonardi, Priest",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     },
+     {
+      "id": "john_henry_newman_priest",
+      "name": "Saint John Henry Newman, Priest and Doctor of the Church",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-10-10",
+    "headerDate": "OCTOBER 10, 2026",
+    "dayOfWeek": "Saturday",
+    "celebration": {
+     "id": "ordinary_time_27_saturday",
+     "name": "Saturday of the twenty-seventh week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 27,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "27th WEEK IN ORDINARY TIME - SATURDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 27,
+     "dayOfWeek": "Saturday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_27_saturday",
+     "availableCelebrationIds": [
+      "ordinary_time_27_saturday"
+     ],
+     "fixedDate": "10-10",
+     "ordinaryWeek": 27
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-11",
+    "headerDate": "OCTOBER 11, 2026",
+    "dayOfWeek": "Sunday",
+    "celebration": {
+     "id": "ordinary_time_28_sunday",
+     "name": "twenty-eighth Sunday in Ordinary Time",
+     "rank": "SUNDAY",
+     "rankLabel": "Sunday",
+     "isHolyDayOfObligation": true,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 28,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "28th SUNDAY IN ORDINARY TIME",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 28,
+     "dayOfWeek": "Sunday",
+     "rank": "SUNDAY",
+     "celebrationId": "ordinary_time_28_sunday",
+     "availableCelebrationIds": [
+      "ordinary_time_28_sunday"
+     ],
+     "fixedDate": "10-11",
+     "ordinaryWeek": 28
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-12",
+    "headerDate": "OCTOBER 12, 2026",
+    "dayOfWeek": "Monday",
+    "celebration": {
+     "id": "ordinary_time_28_monday",
+     "name": "Monday of the twenty-eighth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 28,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "28th WEEK IN ORDINARY TIME - MONDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 28,
+     "dayOfWeek": "Monday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_28_monday",
+     "availableCelebrationIds": [
+      "ordinary_time_28_monday"
+     ],
+     "fixedDate": "10-12",
+     "ordinaryWeek": 28
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-13",
+    "headerDate": "OCTOBER 13, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "ordinary_time_28_tuesday",
+     "name": "Tuesday of the twenty-eighth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 28,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "28th WEEK IN ORDINARY TIME - TUESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 28,
+     "dayOfWeek": "Tuesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_28_tuesday",
+     "availableCelebrationIds": [
+      "ordinary_time_28_tuesday"
+     ],
+     "fixedDate": "10-13",
+     "ordinaryWeek": 28
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-14",
+    "headerDate": "OCTOBER 14, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "ordinary_time_28_wednesday",
+     "name": "Wednesday of the twenty-eighth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 28,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "28th WEEK IN ORDINARY TIME - WEDNESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 28,
+     "dayOfWeek": "Wednesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_28_wednesday",
+     "availableCelebrationIds": [
+      "ordinary_time_28_wednesday",
+      "callistus_i_pope"
+     ],
+     "fixedDate": "10-14",
+     "ordinaryWeek": 28
+    },
+    "optionalMemorials": [
+     {
+      "id": "callistus_i_pope",
+      "name": "Saint Callistus I, Pope and Martyr",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-10-15",
+    "headerDate": "OCTOBER 15, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "teresa_of_jesus_of_avila_virgin",
+     "name": "Saint Teresa of Jesus, Virgin and Doctor of the Church",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 28,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "SAINT TERESA OF JESUS, VIRGIN AND DOCTOR OF THE CHURCH",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 28,
+     "dayOfWeek": "Thursday",
+     "rank": "MEMORIAL",
+     "celebrationId": "teresa_of_jesus_of_avila_virgin",
+     "availableCelebrationIds": [
+      "teresa_of_jesus_of_avila_virgin"
+     ],
+     "fixedDate": "10-15",
+     "ordinaryWeek": 28
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-16",
+    "headerDate": "OCTOBER 16, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "ordinary_time_28_friday",
+     "name": "Friday of the twenty-eighth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 28,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "28th WEEK IN ORDINARY TIME - FRIDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 28,
+     "dayOfWeek": "Friday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_28_friday",
+     "availableCelebrationIds": [
+      "ordinary_time_28_friday",
+      "hedwig_of_silesia_religious",
+      "margaret_mary_alacoque_virgin"
+     ],
+     "fixedDate": "10-16",
+     "ordinaryWeek": 28
+    },
+    "optionalMemorials": [
+     {
+      "id": "hedwig_of_silesia_religious",
+      "name": "Saint Hedwig, Religious",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     },
+     {
+      "id": "margaret_mary_alacoque_virgin",
+      "name": "Saint Margaret Mary Alacoque, Virgin",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-10-17",
+    "headerDate": "OCTOBER 17, 2026",
+    "dayOfWeek": "Saturday",
+    "celebration": {
+     "id": "ignatius_of_antioch_bishop",
+     "name": "Saint Ignatius of Antioch, Bishop and Martyr",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "RED",
+      "name": "Red",
+      "hex": "#b91c1c"
+     },
+     "colors": [
+      {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 28,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_4"
+    },
+    "occasionTitle": "SAINT IGNATIUS OF ANTIOCH, BISHOP AND MARTYR",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 28,
+     "dayOfWeek": "Saturday",
+     "rank": "MEMORIAL",
+     "celebrationId": "ignatius_of_antioch_bishop",
+     "availableCelebrationIds": [
+      "ignatius_of_antioch_bishop"
+     ],
+     "fixedDate": "10-17",
+     "ordinaryWeek": 28
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-18",
+    "headerDate": "OCTOBER 18, 2026",
+    "dayOfWeek": "Sunday",
+    "celebration": {
+     "id": "ordinary_time_29_sunday",
+     "name": "twenty-ninth Sunday in Ordinary Time",
+     "rank": "SUNDAY",
+     "rankLabel": "Sunday",
+     "isHolyDayOfObligation": true,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 29,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "29th SUNDAY IN ORDINARY TIME",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 29,
+     "dayOfWeek": "Sunday",
+     "rank": "SUNDAY",
+     "celebrationId": "ordinary_time_29_sunday",
+     "availableCelebrationIds": [
+      "ordinary_time_29_sunday"
+     ],
+     "fixedDate": "10-18",
+     "ordinaryWeek": 29
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-19",
+    "headerDate": "OCTOBER 19, 2026",
+    "dayOfWeek": "Monday",
+    "celebration": {
+     "id": "ordinary_time_29_monday",
+     "name": "Monday of the twenty-ninth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 29,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "29th WEEK IN ORDINARY TIME - MONDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 29,
+     "dayOfWeek": "Monday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_29_monday",
+     "availableCelebrationIds": [
+      "ordinary_time_29_monday",
+      "john_de_brebeuf_isaac_jogues_priests_and_companions_martyrs",
+      "paul_of_the_cross_priest"
+     ],
+     "fixedDate": "10-19",
+     "ordinaryWeek": 29
+    },
+    "optionalMemorials": [
+     {
+      "id": "john_de_brebeuf_isaac_jogues_priests_and_companions_martyrs",
+      "name": "Saints John de Brébeuf and Isaac Jogues, Priests, and Companions, Martyrs",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     },
+     {
+      "id": "paul_of_the_cross_priest",
+      "name": "Saint Paul of the Cross, Priest",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-10-20",
+    "headerDate": "OCTOBER 20, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "ordinary_time_29_tuesday",
+     "name": "Tuesday of the twenty-ninth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 29,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "29th WEEK IN ORDINARY TIME - TUESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 29,
+     "dayOfWeek": "Tuesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_29_tuesday",
+     "availableCelebrationIds": [
+      "ordinary_time_29_tuesday"
+     ],
+     "fixedDate": "10-20",
+     "ordinaryWeek": 29
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-21",
+    "headerDate": "OCTOBER 21, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "ordinary_time_29_wednesday",
+     "name": "Wednesday of the twenty-ninth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 29,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "29th WEEK IN ORDINARY TIME - WEDNESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 29,
+     "dayOfWeek": "Wednesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_29_wednesday",
+     "availableCelebrationIds": [
+      "ordinary_time_29_wednesday"
+     ],
+     "fixedDate": "10-21",
+     "ordinaryWeek": 29
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-22",
+    "headerDate": "OCTOBER 22, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "ordinary_time_29_thursday",
+     "name": "Thursday of the twenty-ninth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 29,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "29th WEEK IN ORDINARY TIME - THURSDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 29,
+     "dayOfWeek": "Thursday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_29_thursday",
+     "availableCelebrationIds": [
+      "ordinary_time_29_thursday",
+      "john_paul_ii_pope"
+     ],
+     "fixedDate": "10-22",
+     "ordinaryWeek": 29
+    },
+    "optionalMemorials": [
+     {
+      "id": "john_paul_ii_pope",
+      "name": "Saint John Paul II, Pope",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-10-23",
+    "headerDate": "OCTOBER 23, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "ordinary_time_29_friday",
+     "name": "Friday of the twenty-ninth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 29,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "29th WEEK IN ORDINARY TIME - FRIDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 29,
+     "dayOfWeek": "Friday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_29_friday",
+     "availableCelebrationIds": [
+      "ordinary_time_29_friday",
+      "john_of_capistrano_priest"
+     ],
+     "fixedDate": "10-23",
+     "ordinaryWeek": 29
+    },
+    "optionalMemorials": [
+     {
+      "id": "john_of_capistrano_priest",
+      "name": "Saint John of Capistrano, Priest",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-10-24",
+    "headerDate": "OCTOBER 24, 2026",
+    "dayOfWeek": "Saturday",
+    "celebration": {
+     "id": "ordinary_time_29_saturday",
+     "name": "Saturday of the twenty-ninth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 29,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "29th WEEK IN ORDINARY TIME - SATURDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 29,
+     "dayOfWeek": "Saturday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_29_saturday",
+     "availableCelebrationIds": [
+      "ordinary_time_29_saturday",
+      "anthony_mary_claret_bishop"
+     ],
+     "fixedDate": "10-24",
+     "ordinaryWeek": 29
+    },
+    "optionalMemorials": [
+     {
+      "id": "anthony_mary_claret_bishop",
+      "name": "Saint Anthony Mary Claret, Bishop",
+      "rank": "OPTIONAL_MEMORIAL",
+      "rankLabel": "Optional Memorial",
+      "color": {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     }
+    ]
+   },
+   {
+    "date": "2026-10-25",
+    "headerDate": "OCTOBER 25, 2026",
+    "dayOfWeek": "Sunday",
+    "celebration": {
+     "id": "ordinary_time_30_sunday",
+     "name": "thirtieth Sunday in Ordinary Time",
+     "rank": "SUNDAY",
+     "rankLabel": "Sunday",
+     "isHolyDayOfObligation": true,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 30,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "30th SUNDAY IN ORDINARY TIME",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 30,
+     "dayOfWeek": "Sunday",
+     "rank": "SUNDAY",
+     "celebrationId": "ordinary_time_30_sunday",
+     "availableCelebrationIds": [
+      "ordinary_time_30_sunday"
+     ],
+     "fixedDate": "10-25",
+     "ordinaryWeek": 30
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-26",
+    "headerDate": "OCTOBER 26, 2026",
+    "dayOfWeek": "Monday",
+    "celebration": {
+     "id": "ordinary_time_30_monday",
+     "name": "Monday of the thirtieth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 30,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "30th WEEK IN ORDINARY TIME - MONDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 30,
+     "dayOfWeek": "Monday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_30_monday",
+     "availableCelebrationIds": [
+      "ordinary_time_30_monday"
+     ],
+     "fixedDate": "10-26",
+     "ordinaryWeek": 30
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-27",
+    "headerDate": "OCTOBER 27, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "ordinary_time_30_tuesday",
+     "name": "Tuesday of the thirtieth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 30,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "30th WEEK IN ORDINARY TIME - TUESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 30,
+     "dayOfWeek": "Tuesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_30_tuesday",
+     "availableCelebrationIds": [
+      "ordinary_time_30_tuesday"
+     ],
+     "fixedDate": "10-27",
+     "ordinaryWeek": 30
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-28",
+    "headerDate": "OCTOBER 28, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "simon_and_jude_apostles",
+     "name": "Saints Simon and Jude, Apostles",
+     "rank": "FEAST",
+     "rankLabel": "Feast",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "RED",
+      "name": "Red",
+      "hex": "#b91c1c"
+     },
+     "colors": [
+      {
+       "key": "RED",
+       "name": "Red",
+       "hex": "#b91c1c"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 30,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "SAINTS SIMON AND JUDE, APOSTLES",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 30,
+     "dayOfWeek": "Wednesday",
+     "rank": "FEAST",
+     "celebrationId": "simon_and_jude_apostles",
+     "availableCelebrationIds": [
+      "simon_and_jude_apostles"
+     ],
+     "fixedDate": "10-28",
+     "ordinaryWeek": 30
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-29",
+    "headerDate": "OCTOBER 29, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "ordinary_time_30_thursday",
+     "name": "Thursday of the thirtieth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 30,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "30th WEEK IN ORDINARY TIME - THURSDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 30,
+     "dayOfWeek": "Thursday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_30_thursday",
+     "availableCelebrationIds": [
+      "ordinary_time_30_thursday"
+     ],
+     "fixedDate": "10-29",
+     "ordinaryWeek": 30
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-30",
+    "headerDate": "OCTOBER 30, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "ordinary_time_30_friday",
+     "name": "Friday of the thirtieth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 30,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "30th WEEK IN ORDINARY TIME - FRIDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 30,
+     "dayOfWeek": "Friday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_30_friday",
+     "availableCelebrationIds": [
+      "ordinary_time_30_friday"
+     ],
+     "fixedDate": "10-30",
+     "ordinaryWeek": 30
+    },
+    "optionalMemorials": []
+   },
+   {
+    "date": "2026-10-31",
+    "headerDate": "OCTOBER 31, 2026",
+    "dayOfWeek": "Saturday",
+    "celebration": {
+     "id": "ordinary_time_30_saturday",
+     "name": "Saturday of the thirtieth week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 30,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "30th WEEK IN ORDINARY TIME - SATURDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 30,
+     "dayOfWeek": "Saturday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_30_saturday",
+     "availableCelebrationIds": [
+      "ordinary_time_30_saturday"
+     ],
+     "fixedDate": "10-31",
+     "ordinaryWeek": 30
+    },
+    "optionalMemorials": []
+   }
+  ]
+ },
+ "previews": {
+  "2026-09-01": {
+   "date": "2026-09-01",
+   "headerDate": "SEPTEMBER 01, 2026",
+   "fileName": "READINGS-September-01-2026-Tuesday.docx",
+   "occasionTitle": "22nd WEEK IN ORDINARY TIME - TUESDAY",
+   "liturgy": {
+    "date": "2026-09-01",
+    "headerDate": "SEPTEMBER 01, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "ordinary_time_22_tuesday",
+     "name": "Tuesday of the twenty-second week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 22,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "22nd WEEK IN ORDINARY TIME - TUESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 22,
+     "dayOfWeek": "Tuesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_22_tuesday",
+     "availableCelebrationIds": [
+      "ordinary_time_22_tuesday"
+     ],
+     "fixedDate": "09-01",
+     "ordinaryWeek": 22
+    },
+    "optionalMemorials": []
+   },
+   "potfMatch": "season + week + day",
+   "isComplete": true
+  },
+  "2026-09-02": {
+   "date": "2026-09-02",
+   "headerDate": "SEPTEMBER 02, 2026",
+   "fileName": "READINGS-September-02-2026-Wednesday.docx",
+   "occasionTitle": "22nd WEEK IN ORDINARY TIME - WEDNESDAY",
+   "liturgy": {
+    "date": "2026-09-02",
+    "headerDate": "SEPTEMBER 02, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "ordinary_time_22_wednesday",
+     "name": "Wednesday of the twenty-second week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 22,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "22nd WEEK IN ORDINARY TIME - WEDNESDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 22,
+     "dayOfWeek": "Wednesday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_22_wednesday",
+     "availableCelebrationIds": [
+      "ordinary_time_22_wednesday"
+     ],
+     "fixedDate": "09-02",
+     "ordinaryWeek": 22
+    },
+    "optionalMemorials": []
+   },
+   "potfMatch": "season + week + day",
+   "isComplete": true
+  },
+  "2026-09-04": {
+   "date": "2026-09-04",
+   "headerDate": "SEPTEMBER 04, 2026",
+   "fileName": "READINGS-September-04-2026-Friday.docx",
+   "occasionTitle": "22nd WEEK IN ORDINARY TIME - FRIDAY",
+   "liturgy": {
+    "date": "2026-09-04",
+    "headerDate": "SEPTEMBER 04, 2026",
+    "dayOfWeek": "Friday",
+    "celebration": {
+     "id": "ordinary_time_22_friday",
+     "name": "Friday of the twenty-second week of Ordinary Time",
+     "rank": "WEEKDAY",
+     "rankLabel": "Weekday",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "GREEN",
+      "name": "Green",
+      "hex": "#15803d"
+     },
+     "colors": [
+      {
+       "key": "GREEN",
+       "name": "Green",
+       "hex": "#15803d"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 22,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "22nd WEEK IN ORDINARY TIME - FRIDAY",
+    "potfLookup": {
+     "season": "Ordinary Time",
+     "ferialSeason": "Ordinary Time",
+     "week": 22,
+     "dayOfWeek": "Friday",
+     "rank": "WEEKDAY",
+     "celebrationId": "ordinary_time_22_friday",
+     "availableCelebrationIds": [
+      "ordinary_time_22_friday"
+     ],
+     "fixedDate": "09-04",
+     "ordinaryWeek": 22
+    },
+    "optionalMemorials": []
+   },
+   "potfMatch": "season + week + day",
+   "isComplete": true
+  },
+  "2026-09-08": {
+   "date": "2026-09-08",
+   "headerDate": "SEPTEMBER 08, 2026",
+   "fileName": "READINGS-September-08-2026-Tuesday.docx",
+   "occasionTitle": "THE NATIVITY OF THE BLESSED VIRGIN MARY",
+   "liturgy": {
+    "date": "2026-09-08",
+    "headerDate": "SEPTEMBER 08, 2026",
+    "dayOfWeek": "Tuesday",
+    "celebration": {
+     "id": "nativity_of_the_blessed_virgin_mary",
+     "name": "The Nativity of the Blessed Virgin Mary",
+     "rank": "FEAST",
+     "rankLabel": "Feast",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 23,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_3"
+    },
+    "occasionTitle": "THE NATIVITY OF THE BLESSED VIRGIN MARY",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 23,
+     "dayOfWeek": "Tuesday",
+     "rank": "FEAST",
+     "celebrationId": "nativity_of_the_blessed_virgin_mary",
+     "availableCelebrationIds": [
+      "nativity_of_the_blessed_virgin_mary"
+     ],
+     "fixedDate": "09-08",
+     "ordinaryWeek": 23
+    },
+    "optionalMemorials": []
+   },
+   "potfMatch": "celebration",
+   "isComplete": true
+  },
+  "2026-09-23": {
+   "date": "2026-09-23",
+   "headerDate": "SEPTEMBER 23, 2026",
+   "fileName": "READINGS-September-23-2026-Wednesday.docx",
+   "occasionTitle": "SAINT PIUS OF PIETRELCINA, PRIEST",
+   "liturgy": {
+    "date": "2026-09-23",
+    "headerDate": "SEPTEMBER 23, 2026",
+    "dayOfWeek": "Wednesday",
+    "celebration": {
+     "id": "pius_francesco_forgione_priest",
+     "name": "Saint Pius of Pietrelcina, Priest",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 25,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_1"
+    },
+    "occasionTitle": "SAINT PIUS OF PIETRELCINA, PRIEST",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 25,
+     "dayOfWeek": "Wednesday",
+     "rank": "MEMORIAL",
+     "celebrationId": "pius_francesco_forgione_priest",
+     "availableCelebrationIds": [
+      "pius_francesco_forgione_priest"
+     ],
+     "fixedDate": "09-23",
+     "ordinaryWeek": 25
+    },
+    "optionalMemorials": []
+   },
+   "potfMatch": "season + week + day (ferial fallback)",
+   "isComplete": true
+  },
+  "2026-10-01": {
+   "date": "2026-10-01",
+   "headerDate": "OCTOBER 01, 2026",
+   "fileName": "READINGS-October-01-2026-Thursday.docx",
+   "occasionTitle": "SAINT THÉRÈSE OF THE CHILD JESUS, VIRGIN AND DOCTOR OF THE CHURCH",
+   "liturgy": {
+    "date": "2026-10-01",
+    "headerDate": "OCTOBER 01, 2026",
+    "dayOfWeek": "Thursday",
+    "celebration": {
+     "id": "therese_of_the_child_jesus_and_the_holy_face_of_lisieux_virgin",
+     "name": "Saint Thérèse of the Child Jesus, Virgin and Doctor of the Church",
+     "rank": "MEMORIAL",
+     "rankLabel": "Memorial",
+     "isHolyDayOfObligation": false,
+     "color": {
+      "key": "WHITE",
+      "name": "White",
+      "hex": "#d4d4d8"
+     },
+     "colors": [
+      {
+       "key": "WHITE",
+       "name": "White",
+       "hex": "#d4d4d8"
+      }
+     ]
+    },
+    "season": {
+     "key": "ORDINARY_TIME",
+     "name": "Ordinary Time",
+     "week": 26,
+     "period": "LATE_ORDINARY_TIME"
+    },
+    "cycles": {
+     "sunday": "YEAR_A",
+     "weekday": "YEAR_2",
+     "psalterWeek": "WEEK_2"
+    },
+    "occasionTitle": "SAINT THÉRÈSE OF THE CHILD JESUS, VIRGIN AND DOCTOR OF THE CHURCH",
+    "potfLookup": {
+     "season": "Feast",
+     "ferialSeason": "Ordinary Time",
+     "week": 26,
+     "dayOfWeek": "Thursday",
+     "rank": "MEMORIAL",
+     "celebrationId": "therese_of_the_child_jesus_and_the_holy_face_of_lisieux_virgin",
+     "availableCelebrationIds": [
+      "therese_of_the_child_jesus_and_the_holy_face_of_lisieux_virgin"
+     ],
+     "fixedDate": "10-01",
+     "ordinaryWeek": 26
+    },
+    "optionalMemorials": []
+   },
+   "potfMatch": "season + week + day (ferial fallback)",
+   "isComplete": true
+  }
+ },
+ "readings": {
+  "2026-09-01": {
+   "date": "2026-09-01",
+   "source": "demo",
+   "sourceUrl": null,
+   "lectionary": null,
+   "reading1": {
+    "heading": "Reading 1",
+    "citation": "1 Corinthians 2:10b-16",
+    "intro": "A reading from the first Letter of Saint Paul to the Corinthians",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "reading2": null,
+   "psalm": {
+    "heading": "Responsorial Psalm",
+    "citation": "Psalm 145:8-9, 10-11, 12-13ab, 13cd-14",
+    "refrain": "The Lord is just in all his ways.",
+    "refrainAlt": null,
+    "stanzas": [
+     {
+      "0": "The LORD is gracious and merciful,",
+      "1": "slow to anger and of great kindness.",
+      "2": "The LORD is good to all",
+      "3": "and compassionate toward all his works.",
+      "lines": [
+       "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+      ]
+     }
+    ]
+   },
+   "acclamation": {
+    "heading": "Alleluia",
+    "citation": "Luke 7:16",
+    "refrain": "Alleluia, alleluia.",
+    "verse": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "sequence": null,
+   "gospel": {
+    "heading": "Gospel",
+    "citation": "Luke 4:31-37",
+    "intro": "A reading from the holy Gospel according to Luke",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "warnings": [],
+   "alternatives": [],
+   "fromCache": true,
+   "origin": "cache",
+   "attempts": [],
+   "parserVersion": 4
+  },
+  "2026-09-02": {
+   "date": "2026-09-02",
+   "source": "demo",
+   "sourceUrl": null,
+   "lectionary": null,
+   "reading1": {
+    "heading": "Reading 1",
+    "citation": "1 Corinthians 3:1-9",
+    "intro": "A reading from the first Letter of Saint Paul to the Corinthians",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "reading2": null,
+   "psalm": {
+    "heading": "Responsorial Psalm",
+    "citation": "Psalm 33:12-13, 14-15, 20-21",
+    "refrain": "Blessed the people the Lord has chosen to be his own.",
+    "refrainAlt": null,
+    "stanzas": [
+     {
+      "0": "Blessed the nation whose God is the LORD,",
+      "1": "the people he has chosen for his own inheritance.",
+      "2": "From heaven the LORD looks down;",
+      "3": "he sees all mankind.",
+      "lines": [
+       "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+      ]
+     }
+    ]
+   },
+   "acclamation": {
+    "heading": "Alleluia",
+    "citation": "Luke 4:18",
+    "refrain": "Alleluia, alleluia.",
+    "verse": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "sequence": null,
+   "gospel": {
+    "heading": "Gospel",
+    "citation": "Luke 4:38-44",
+    "intro": "A reading from the holy Gospel according to Luke",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "warnings": [],
+   "alternatives": [],
+   "fromCache": true,
+   "origin": "cache",
+   "attempts": [],
+   "parserVersion": 4
+  },
+  "2026-09-04": {
+   "date": "2026-09-04",
+   "source": "demo",
+   "sourceUrl": null,
+   "lectionary": null,
+   "reading1": {
+    "heading": "Reading 1",
+    "citation": "1 Corinthians 4:1-5",
+    "intro": "A reading from the first Letter of Saint Paul to the Corinthians",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "reading2": null,
+   "psalm": {
+    "heading": "Responsorial Psalm",
+    "citation": "Psalm 37:3-4, 5-6, 27-28, 39-40",
+    "refrain": "The salvation of the just comes from the Lord.",
+    "refrainAlt": null,
+    "stanzas": [
+     {
+      "0": "Trust in the LORD and do good,",
+      "1": "that you may dwell in the land and be fed in security.",
+      "2": "Take delight in the LORD,",
+      "3": "and he will grant you your heart’s requests.",
+      "lines": [
+       "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+      ]
+     }
+    ]
+   },
+   "acclamation": {
+    "heading": "Alleluia",
+    "citation": "John 8:12",
+    "refrain": "Alleluia, alleluia.",
+    "verse": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "sequence": null,
+   "gospel": {
+    "heading": "Gospel",
+    "citation": "Luke 5:33-39",
+    "intro": "A reading from the holy Gospel according to Luke",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "warnings": [],
+   "alternatives": [],
+   "fromCache": true,
+   "origin": "cache",
+   "attempts": [],
+   "parserVersion": 4
+  },
+  "2026-09-08": {
+   "date": "2026-09-08",
+   "source": "demo",
+   "sourceUrl": null,
+   "lectionary": null,
+   "reading1": {
+    "heading": "Reading 1",
+    "citation": "Micah 5:1-4a",
+    "intro": "A reading from the Book of the Prophet Micah",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "reading2": null,
+   "psalm": {
+    "heading": "Responsorial Psalm",
+    "citation": "Psalm 13:6ab, 6c",
+    "refrain": "With delight I rejoice in the Lord.",
+    "refrainAlt": null,
+    "stanzas": [
+     {
+      "0": "Though I trusted in your mercy,",
+      "1": "let my heart rejoice in your salvation.",
+      "lines": [
+       "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+      ]
+     }
+    ]
+   },
+   "acclamation": {
+    "heading": "Alleluia",
+    "citation": null,
+    "refrain": "Alleluia, alleluia.",
+    "verse": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "sequence": null,
+   "gospel": {
+    "heading": "Gospel",
+    "citation": "Matthew 1:1-16, 18-23",
+    "intro": "A reading from the holy Gospel according to Matthew",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "warnings": [],
+   "alternatives": [],
+   "fromCache": true,
+   "origin": "cache",
+   "attempts": [],
+   "parserVersion": 4
+  },
+  "2026-09-23": {
+   "date": "2026-09-23",
+   "source": "demo",
+   "sourceUrl": null,
+   "lectionary": null,
+   "reading1": {
+    "heading": "Reading 1",
+    "citation": "Proverbs 30:5-9",
+    "intro": "A reading from the Book of Proverbs",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "reading2": null,
+   "psalm": {
+    "heading": "Responsorial Psalm",
+    "citation": "Psalm 119:29, 72, 89, 101, 104, 163",
+    "refrain": "Your word, O Lord, is a lamp for my feet.",
+    "refrainAlt": null,
+    "stanzas": [
+     {
+      "0": "Remove from me the way of falsehood,",
+      "1": "and favor me with your law.",
+      "lines": [
+       "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+      ]
+     }
+    ]
+   },
+   "acclamation": {
+    "heading": "Alleluia",
+    "citation": "Mark 1:15",
+    "refrain": "Alleluia, alleluia.",
+    "verse": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "sequence": null,
+   "gospel": {
+    "heading": "Gospel",
+    "citation": "Luke 9:1-6",
+    "intro": "A reading from the holy Gospel according to Luke",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "warnings": [],
+   "alternatives": [],
+   "fromCache": true,
+   "origin": "cache",
+   "attempts": [],
+   "parserVersion": 4
+  },
+  "2026-10-01": {
+   "date": "2026-10-01",
+   "source": "demo",
+   "sourceUrl": null,
+   "lectionary": null,
+   "reading1": {
+    "heading": "Reading 1",
+    "citation": "Job 19:21-27",
+    "intro": "A reading from the Book of Job",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "reading2": null,
+   "psalm": {
+    "heading": "Responsorial Psalm",
+    "citation": "Psalm 27:7-8a, 8b-9abc, 13-14",
+    "refrain": "I believe that I shall see the good things of the Lord in the land of the living.",
+    "refrainAlt": null,
+    "stanzas": [
+     {
+      "0": "Hear, O LORD, the sound of my call;",
+      "1": "have pity on me, and answer me.",
+      "2": "Of you my heart speaks; you my glance seeks.",
+      "lines": [
+       "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+      ]
+     }
+    ]
+   },
+   "acclamation": {
+    "heading": "Alleluia",
+    "citation": "Mark 1:15",
+    "refrain": "Alleluia, alleluia.",
+    "verse": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "sequence": null,
+   "gospel": {
+    "heading": "Gospel",
+    "citation": "Luke 10:1-12",
+    "intro": "A reading from the holy Gospel according to Luke",
+    "lines": [
+     "The text of this reading is not included in the demo. Run the real API to fetch it from USCCB."
+    ]
+   },
+   "warnings": [],
+   "alternatives": [],
+   "fromCache": true,
+   "origin": "cache",
+   "attempts": [],
+   "parserVersion": 4
+  }
+ },
+ "settings": {
+  "includeGospel": false,
+  "includeSequence": true,
+  "separatePages": true,
+  "highlightFirstRefrain": true,
+  "repeatPsalmRefrain": true,
+  "firstRefrainUppercase": true,
+  "appendIntentionSuffix": true,
+  "spaceBetweenIntentions": true,
+  "font": "Book Antiqua",
+  "schoolWideIntentions": [],
+  "usePlaceholderPotf": false,
+  "providerOrder": [
+   "usccb",
+   "evangelizo"
+  ]
+ },
+ "defaults": {
+  "includeGospel": false,
+  "includeSequence": true,
+  "separatePages": true,
+  "highlightFirstRefrain": true,
+  "repeatPsalmRefrain": true,
+  "firstRefrainUppercase": true,
+  "appendIntentionSuffix": true,
+  "spaceBetweenIntentions": true,
+  "font": "Book Antiqua",
+  "schoolWideIntentions": [],
+  "usePlaceholderPotf": false,
+  "providerOrder": [
+   "usccb",
+   "evangelizo"
+  ]
+ },
+ "style": {
+  "font": "Book Antiqua",
+  "page": {
+   "width": 12240,
+   "height": 15840,
+   "margins": {
+    "top": 1530,
+    "right": 1170,
+    "bottom": 810,
+    "left": 1440
+   }
+  },
+  "size": {
+   "dateHeader": 31,
+   "liturgyHeader": 31,
+   "sectionLabel": 32,
+   "readingIntro": 32,
+   "readingBody": 28,
+   "responseCue": 28,
+   "psalm": 30,
+   "acclamation": 32,
+   "potfTitle": 28,
+   "potfBody": 28
+  },
+  "color": {
+   "heading": "C00000",
+   "refrainFirst": "C00000",
+   "refrainRepeat": "FF0000",
+   "commentator": "FF0000"
+  },
+  "text": {
+   "liturgyHeader": "LITURGY OF THE WORD",
+   "firstReadingLabel": "FIRST READING",
+   "secondReadingLabel": "SECOND READING",
+   "psalmLabel": "RESPONSORIAL PSALM",
+   "gospelLabel": "GOSPEL",
+   "sequenceLabel": "SEQUENCE",
+   "wordOfTheLord": "The Word of the Lord.",
+   "thanksBeToGod": "All: Thanks be to God.",
+   "gospelOfTheLord": "The Gospel of the Lord.",
+   "praiseToYou": "All: Praise to you, Lord Jesus Christ.",
+   "commentator": "Commentator",
+   "priest": "Priest:",
+   "intentionSuffix": "Let us pray to the Lord.",
+   "responseSeparator": "OR",
+   "amen": "Amen."
+  },
+  "options": {
+   "includeGospel": false,
+   "separatePages": true,
+   "highlightFirstRefrain": "yellow",
+   "includeSequence": true,
+   "repeatPsalmRefrain": true,
+   "firstRefrainUppercase": true,
+   "appendIntentionSuffix": true,
+   "spaceBetweenIntentions": true
+  }
+ },
+ "seasons": [
+  "Advent",
+  "Christmas",
+  "Lent",
+  "Easter",
+  "Ordinary Time",
+  "Feast",
+  "Solemnity"
+ ],
+ "templates": [
+  {
+   "id": 1,
+   "title": "Placeholder - Ordinary Time",
+   "season": "Ordinary Time",
+   "week": null,
+   "dayOfWeek": null,
+   "celebrationId": null,
+   "fixedDate": null,
+   "priestInvitation": "Let us bring our needs before the Lord, who hears every prayer.",
+   "responseOptions": [
+    "Lord, hear our prayer."
+   ],
+   "intentions": [
+    "For the Church, that she may be a sign of hope for all people, let us pray to the Lord.",
+    "For those who govern, that they may serve the common good, let us pray to the Lord.",
+    "For our school community, that our work and study may give glory to God, let us pray to the Lord.",
+    "For the sick and the suffering, that they may know God’s comfort, let us pray to the Lord.",
+    "For the faithful departed, that they may rest in peace, let us pray to the Lord."
+   ],
+   "priestConclusion": "Father, hear the prayers of your people and grant what we ask in faith. Through Christ our Lord.",
+   "notes": null,
+   "origin": "placeholder",
+   "isPlaceholder": true,
+   "isActive": true
+  },
+  {
+   "id": 2,
+   "title": "Placeholder - Advent",
+   "season": "Advent",
+   "week": null,
+   "dayOfWeek": null,
+   "celebrationId": null,
+   "fixedDate": null,
+   "priestInvitation": "As we wait in joyful hope, let us place our needs before the Lord.",
+   "responseOptions": [
+    "Come, Lord Jesus.",
+    "Lord, hear our prayer."
+   ],
+   "intentions": [
+    "For the Church, that she may prepare the way of the Lord, let us pray to the Lord.",
+    "For all who wait in darkness, that they may see the light of Christ, let us pray to the Lord.",
+    "For our community, that this season may find us watchful, let us pray to the Lord.",
+    "For the faithful departed, that they may see the Lord’s face, let us pray to the Lord."
+   ],
+   "priestConclusion": "God of hope, hear the prayers of your waiting people. Through Christ our Lord.",
+   "notes": null,
+   "origin": "placeholder",
+   "isPlaceholder": true,
+   "isActive": true
+  },
+  {
+   "id": 3,
+   "title": "Placeholder - Lent",
+   "season": "Lent",
+   "week": null,
+   "dayOfWeek": null,
+   "celebrationId": null,
+   "fixedDate": null,
+   "priestInvitation": "Turning back to the Lord with all our heart, let us pray.",
+   "responseOptions": [
+    "Lord, hear our prayer.",
+    "Have mercy on us, O Lord."
+   ],
+   "intentions": [
+    "For the Church, that this season may renew her, let us pray to the Lord.",
+    "For those preparing for baptism, that they may be strengthened, let us pray to the Lord.",
+    "For the hungry and the homeless, that we may not pass them by, let us pray to the Lord.",
+    "For ourselves, that our fasting may become mercy, let us pray to the Lord."
+   ],
+   "priestConclusion": "Merciful Father, hear the prayers of your people this season. Through Christ our Lord.",
+   "notes": null,
+   "origin": "placeholder",
+   "isPlaceholder": true,
+   "isActive": true
+  }
+ ],
+ "schedule": [
+  {
+   "date": "2026-09-02",
+   "label": "First Wednesday Mass",
+   "notes": null
+  },
+  {
+   "date": "2026-09-04",
+   "label": "First Friday Mass",
+   "notes": null
+  },
+  {
+   "date": "2026-09-08",
+   "label": "Nativity of the Blessed Virgin Mary",
+   "notes": null
+  }
+ ]
+}

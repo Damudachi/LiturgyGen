@@ -1,8 +1,24 @@
-/** Thin wrapper over the LiturgyGen API. Every call returns parsed JSON or throws
- *  an Error carrying the server's message, which the UI shows verbatim. */
+/**
+ * The real client. Every function here talks to the Express API.
+ *
+ * `mockApi.js` beside this file answers the same calls from a seeded snapshot
+ * so the GitHub Pages build works without a server; `index.js` chooses between
+ * them. Whatever is added here has to be added there too, or demo mode breaks
+ * on a screen that used to work.
+ *
+ * Every call returns parsed JSON or throws an Error carrying the server's own
+ * message, which the UI shows verbatim.
+ *
+ * BASE is empty in the two cases where the client and the API share an origin:
+ * the Vite dev server (which proxies /api) and the desktop build (where Express
+ * serves the built client itself). It is set only for a client deployed apart
+ * from its API, as on GitHub Pages.
+ */
+
+const BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 async function request(path, { method = 'GET', body, signal } = {}) {
-  const response = await fetch(`/api${path}`, {
+  const response = await fetch(`${BASE}/api${path}`, {
     method,
     signal,
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
@@ -33,7 +49,7 @@ async function request(path, { method = 'GET', body, signal } = {}) {
 
 /** Download a binary response as a file, using the server's filename. */
 async function download(path, { method = 'GET', body } = {}) {
-  const response = await fetch(`/api${path}`, {
+  const response = await fetch(`${BASE}/api${path}`, {
     method,
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
     body: body ? JSON.stringify(body) : undefined,
