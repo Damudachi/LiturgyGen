@@ -19,11 +19,12 @@ Boxes are ticked only where the thing is actually true today.
 - [x] **Future commits are anonymous.** `git config user.email` is set, for this
       repository only, to `Damudachi@users.noreply.github.com`. The global
       config is untouched, so other projects are unaffected
-- [ ] **Secret scanning and push protection are not on yet.** Both are free on
-      public repositories. They go on at **Settings → Code security and
-      analysis** the moment this repository is made public, which is the only
-      point at which push protection can still prevent the problem rather than
-      report it
+- [ ] **Secret scanning and push protection are not on.** This repository is
+      already public, so both are available now at **Settings → Code security
+      and analysis** and neither is enabled. Push protection cannot undo
+      anything already pushed; it covers every commit from here. The history
+      audit above is what says nothing has leaked so far — but an audit is a
+      snapshot, not a control
 - [ ] **A name is still in the history.** Commit `db5e93b` added
       `Docu/Sabando_Midterm Reflection Journal.pdf`. Removing a file does not
       remove it from the history, so a surname is reachable by anyone who walks
