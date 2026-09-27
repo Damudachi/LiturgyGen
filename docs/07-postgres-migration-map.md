@@ -136,7 +136,7 @@ dependency order — `db/index.js` first, because everything else imports from i
 
 | Line | What it does | Becomes |
 | --- | --- | --- |
-| 43 | `SELECT * FROM scheduled_masses ${where} ORDER BY date` | `async`; **the `${where}` interpolation has to go**. It is built from `isIsoDate`-validated input today, so it is not injectable, but a query built by string concatenation is the thing a grader looks for first. Build a `$n` list instead |
+| 30–47 | `GET /schedule` — now four fixed query constants (`SCHEDULE_QUERIES`) chosen by which bounds are present | `async`, and rename the `@from`/`@to` bindings to `$1`/`$2`. **The string concatenation is already gone** — it was removed on 27 September rather than left for this migration, because the security announcement calls it out by name. Keep the four-constant shape: it is clearer than a `$n` list built at run time |
 | 52–56 | insert-or-update each date in a transaction | `ON CONFLICT (date) DO UPDATE`; BEGIN/COMMIT |
 | 62 | `DELETE ... WHERE date = ?` then `.changes > 0` | `result.rowCount > 0` |
 

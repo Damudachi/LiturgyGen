@@ -97,6 +97,25 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   before writing a file that goes into a public repository — see case 3 below.
 - **Commit:** (this week's commit)
 
+### 2026-09-27 — Security pass before going public
+
+- **Tool:** Claude (Claude Code)
+- **What I asked for:** audit the repository against the security announcement —
+  secrets in history, workflow leaks, personal data, open write routes — and
+  scaffold a Basic Auth gate **without writing the credential check**, because
+  the brief says to write that myself.
+- **What it gave back:** the audit (clean history, no workflow secrets, but 19
+  unauthenticated write routes and my email on all 18 commits), the middleware
+  wiring with `/healthz` and `/readyz` deliberately outside the gate, nine tests
+  describing the contract, and a rewrite of the one SQL `WHERE` clause that was
+  still built by string concatenation.
+- **What I kept, what I changed, and why:** kept the wiring and the tests. The
+  detail I would not have thought of is that the stub has to **fail closed** —
+  an unimplemented check throws, and the middleware catches it and returns 401
+  rather than calling `next()`. A gate that falls open when it breaks is worse
+  than no gate, because you think you have one.
+- **Commit:** (this week's commit)
+
 ---
 
 ## 2. Where the AI got it wrong
@@ -207,7 +226,26 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   file I rewrote most often, because every new section of the book broke an
   assumption in it.
 
-- **Coming this week:** the PostgreSQL migration and the REST work, which are
+- **File:** `server/src/middleware/basicAuth.js` — the `checkCredentials`
+  function. **Being written now; the file currently holds a stub that fails
+  closed.** This entry gets its commit link when the nine tests in
+  `server/test/basicAuth.test.js` go green, and not before.
+- **What it does and why it is built this way:** decides whether an
+  `Authorization: Basic <base64>` header carries the configured username and
+  password. The surrounding middleware and the tests were scaffolded with
+  assistance; the comparison itself is mine, because the brief says to write it
+  myself. Four things in it are not obvious until you read RFC 7617: the
+  username cannot contain a colon but the **password can**, so it has to split
+  on the first colon only rather than on every colon; the scheme token is
+  case-insensitive, so `basic` has to be accepted as well as `Basic`; a
+  malformed or missing header has to be a rejection rather than a crash; and
+  the comparison has to be constant-time via `crypto.timingSafeEqual`, because
+  `===` on a string returns the moment two bytes differ and that timing
+  difference leaks how much of the password is right. Hashing both sides first
+  is the usual way round `timingSafeEqual` throwing on buffers of unequal
+  length, which would otherwise leak the password's length.
+
+- **Coming next week:** the PostgreSQL migration and the REST work, which are
   mine end to end. `docs/07-postgres-migration-map.md` is the plan; the
   scaffolding (`server/db/pool.js`, `schema.sql`, `seed.sql`) was set up with
   assistance, and every one of the twenty query rewrites is my own.

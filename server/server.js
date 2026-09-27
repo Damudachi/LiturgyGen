@@ -11,6 +11,7 @@
 
 import config from './src/config.js';
 import createApp, { allowedOrigins } from './src/app.js';
+import { gateEnabled } from './src/middleware/basicAuth.js';
 import { getDb } from './src/db/index.js';
 import { seedPotfTemplates } from './src/db/seed.js';
 
@@ -46,4 +47,7 @@ createApp().listen(port, config.host, () => {
   console.log(`  database   : ${config.dbFile}`);
   console.log(`  scrape gap : ${config.usccb.delayMs} ms between requests`);
   console.log(`  CORS allows: ${allowedOrigins().join(', ')}`);
+  // Never print the credential itself - only whether there is one. A log is
+  // the commonest way a secret escapes a service that never committed one.
+  console.log(`  basic auth : ${gateEnabled() ? 'ON' : 'off (set BASIC_AUTH_USER and BASIC_AUTH_PASS to enable)'}`);
 });

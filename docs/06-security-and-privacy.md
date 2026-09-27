@@ -16,6 +16,14 @@ Boxes are ticked only where the thing is actually true today.
       coursework folder, whose filenames carry a surname — is now git-ignored,
       and the two files from it that were tracked have been removed from the
       index. `LICENSE` carries a GitHub handle, not a name
+- [x] **Future commits are anonymous.** `git config user.email` is set, for this
+      repository only, to `Damudachi@users.noreply.github.com`. The global
+      config is untouched, so other projects are unaffected
+- [ ] **Secret scanning and push protection are not on yet.** Both are free on
+      public repositories. They go on at **Settings → Code security and
+      analysis** the moment this repository is made public, which is the only
+      point at which push protection can still prevent the problem rather than
+      report it
 - [ ] **A name is still in the history.** Commit `db5e93b` added
       `Docu/Sabando_Midterm Reflection Journal.pdf`. Removing a file does not
       remove it from the history, so a surname is reachable by anyone who walks
@@ -29,13 +37,21 @@ Boxes are ticked only where the thing is actually true today.
 
 - [x] **Parameterised queries.** Every SQLite call uses `?` or `@named` binding;
       no value is concatenated into SQL
-- [ ] **One SQL string is still built by concatenation.**
-      `server/src/routes/settings.js:43` assembles its `WHERE` clause from a
-      `clauses` array. The values are bound, and both inputs pass `isIsoDate()`
-      before they get near it, so it is not injectable today — but a query built
-      by string-joining is the wrong shape, and it is the first thing a reader
-      distrusts. Being fixed as part of the PostgreSQL migration; see
-      `docs/07-postgres-migration-map.md`
+- [x] **The one concatenated `WHERE` clause is gone.**
+      `server/src/routes/settings.js` used to assemble its clause from an array
+      of fragments. Always with bound values and behind `isIsoDate()`, so never
+      injectable — but the wrong shape, and "it happens to be safe" is a worse
+      property than "it cannot be unsafe". Replaced with four fixed query
+      constants chosen by which bounds are present, so no SQL is built at run
+      time at all
+- [x] **A door in front of the app.** `server/src/middleware/basicAuth.js`,
+      registered before every route in `src/app.js`. Off when
+      `BASIC_AUTH_USER`/`BASIC_AUTH_PASS` are unset, so development and the
+      desktop build are unaffected; on when the host sets both. `/healthz` and
+      `/readyz` stay outside it, because a platform health check cannot
+      authenticate and a gated one gets the service killed. The middleware
+      **fails closed**: a credential check that throws produces a 401, never a
+      pass-through
 - [x] **Server-side validation.** Dates go through `isIsoDate()`, the settings
       route rejects unknown keys outright, and the POTF routes check lengths.
       The React form is for a fast, friendly message; the server is for

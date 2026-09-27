@@ -149,6 +149,8 @@ placeholder values.
 | Name | Where | What it is |
 | --- | --- | --- |
 | `DATABASE_URL` | server | PostgreSQL connection string. Contains a password |
+| `BASIC_AUTH_USER` | server | username for the gate. Unset means the gate is off |
+| `BASIC_AUTH_PASS` | server | password for the gate. Set **both** to switch it on |
 | `CORS_ORIGINS` | server | comma-separated origins allowed to call the API |
 | `NODE_ENV` | server | `production` on a host |
 | `PORT` | server | **set by the host**; do not set it yourself |
@@ -163,12 +165,31 @@ placeholder values.
 Every `VITE_` value is compiled into the built JavaScript and is **public**.
 Never put a key, a password or a connection string in one.
 
+## The door
+
+The deployed app sits behind **HTTP Basic Authentication**. LiturgyGen has no
+user model and does not need one — nobody logs in and nothing belongs to
+anybody — but it does have nineteen write routes, and `DELETE /api/potf/:id`
+removes a prayer somebody transcribed by hand out of a printed book. An open
+DELETE on a public URL gets found by a scanner, not by a person.
+
+`server/src/middleware/basicAuth.js` is registered before every route, so it
+covers all of them. Two things sit outside it on purpose: `/healthz` and
+`/readyz`, because a platform health check cannot authenticate and a gated one
+gets the service marked unhealthy and killed. Neither leaks anything.
+
+The gate is **off** when `BASIC_AUTH_USER` and `BASIC_AUTH_PASS` are unset, so
+local development and the desktop build are unaffected, and **on** when a host
+sets both. It fails closed: a credential check that throws produces a 401, never
+a pass-through. The credentials live in the host's settings panel and are never
+in this repository.
+
 ## The API
 
 | Method | Path | What it does |
 | --- | --- | --- |
-| `GET` | `/healthz` | is the process alive |
-| `GET` | `/readyz` | is the database reachable |
+| `GET` | `/healthz` | is the process alive — **outside the gate** |
+| `GET` | `/readyz` | is the database reachable — **outside the gate** |
 | `GET` | `/api/calendar/month/:year/:month` | the liturgical calendar for a month |
 | `GET` | `/api/calendar/day/:date` | one liturgical day |
 | `POST` | `/api/calendar/expand` | expand a month plus a filter into a list of dates |

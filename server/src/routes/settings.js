@@ -27,20 +27,31 @@ router.put('/', (req, res, next) => {
  * Scheduled Masses - the office's own list of dates a batch can be built from
  * ------------------------------------------------------------------ */
 
+/**
+ * The saved Mass schedule, optionally bounded by ?from= and ?to=.
+ *
+ * This used to assemble its WHERE clause by joining strings. The values were
+ * always bound and both inputs were validated by isIsoDate() first, so it was
+ * never injectable - but a query built by concatenation is the shape a reader
+ * has to stop and verify, and "it happens to be safe" is a worse property than
+ * "it cannot be unsafe". Four fixed queries, chosen by which bounds are
+ * present, and no SQL is built at run time at all.
+ */
+const SCHEDULE_QUERIES = {
+  none: 'SELECT * FROM scheduled_masses ORDER BY date',
+  from: 'SELECT * FROM scheduled_masses WHERE date >= @from ORDER BY date',
+  to: 'SELECT * FROM scheduled_masses WHERE date <= @to ORDER BY date',
+  both: 'SELECT * FROM scheduled_masses WHERE date >= @from AND date <= @to ORDER BY date',
+};
+
 router.get('/schedule', (req, res) => {
-  const { from, to } = req.query;
-  const clauses = [];
-  const params = {};
-  if (isIsoDate(from)) {
-    clauses.push('date >= @from');
-    params.from = from;
-  }
-  if (isIsoDate(to)) {
-    clauses.push('date <= @to');
-    params.to = to;
-  }
-  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-  const rows = getDb().prepare(`SELECT * FROM scheduled_masses ${where} ORDER BY date`).all(params);
+  const from = isIsoDate(req.query.from) ? req.query.from : null;
+  const to = isIsoDate(req.query.to) ? req.query.to : null;
+
+  const key = from && to ? 'both' : from ? 'from' : to ? 'to' : 'none';
+  const params = { ...(from && { from }), ...(to && { to }) };
+
+  const rows = getDb().prepare(SCHEDULE_QUERIES[key]).all(params);
   res.json({ scheduled: rows });
 });
 

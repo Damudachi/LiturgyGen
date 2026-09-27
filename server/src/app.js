@@ -19,6 +19,7 @@ import batchRoutes from './routes/batch.js';
 import potfRoutes from './routes/potf.js';
 import settingsRoutes from './routes/settings.js';
 import { checkDatabase } from './db/index.js';
+import basicAuth, { gateEnabled } from './middleware/basicAuth.js';
 
 /**
  * CORS goes on before the routes: middleware registered after a route never
@@ -65,6 +66,18 @@ export function createApp() {
       res.status(503).json({ ok: false, db: 'down' });
     }
   });
+
+  /**
+   * The door. Everything below this line is behind it; everything above -
+   * /healthz and /readyz - is deliberately not, because a host's health check
+   * cannot authenticate and a gated one gets the service marked unhealthy and
+   * killed. Neither leaks anything: one says the process is alive, the other
+   * says whether the database answered.
+   *
+   * Off when BASIC_AUTH_USER and BASIC_AUTH_PASS are unset, so development and
+   * the desktop build are unaffected. See src/middleware/basicAuth.js.
+   */
+  app.use(basicAuth({ realm: 'LiturgyGen' }));
 
   /** Kept for the client's own boot check, which reports the live settings. */
   app.get('/api/health', (_req, res) => {
