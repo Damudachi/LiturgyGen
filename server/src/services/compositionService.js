@@ -41,9 +41,14 @@ export async function buildDay(iso, options = {}) {
     extraIntentions = null,
     occasionTitle = null,
     potfTitle = null,
-    settings = getSettings(),
+    settings: suppliedSettings = null,
     offline = false,
   } = options;
+
+  // `settings = await getSettings()` cannot be a default parameter, so the
+  // fetch moved into the body. Callers that already have the settings still
+  // pass them and save the round trip.
+  const settings = suppliedSettings ?? (await getSettings());
 
   const liturgy = await getLiturgicalDay(iso);
 
@@ -51,7 +56,7 @@ export async function buildDay(iso, options = {}) {
   let readingsError = null;
   try {
     if (offline) {
-      readings = peekReadings(iso, { providers });
+      readings = await peekReadings(iso, { providers });
       if (!readings) {
         const err = new Error('The readings for this day have not been fetched yet.');
         err.code = 'NOT_FETCHED';
@@ -81,7 +86,7 @@ export async function buildDay(iso, options = {}) {
     if (template) {
       potfMatch = 'chosen manually';
     } else {
-      const resolved = resolveForDay(liturgy.potfLookup, {
+      const resolved = await resolveForDay(liturgy.potfLookup, {
         allowPlaceholders: Boolean(settings.usePlaceholderPotf),
       });
       potfMatch = resolved.matchedBy;
@@ -141,8 +146,14 @@ export async function checkDay(iso, options = {}) {
   };
 }
 
-/** Style overrides for docxService, derived from saved settings. */
-export function styleFromSettings(settings = getSettings(), extra = {}) {
+/**
+ * Style overrides for docxService, derived from saved settings.
+ *
+ * `settings` used to default to `getSettings()`. That is now async and a
+ * default parameter cannot await, so it is required. Every caller already had
+ * the settings in hand, so nothing needed a new fetch.
+ */
+export function styleFromSettings(settings, extra = {}) {
   return {
     font: settings.font,
     options: {

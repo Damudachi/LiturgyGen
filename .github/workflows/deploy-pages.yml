@@ -76,10 +76,8 @@ jobs:
       # This repository is one npm workspace, so the install happens at the root
       # and there is no client/package-lock.json to install from.
       #
-      # better-sqlite3 is still in the server's dependencies while the
-      # PostgreSQL migration is in progress, and it has no prebuild for every
-      # runner. The client build does not need it, so the workspace install is
-      # limited to the client.
+      # The client build does not need the server's dependencies, so the
+      # workspace install is limited to the client.
       - if: steps.check.outputs.ready == 'true'
         run: npm ci --workspace client --include-workspace-root
 

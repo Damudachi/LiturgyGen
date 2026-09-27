@@ -1,15 +1,19 @@
 import { Router } from 'express';
-import { DEFAULT_SETTINGS, getDb, getSettings, setSettings } from '../db/index.js';
+import { DEFAULT_SETTINGS, getSettings, isoFromDb, query, setSettings, withTransaction } from '../db/index.js';
 import { isIsoDate, sortUnique } from '../lib/dates.js';
 import { DEFAULT_STYLE } from '../services/docxService.js';
 
 const router = Router();
 
-router.get('/', (_req, res) => {
-  res.json({ settings: getSettings(), defaults: DEFAULT_SETTINGS, style: DEFAULT_STYLE });
+router.get('/', async (_req, res, next) => {
+  try {
+    res.json({ settings: await getSettings(), defaults: DEFAULT_SETTINGS, style: DEFAULT_STYLE });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.put('/', (req, res, next) => {
+router.put('/', async (req, res, next) => {
   try {
     const patch = req.body || {};
     const allowed = Object.keys(DEFAULT_SETTINGS);
@@ -17,7 +21,7 @@ router.put('/', (req, res, next) => {
     if (unknown.length) {
       return res.status(400).json({ error: `Unknown setting(s): ${unknown.join(', ')}` });
     }
-    res.json({ settings: setSettings(patch) });
+    res.json({ settings: await setSettings(patch) });
   } catch (error) {
     next(error);
   }
@@ -38,40 +42,62 @@ router.put('/', (req, res, next) => {
  * present, and no SQL is built at run time at all.
  */
 const SCHEDULE_QUERIES = {
-  none: 'SELECT * FROM scheduled_masses ORDER BY date',
-  from: 'SELECT * FROM scheduled_masses WHERE date >= @from ORDER BY date',
-  to: 'SELECT * FROM scheduled_masses WHERE date <= @to ORDER BY date',
-  both: 'SELECT * FROM scheduled_masses WHERE date >= @from AND date <= @to ORDER BY date',
+  none: { text: 'SELECT * FROM scheduled_masses ORDER BY date', values: () => [] },
+  from: { text: 'SELECT * FROM scheduled_masses WHERE date >= $1 ORDER BY date', values: (f) => [f] },
+  to: { text: 'SELECT * FROM scheduled_masses WHERE date <= $1 ORDER BY date', values: (_f, t) => [t] },
+  both: {
+    text: 'SELECT * FROM scheduled_masses WHERE date >= $1 AND date <= $2 ORDER BY date',
+    values: (f, t) => [f, t],
+  },
 };
 
-router.get('/schedule', (req, res) => {
+router.get('/schedule', async (req, res, next) => {
   const from = isIsoDate(req.query.from) ? req.query.from : null;
   const to = isIsoDate(req.query.to) ? req.query.to : null;
+  const chosen = SCHEDULE_QUERIES[from && to ? 'both' : from ? 'from' : to ? 'to' : 'none'];
 
-  const key = from && to ? 'both' : from ? 'from' : to ? 'to' : 'none';
-  const params = { ...(from && { from }), ...(to && { to }) };
-
-  const rows = getDb().prepare(SCHEDULE_QUERIES[key]).all(params);
-  res.json({ scheduled: rows });
+  try {
+    const { rows } = await query(chosen.text, chosen.values(from, to));
+    // `date` is a DATE column. isoFromDb keeps it a plain 'YYYY-MM-DD' string
+    // all the way out to the client, which is what every other date in this
+    // API already is.
+    res.json({ scheduled: rows.map((row) => ({ ...row, date: isoFromDb(row.date) })) });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.post('/schedule', (req, res) => {
+router.post('/schedule', async (req, res, next) => {
   const { dates, label = null, notes = null } = req.body || {};
   const list = sortUnique(Array.isArray(dates) ? dates : [dates]).filter(isIsoDate);
   if (!list.length) return res.status(400).json({ error: 'Provide one or more dates as YYYY-MM-DD.' });
 
-  const statement = getDb().prepare(`
-    INSERT INTO scheduled_masses (date, label, notes) VALUES (?, ?, ?)
-    ON CONFLICT(date) DO UPDATE SET label = excluded.label, notes = excluded.notes
-  `);
-  getDb().transaction(() => list.forEach((date) => statement.run(date, label, notes)))();
-  res.status(201).json({ added: list });
+  try {
+    // All the dates or none of them. `ON CONFLICT ... DO UPDATE` is the same
+    // syntax PostgreSQL and SQLite share, so this clause ported unchanged.
+    await withTransaction(async (client) => {
+      for (const date of list) {
+        await client.query(
+          `INSERT INTO scheduled_masses (date, label, notes) VALUES ($1, $2, $3)
+           ON CONFLICT (date) DO UPDATE SET label = excluded.label, notes = excluded.notes`,
+          [date, label, notes],
+        );
+      }
+    });
+    res.status(201).json({ added: list });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.delete('/schedule/:date', (req, res) => {
+router.delete('/schedule/:date', async (req, res, next) => {
   if (!isIsoDate(req.params.date)) return res.status(400).json({ error: 'Date must be YYYY-MM-DD.' });
-  const result = getDb().prepare('DELETE FROM scheduled_masses WHERE date = ?').run(req.params.date);
-  res.json({ deleted: result.changes > 0 });
+  try {
+    const { rowCount } = await query('DELETE FROM scheduled_masses WHERE date = $1', [req.params.date]);
+    res.json({ deleted: rowCount > 0 });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;

@@ -12,11 +12,33 @@
 import config from './src/config.js';
 import createApp, { allowedOrigins } from './src/app.js';
 import { gateEnabled } from './src/middleware/basicAuth.js';
-import { getDb } from './src/db/index.js';
+import { checkDatabase } from './src/db/index.js';
 import { seedPotfTemplates } from './src/db/seed.js';
 
-getDb();
-const seeded = seedPotfTemplates();
+/** Host and database name from DATABASE_URL, with the password left out. */
+function databaseLabel() {
+  try {
+    const url = new URL(process.env.DATABASE_URL);
+    return `${url.host}${url.pathname}`;
+  } catch {
+    return 'not configured';
+  }
+}
+
+/*
+ * Fail here rather than on the first request. `npm run db:schema` has to have
+ * been run against DATABASE_URL at least once; there is no migrations array in
+ * JavaScript any more, so the process does not create its own tables.
+ */
+try {
+  await checkDatabase();
+} catch (error) {
+  console.error(`Cannot reach the database: ${error.message}`);
+  console.error('Check DATABASE_URL, and run `npm run db:reset` if the schema has never been applied.');
+  process.exit(1);
+}
+
+const seeded = await seedPotfTemplates();
 if (seeded.inserted) {
   console.log(`Seeded ${seeded.inserted} Prayers of the Faithful templates.`);
 }
@@ -44,7 +66,9 @@ const port = Number(process.env.PORT || config.port);
 createApp().listen(port, config.host, () => {
   console.log(`LiturgyGen API listening on http://localhost:${port}`);
   console.log(`  calendar   : ${config.calendar.particularCalendar}`);
-  console.log(`  database   : ${config.dbFile}`);
+  // The host, never the credentials. A connection string in a log is a
+  // connection string in whatever collects that log.
+  console.log(`  database   : ${databaseLabel()}`);
   console.log(`  scrape gap : ${config.usccb.delayMs} ms between requests`);
   console.log(`  CORS allows: ${allowedOrigins().join(', ')}`);
   // Never print the credential itself - only whether there is one. A log is

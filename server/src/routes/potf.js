@@ -22,11 +22,11 @@ router.post('/parse', (req, res, next) => {
 });
 
 /** Parse a typed page and save it against the day the office chose for it. */
-router.post('/import', (req, res, next) => {
+router.post('/import', async (req, res, next) => {
   try {
     const body = req.body || {};
     const parsed = parseOrilloPage(body.text);
-    const template = potfService.createTemplate({
+    const template = await potfService.createTemplate({
       title: body.title || parsed.title || 'Imported prayer',
       season: body.season,
       week: body.week,
@@ -46,10 +46,10 @@ router.post('/import', (req, res, next) => {
   }
 });
 
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     res.json({
-      templates: potfService.listTemplates({
+      templates: await potfService.listTemplates({
         season: req.query.season,
         week: req.query.week,
         dayOfWeek: req.query.dayOfWeek,
@@ -67,8 +67,9 @@ router.get('/resolve/:date', async (req, res, next) => {
   try {
     if (!isIsoDate(req.params.date)) return res.status(400).json({ error: 'Date must be YYYY-MM-DD.' });
     const liturgy = await getLiturgicalDay(req.params.date);
-    const resolved = potfService.resolveForDay(liturgy.potfLookup, {
-      allowPlaceholders: Boolean(getSettings().usePlaceholderPotf),
+    const settings = await getSettings();
+    const resolved = await potfService.resolveForDay(liturgy.potfLookup, {
+      allowPlaceholders: Boolean(settings.usePlaceholderPotf),
     });
     res.json({
       date: req.params.date,
@@ -82,9 +83,9 @@ router.get('/resolve/:date', async (req, res, next) => {
   }
 });
 
-router.get('/:id', (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
   try {
-    const template = potfService.getTemplate(Number(req.params.id));
+    const template = await potfService.getTemplate(Number(req.params.id));
     if (!template) return res.status(404).json({ error: 'No such template.' });
     res.json(template);
   } catch (error) {
@@ -92,33 +93,33 @@ router.get('/:id', (req, res, next) => {
   }
 });
 
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
-    res.status(201).json(potfService.createTemplate(req.body || {}));
+    res.status(201).json(await potfService.createTemplate(req.body || {}));
   } catch (error) {
     next(error);
   }
 });
 
-router.put('/:id', (req, res, next) => {
+router.put('/:id', async (req, res, next) => {
   try {
-    res.json(potfService.updateTemplate(Number(req.params.id), req.body || {}));
+    res.json(await potfService.updateTemplate(Number(req.params.id), req.body || {}));
   } catch (error) {
     next(error);
   }
 });
 
-router.post('/:id/duplicate', (req, res, next) => {
+router.post('/:id/duplicate', async (req, res, next) => {
   try {
-    res.status(201).json(potfService.duplicateTemplate(Number(req.params.id)));
+    res.status(201).json(await potfService.duplicateTemplate(Number(req.params.id)));
   } catch (error) {
     next(error);
   }
 });
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
   try {
-    const deleted = potfService.deleteTemplate(Number(req.params.id));
+    const deleted = await potfService.deleteTemplate(Number(req.params.id));
     if (!deleted) return res.status(404).json({ error: 'No such template.' });
     res.json({ deleted: true });
   } catch (error) {

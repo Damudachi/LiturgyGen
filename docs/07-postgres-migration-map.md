@@ -1,11 +1,18 @@
 # The SQLite to PostgreSQL migration map
 
-LiturgyGen currently runs on **better-sqlite3**. It is moving to **PostgreSQL**.
-This file is the working list: every place that touches the database, what it
-does now, and what it becomes. It exists so the migration is a list of small
-mechanical changes rather than an afternoon of guessing.
+> **Status: done.** LiturgyGen runs on **PostgreSQL**. `better-sqlite3` is out
+> of `server/package.json`, out of the Dockerfile, and out of CI. All 20 call
+> sites across the five files below are converted, 112 tests pass, and the whole
+> API has been exercised end to end against the real `db/schema.sql`.
+>
+> This file is kept as the record of what changed and why, because it is the
+> explanation of the diff. The tables below describe the work as it was planned;
+> the notes in each section say how it actually went.
 
-The ground is already in place and unused:
+LiturgyGen used to run on **better-sqlite3**. This file was the working list:
+every place that touched the database, what it did, and what it became.
+
+The ground it landed on:
 
 | File | What it is |
 | --- | --- |
@@ -196,7 +203,68 @@ first, because nothing depends on them until the day of the switch.
 
 ---
 
-## Order to do it in
+## What the migration actually turned up
+
+Five things that were not on the plan.
+
+**1. Dates were a live bug waiting to happen.** `node-postgres` parses a `DATE`
+into `new Date(y, m-1, d)` — **local** midnight. The API host runs UTC and the
+office is UTC+8, so a date read back and re-formatted would have landed a day
+early, and for a liturgical calendar that means printing Tuesday's readings for
+Wednesday's Mass. Fixed at the source with one line in `src/db/index.js`:
+
+```js
+pg.types.setTypeParser(1082, (value) => value)   // 1082 = DATE
+```
+
+A `DATE` has no time in it, so no timezone may be applied to one. `isoFromDb()`
+handles the belt-and-braces case and is tested.
+
+**2. `LIKE` is case-sensitive in PostgreSQL and was not in SQLite.** Searching
+the prayer library for `advent` silently stopped finding `Advent`. Now `ILIKE`,
+with a test.
+
+**3. `intentions LIKE ...` could not work at all any more.** It is JSONB now, so
+search casts it: `intentions::text ILIKE $n`.
+
+**4. Two `IS NOT NULL AND col = value` guards were redundant** and had been
+since they were written — `NULL = anything` is NULL, never true, so the
+comparison already excludes null rows. Removed from the celebration and
+calendar-date rules.
+
+**5. The seeder's null-safe match needed rewriting.** SQLite's `week IS @week`
+is PostgreSQL's `IS NOT DISTINCT FROM`, which pg-mem cannot parse, so it is
+written longhand as `(week = $2 OR (week IS NULL AND $2::int IS NULL))` —
+plain SQL that both understand. Without a null-safe match every seeded row looks
+new on every run and duplicates itself, because most of these keys are NULL most
+of the time.
+
+## How it is tested
+
+`server/test/postgres.test.js`, 26 tests, plus the converted `potf.test.js` and
+`check.test.js`. They run against **pg-mem**, an in-process PostgreSQL, loading
+the real `server/db/schema.sql` — so the tests exercise the schema that ships
+rather than a mock of it. No Docker, no database, nothing to install in CI.
+
+Two honest limits:
+
+- **pg-mem ignores `ROLLBACK`.** A rolled-back INSERT is still there afterwards,
+  so the one thing only a real server can confirm is that a failing transaction
+  actually undoes its work. What *is* tested is the part that is ours: that
+  `withTransaction` issues BEGIN / work / COMMIT or ROLLBACK in the right order
+  and **always releases the client**, because a client that is never released is
+  a connection the pool never gets back and a free tier allows about five.
+- **Two builtins are registered by hand** in `test/helpers/pgMem.js` (`text ~
+  text` and `char_length`) because pg-mem lacks them. If a test passes only
+  because of one of those, that is a bug in the test.
+
+## What this cost
+
+The desktop build. `better-sqlite3` is gone, so the installer no longer has a
+database it can bundle. The web deployment is the primary artifact now and the
+desktop build is on hold — named here rather than discovered later.
+
+## Order it was done in
 
 1. `docker compose up -d db`, `npm run db:reset`, confirm `/readyz` answers `db: up`.
 2. `db/index.js`: settings only. It is two functions and the whole app boots on it.

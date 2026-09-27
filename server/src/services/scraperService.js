@@ -16,7 +16,7 @@ import path from 'node:path';
 import config from '../config.js';
 import { assertIsoDate } from '../lib/dates.js';
 import { auditReadings, emptyReadings, isComplete } from '../lib/readingsShape.js';
-import { getDb, getSettings } from '../db/index.js';
+import { getSettings, query } from '../db/index.js';
 import usccbProvider from './providers/usccbProvider.js';
 import evangelizoProvider from './providers/evangelizoProvider.js';
 
@@ -115,17 +115,20 @@ export function clearCache(iso = null) {
  * Manual overrides
  * ------------------------------------------------------------------ */
 
-export function getOverride(iso) {
-  const row = getDb().prepare('SELECT payload, source, updated_at FROM readings_overrides WHERE date = ?').get(iso);
-  if (!row) return null;
-  try {
-    const payload = JSON.parse(row.payload);
-    payload.source = row.source || 'manual';
-    payload.overriddenAt = row.updated_at;
-    return payload;
-  } catch {
-    return null;
-  }
+/**
+ * `payload` is JSONB, so the driver returns the object itself. The SQLite
+ * version stored JSON in a TEXT column and had to JSON.parse it inside a
+ * try/catch against a row that might hold something unparseable; a JSONB column
+ * cannot hold invalid JSON, so that whole branch is gone.
+ */
+export async function getOverride(iso) {
+  const { rows } = await query(
+    'SELECT payload, source, updated_at FROM readings_overrides WHERE date = $1',
+    [iso],
+  );
+  if (!rows.length) return null;
+  const [row] = rows;
+  return { ...row.payload, source: row.source || 'manual', overriddenAt: row.updated_at };
 }
 
 /**
@@ -137,7 +140,7 @@ export async function saveOverride(iso, patch, { merge = true } = {}) {
   let payload = patch;
 
   if (merge) {
-    const base = getOverride(iso) || readParsedCache(iso) || emptyReadings(iso, 'manual');
+    const base = (await getOverride(iso)) || readParsedCache(iso) || emptyReadings(iso, 'manual');
     payload = { ...base, ...patch, date: iso };
     // Merge one level into the section objects so a caller can send just
     // { psalm: { refrain: "..." } } without wiping the verses.
@@ -150,20 +153,21 @@ export async function saveOverride(iso, patch, { merge = true } = {}) {
   payload.source = payload.source === 'manual' ? 'manual' : `${payload.source || 'unknown'}+manual`;
   payload.warnings = auditReadings(payload);
 
-  getDb()
-    .prepare(
-      `INSERT INTO readings_overrides (date, payload, source, updated_at)
-       VALUES (@date, @payload, @source, datetime('now'))
-       ON CONFLICT(date) DO UPDATE SET
-         payload = excluded.payload, source = excluded.source, updated_at = datetime('now')`,
-    )
-    .run({ date: iso, payload: JSON.stringify(payload), source: payload.source });
+  await query(
+    `INSERT INTO readings_overrides (date, payload, source, updated_at)
+     VALUES ($1, $2::jsonb, $3, now())
+     ON CONFLICT (date) DO UPDATE SET
+       payload = excluded.payload, source = excluded.source, updated_at = now()`,
+    [iso, JSON.stringify(payload), payload.source],
+  );
 
   return payload;
 }
 
-export function deleteOverride(iso) {
-  return getDb().prepare('DELETE FROM readings_overrides WHERE date = ?').run(iso).changes > 0;
+/** `.changes` became `rowCount`. */
+export async function deleteOverride(iso) {
+  const { rowCount } = await query('DELETE FROM readings_overrides WHERE date = $1', [iso]);
+  return rowCount > 0;
 }
 
 /**
@@ -189,8 +193,8 @@ export async function importFromHtml(iso, html) {
  * Fetching
  * ------------------------------------------------------------------ */
 
-function resolveProviderOrder(requested) {
-  const configured = requested || getSettings().providerOrder || ['usccb'];
+async function resolveProviderOrder(requested) {
+  const configured = requested || (await getSettings()).providerOrder || ['usccb'];
   const order = configured.filter((name) => PROVIDERS[name]);
   return order.length ? order : ['usccb'];
 }
@@ -204,7 +208,7 @@ export async function getReadings(iso, options = {}) {
   const { force = false, providers = null, useCache = true, useOverride = true } = options;
 
   if (useOverride) {
-    const override = getOverride(iso);
+    const override = await getOverride(iso);
     if (override) {
       override.warnings = auditReadings(override);
       override.fromCache = true;
@@ -213,7 +217,7 @@ export async function getReadings(iso, options = {}) {
     }
   }
 
-  const order = resolveProviderOrder(providers);
+  const order = await resolveProviderOrder(providers);
   const attempts = [];
 
   /**
@@ -279,9 +283,9 @@ export async function getReadings(iso, options = {}) {
  * `refetchable` marks a partial copy from the fallback feed: getReadings would
  * go back to the preferred source for it, so fetching again may fill the gaps.
  */
-export function peekReadings(iso, { providers = null } = {}) {
+export async function peekReadings(iso, { providers = null } = {}) {
   assertIsoDate(iso);
-  const override = getOverride(iso);
+  const override = await getOverride(iso);
   if (override) {
     return { ...override, warnings: auditReadings(override), origin: 'override', refetchable: false };
   }
@@ -291,7 +295,7 @@ export function peekReadings(iso, { providers = null } = {}) {
     ...cached,
     warnings: auditReadings(cached),
     origin: 'cache',
-    refetchable: !canServeFromCache(cached, resolveProviderOrder(providers)[0]),
+    refetchable: !canServeFromCache(cached, (await resolveProviderOrder(providers))[0]),
   };
 }
 
@@ -302,8 +306,8 @@ export function peekReadings(iso, { providers = null } = {}) {
  * Batch generation uses this to hold between dates rather than spend the rest of
  * the run on the fallback feed - see batchService.
  */
-export function preferredCooldownMs(requested = null) {
-  const provider = PROVIDERS[resolveProviderOrder(requested)[0]];
+export async function preferredCooldownMs(requested = null) {
+  const provider = PROVIDERS[(await resolveProviderOrder(requested))[0]];
   return provider && provider.challengeCooldownMs ? provider.challengeCooldownMs() : 0;
 }
 

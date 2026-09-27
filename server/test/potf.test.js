@@ -4,15 +4,15 @@
  */
 
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import test from 'node:test';
+import { makeTestDb } from './helpers/pgMem.js';
+import { useTestPool } from '../src/db/index.js';
 
-process.env.DB_FILE = path.join(
-  fs.mkdtempSync(path.join(os.tmpdir(), 'liturgygen-test-')),
-  'test.sqlite',
-);
+// A throwaway in-process PostgreSQL running the real db/schema.sql, so the
+// office's own data is never touched. This replaced a temp-directory SQLite
+// file; everything below it is unchanged except for the awaits.
+const { pool } = await makeTestDb();
+useTestPool(pool);
 
 const { seedPotfTemplates } = await import('../src/db/seed.js');
 const { resolveForDay, createTemplate, listTemplates, updateTemplate } = await import(
@@ -22,7 +22,7 @@ const { getLiturgicalDay } = await import('../src/services/calendarService.js');
 const { parseOrilloPage } = await import('../src/lib/orilloParser.js');
 const { loadOrilloSeeds } = await import('../src/db/seeds/orillo.seed.js');
 
-seedPotfTemplates();
+await seedPotfTemplates();
 
 // The office's transcriptions are not in this repository, so a clean checkout
 // (and CI) seeds the placeholders alone. Tests that assert against the book's
@@ -33,7 +33,7 @@ const needsOrillo = loadOrilloSeeds().missing.length
   : {};
 
 const resolveIso = async (iso, options) =>
-  resolveForDay((await getLiturgicalDay(iso)).potfLookup, options);
+  await resolveForDay((await getLiturgicalDay(iso)).potfLookup, options);
 
 test('a transcribed weekday is matched exactly', needsOrillo, async () => {
   const wednesday = await resolveIso('2024-12-04');
@@ -80,7 +80,7 @@ test('a day with no prayer of its own takes the Ordinary Time prayer for that da
   // Every prayer in the Ordinary Time book belongs to a numbered week, so the
   // fallback has to carry one. Typed in here so the test does not depend on the
   // office's transcriptions being present.
-  createTemplate({
+  await createTemplate({
     title: 'Ordinary Time, Week 3 - Tuesday (test)',
     season: 'Ordinary Time',
     week: 3,
@@ -91,7 +91,7 @@ test('a day with no prayer of its own takes the Ordinary Time prayer for that da
     priestConclusion: 'Through Christ our Lord',
   });
 
-  const resolved = resolveForDay({
+  const resolved = await resolveForDay({
     season: 'Christmas',
     ferialSeason: 'Christmas',
     week: 2,
@@ -171,7 +171,7 @@ test('placeholders are never chosen for a date unless the office asks for them',
 });
 
 test('a feast or dated prayer never stands in for the whole season', async () => {
-  createTemplate({
+  await createTemplate({
     title: 'A feast of the Lord (test)',
     season: 'Feast',
     celebrationId: 'some_feast_of_the_lord',
@@ -195,13 +195,13 @@ test('the Triduum never borrows an Ordinary Time weekday prayer', async () => {
 });
 
 test('a placeholder the office rewrites becomes its own prayer', async () => {
-  const [placeholder] = listTemplates({ search: 'Paschal Triduum - any day' });
+  const [placeholder] = await listTemplates({ search: 'Paschal Triduum - any day' });
   assert.equal(placeholder.isPlaceholder, true);
 
-  const edited = updateTemplate(placeholder.id, { priestInvitation: 'Our own words.' });
+  const edited = await updateTemplate(placeholder.id, { priestInvitation: 'Our own words.' });
   assert.equal(edited.isPlaceholder, false);
 
-  const goodFriday = resolveForDay({
+  const goodFriday = await resolveForDay({
     season: 'Triduum',
     ferialSeason: 'Triduum',
     week: null,
@@ -241,7 +241,7 @@ test('the fallback never displaces a prayer the day actually has', needsOrillo, 
  * ------------------------------------------------------------------ */
 
 test('a template keyed to a calendar date is found on that date', async () => {
-  createTemplate({
+  await createTemplate({
     title: 'Second of January (test)',
     season: 'Christmas',
     fixedDate: '01-02',
@@ -257,7 +257,7 @@ test('a template keyed to a calendar date is found on that date', async () => {
 });
 
 test('a dated feast prayer is not used in a year the feast is not kept', async () => {
-  createTemplate({
+  await createTemplate({
     title: 'The Annunciation of the Lord (test)',
     season: 'Feast',
     celebrationId: 'annunciation_of_the_lord',
@@ -279,7 +279,7 @@ test('a dated feast prayer is not used in a year the feast is not kept', async (
 });
 
 test('an optional memorial the book has a prayer for still resolves by date', async () => {
-  createTemplate({
+  await createTemplate({
     title: 'Our Lady of Lourdes (test)',
     season: 'Feast',
     celebrationId: 'our_lady_of_lourdes',
@@ -298,7 +298,7 @@ test('an optional memorial the book has a prayer for still resolves by date', as
 });
 
 test('a solemnity on the same calendar date still outranks the date rule', async () => {
-  createTemplate({
+  await createTemplate({
     title: 'The Epiphany of the Lord (test)',
     season: 'Christmas',
     celebrationId: 'epiphany_of_the_lord',
@@ -313,7 +313,7 @@ test('a solemnity on the same calendar date still outranks the date rule', async
   assert.equal(epiphany.potfLookup.celebrationId, 'epiphany_of_the_lord');
   assert.equal(epiphany.potfLookup.fixedDate, '01-02');
 
-  const resolved = resolveForDay(epiphany.potfLookup);
+  const resolved = await resolveForDay(epiphany.potfLookup);
   assert.equal(resolved.matchedBy, 'celebration');
   assert.match(resolved.template.title, /Epiphany/);
 });
@@ -330,7 +330,7 @@ LORD, HEAR OUR PRAYER.
 
 Father, hear us through Christ our Lord. Amen.`);
 
-  createTemplate({
+  await createTemplate({
     title: parsed.title,
     season: 'Christmas',
     fixedDate: '01-14',

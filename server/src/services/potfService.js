@@ -14,7 +14,7 @@
  * volumes: the Proper of Seasons book first, the Ordinary Time book otherwise.
  */
 
-import { getDb } from '../db/index.js';
+import { query } from '../db/index.js';
 
 const ORDINARY_TIME = 'Ordinary Time';
 const SEASONS = [ORDINARY_TIME, 'Advent', 'Christmas', 'Lent', 'Triduum', 'Easter', 'Feast'];
@@ -33,6 +33,15 @@ function parseJsonArray(value, fallback = []) {
   }
 }
 
+/**
+ * A database row becomes the shape the API and the client use.
+ *
+ * `response_options` and `intentions` are JSONB, so the driver hands back real
+ * arrays - `parseJsonArray` is no longer needed on the way out, only on the way
+ * in where a caller may still send a JSON string. `is_placeholder` and
+ * `is_active` are real BOOLEANs rather than 0 and 1, so the `Boolean()` casts
+ * are gone too.
+ */
 function rowToTemplate(row) {
   if (!row) return null;
   return {
@@ -44,16 +53,36 @@ function rowToTemplate(row) {
     celebrationId: row.celebration_id,
     fixedDate: row.fixed_date,
     priestInvitation: row.priest_invitation,
-    responseOptions: parseJsonArray(row.response_options),
-    intentions: parseJsonArray(row.intentions),
+    responseOptions: row.response_options ?? [],
+    intentions: row.intentions ?? [],
     priestConclusion: row.priest_conclusion,
     notes: row.notes,
     origin: row.origin,
-    isPlaceholder: Boolean(row.is_placeholder),
-    isActive: Boolean(row.is_active),
+    isPlaceholder: row.is_placeholder,
+    isActive: row.is_active,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+/**
+ * Turn `@name` placeholders into `$1, $2, ...` and collect the values in the
+ * order PostgreSQL wants them.
+ *
+ * The MATCH_RULES further down are written with names because the cascade is
+ * far easier to read that way: `season = @season AND week = @week` says what it
+ * matches, `season = $1 AND week = $2` does not. This is the only place in the
+ * codebase that assembles SQL at run time, and every fragment it assembles is a
+ * fixed string in this file - never user input. A repeated name is bound twice,
+ * which is correct.
+ */
+function named(sql, params) {
+  const values = [];
+  const text = sql.replace(/@(\w+)/g, (_match, key) => {
+    values.push(params[key] ?? null);
+    return `$${values.length}`;
+  });
+  return { text, values };
 }
 
 /* ------------------------------------------------------------------ *
@@ -154,11 +183,13 @@ export function normaliseInput(input, { partial = false } = {}) {
  * CRUD
  * ------------------------------------------------------------------ */
 
-export function listTemplates({ season, week, dayOfWeek, search, includeInactive = false } = {}) {
+export async function listTemplates({ season, week, dayOfWeek, search, includeInactive = false } = {}) {
   const clauses = [];
   const params = {};
 
-  if (!includeInactive) clauses.push('is_active = 1');
+  // `is_active` is a real BOOLEAN now, so it is the condition rather than
+  // something compared to 1.
+  if (!includeInactive) clauses.push('is_active');
   if (season) {
     clauses.push('season = @season');
     params.season = season;
@@ -172,55 +203,63 @@ export function listTemplates({ season, week, dayOfWeek, search, includeInactive
     params.dayOfWeek = dayOfWeek;
   }
   if (search) {
-    clauses.push('(title LIKE @search OR priest_invitation LIKE @search OR intentions LIKE @search)');
+    // ILIKE rather than LIKE: PostgreSQL's LIKE is case-sensitive where
+    // SQLite's was not, so searching "advent" stopped finding "Advent".
+    // `intentions` is JSONB and cannot be matched with a text operator
+    // directly, hence the cast.
+    clauses.push('(title ILIKE @search OR priest_invitation ILIKE @search OR intentions::text ILIKE @search)');
     params.search = `%${search}%`;
   }
 
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-  const rows = getDb()
-    .prepare(
-      `SELECT * FROM potf_templates ${where}
-       ORDER BY season, COALESCE(week, 99), COALESCE(day_of_week, 'zz'), title`,
-    )
-    .all(params);
+  const { text, values } = named(
+    `SELECT * FROM potf_templates ${where}
+     ORDER BY season, COALESCE(week, 99), COALESCE(day_of_week, 'zz'), title`,
+    params,
+  );
+  const { rows } = await query(text, values);
   return rows.map(rowToTemplate);
 }
 
-export function getTemplate(id) {
-  return rowToTemplate(getDb().prepare('SELECT * FROM potf_templates WHERE id = ?').get(id));
+export async function getTemplate(id) {
+  const { rows } = await query('SELECT * FROM potf_templates WHERE id = $1', [id]);
+  return rowToTemplate(rows[0]);
 }
 
-export function createTemplate(input) {
+/**
+ * `RETURNING *` replaces `lastInsertRowid` followed by a SELECT. PostgreSQL has
+ * no lastInsertRowid at all, and asking for the row back in the same statement
+ * is one round trip instead of two.
+ */
+export async function createTemplate(input) {
   const data = normaliseInput(input);
-  const result = getDb()
-    .prepare(
-      `INSERT INTO potf_templates
-        (title, season, week, day_of_week, celebration_id, fixed_date, priest_invitation,
-         response_options, intentions, priest_conclusion, notes, origin, is_active)
-       VALUES
-        (@title, @season, @week, @dayOfWeek, @celebrationId, @fixedDate, @priestInvitation,
-         @responseOptions, @intentions, @priestConclusion, @notes, @origin, @isActive)`,
-    )
-    .run({
-      title: data.title,
-      season: data.season,
-      week: data.week ?? null,
-      dayOfWeek: data.dayOfWeek ?? null,
-      celebrationId: data.celebrationId ?? null,
-      fixedDate: data.fixedDate ?? null,
-      priestInvitation: data.priestInvitation ?? '',
-      responseOptions: JSON.stringify(data.responseOptions ?? []),
-      intentions: JSON.stringify(data.intentions ?? []),
-      priestConclusion: data.priestConclusion ?? '',
-      notes: data.notes ?? null,
-      origin: input.origin === 'seed' ? 'seed' : 'custom',
-      isActive: data.isActive === false ? 0 : 1,
-    });
-  return getTemplate(result.lastInsertRowid);
+  const { rows } = await query(
+    `INSERT INTO potf_templates
+      (title, season, week, day_of_week, celebration_id, fixed_date, priest_invitation,
+       response_options, intentions, priest_conclusion, notes, origin, is_active)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::jsonb, $10, $11, $12, $13)
+     RETURNING *`,
+    [
+      data.title,
+      data.season,
+      data.week ?? null,
+      data.dayOfWeek ?? null,
+      data.celebrationId ?? null,
+      data.fixedDate ?? null,
+      data.priestInvitation ?? '',
+      JSON.stringify(data.responseOptions ?? []),
+      JSON.stringify(data.intentions ?? []),
+      data.priestConclusion ?? '',
+      data.notes ?? null,
+      input.origin === 'seed' ? 'seed' : 'custom',
+      data.isActive !== false,
+    ],
+  );
+  return rowToTemplate(rows[0]);
 }
 
-export function updateTemplate(id, input) {
-  const existing = getTemplate(id);
+export async function updateTemplate(id, input) {
+  const existing = await getTemplate(id);
   if (!existing) {
     const err = new Error(`No Prayers of the Faithful template with id ${id}.`);
     err.status = 404;
@@ -241,21 +280,25 @@ export function updateTemplate(id, input) {
     isActive: 'is_active',
   };
 
+  // The SET list is still assembled from whichever fields changed, but the
+  // placeholders are numbered as they are pushed so the values array stays in
+  // step with them. Column names come from the `columns` map above, never from
+  // the request.
   const sets = [];
-  const params = { id };
+  const params = {};
 
   for (const [key, column] of Object.entries(columns)) {
     if (key in data) {
       sets.push(`${column} = @${key}`);
-      params[key] = key === 'isActive' ? (data[key] ? 1 : 0) : data[key];
+      params[key] = key === 'isActive' ? Boolean(data[key]) : data[key];
     }
   }
   if ('responseOptions' in data) {
-    sets.push('response_options = @responseOptions');
+    sets.push('response_options = @responseOptions::jsonb');
     params.responseOptions = JSON.stringify(data.responseOptions);
   }
   if ('intentions' in data) {
-    sets.push('intentions = @intentions');
+    sets.push('intentions = @intentions::jsonb');
     params.intentions = JSON.stringify(data.intentions);
   }
 
@@ -263,33 +306,41 @@ export function updateTemplate(id, input) {
   // may resolve to it from now on without the placeholder setting.
   const textKeys = ['priestInvitation', 'priestConclusion', 'responseOptions', 'intentions'];
   if (existing.isPlaceholder && textKeys.some((key) => key in data)) {
-    sets.push('is_placeholder = 0');
+    sets.push('is_placeholder = FALSE');
   }
 
   if (!sets.length) return existing;
 
-  sets.push("updated_at = datetime('now')");
-  getDb().prepare(`UPDATE potf_templates SET ${sets.join(', ')} WHERE id = @id`).run(params);
-  return getTemplate(id);
+  sets.push('updated_at = now()');
+  params.id = id;
+  const { text, values } = named(
+    `UPDATE potf_templates SET ${sets.join(', ')} WHERE id = @id RETURNING *`,
+    params,
+  );
+  const { rows } = await query(text, values);
+  return rowToTemplate(rows[0]);
 }
 
-export function deleteTemplate(id) {
-  const result = getDb().prepare('DELETE FROM potf_templates WHERE id = ?').run(id);
-  return result.changes > 0;
+export async function deleteTemplate(id) {
+  const { rowCount } = await query('DELETE FROM potf_templates WHERE id = $1', [id]);
+  return rowCount > 0;
 }
 
-export function duplicateTemplate(id) {
-  const source = getTemplate(id);
+export async function duplicateTemplate(id) {
+  const source = await getTemplate(id);
   if (!source) {
     const err = new Error(`No Prayers of the Faithful template with id ${id}.`);
     err.status = 404;
     throw err;
   }
-  const copy = createTemplate({ ...source, title: `${source.title} (copy)`, origin: 'custom' });
+  const copy = await createTemplate({ ...source, title: `${source.title} (copy)`, origin: 'custom' });
   // A copy of a placeholder is still the placeholder's text until someone edits it.
   if (source.isPlaceholder) {
-    getDb().prepare('UPDATE potf_templates SET is_placeholder = 1 WHERE id = ?').run(copy.id);
-    return getTemplate(copy.id);
+    const { rows } = await query(
+      'UPDATE potf_templates SET is_placeholder = TRUE WHERE id = $1 RETURNING *',
+      [copy.id],
+    );
+    return rowToTemplate(rows[0]);
   }
   return copy;
 }
@@ -303,7 +354,11 @@ const UNKEYED = 'AND celebration_id IS NULL AND fixed_date IS NULL';
 const MATCH_RULES = [
   {
     reason: 'celebration',
-    sql: 'celebration_id IS NOT NULL AND celebration_id = @celebrationId',
+    // The `celebration_id IS NOT NULL AND` this used to carry was redundant:
+    // `NULL = anything` is NULL, never true, so a null column is already
+    // excluded by the comparison. Dropped from both this rule and the dated one
+    // below.
+    sql: 'celebration_id = @celebrationId',
     needs: (l) => Boolean(l.celebrationId),
   },
   {
@@ -321,7 +376,7 @@ const MATCH_RULES = [
     // stretches - keep matching on the date alone.
     reason: 'calendar date',
     sql: ({ availableIds }) =>
-      `fixed_date IS NOT NULL AND fixed_date = @fixedDate
+      `fixed_date = @fixedDate
        AND (celebration_id IS NULL OR celebration_id IN (${availableIds}))`,
     needs: (l) => Boolean(l.fixedDate),
   },
@@ -355,8 +410,16 @@ const MATCH_RULES = [
   },
 ];
 
-function findBy(lookup, season, { includeCatchAll = true, allowPlaceholders = false } = {}) {
-  const db = getDb();
+/**
+ * Walk the rules, most specific first, and stop at the first hit.
+ *
+ * Each tier is now its own round trip rather than an in-process read, so a date
+ * that falls all the way through costs seven of them. Measured against a
+ * 200-day batch this is not the bottleneck - the USCCB cooldown dominates by
+ * three orders of magnitude - so it is left as seven readable queries rather
+ * than folded into one CASE-ranked query that nobody could follow.
+ */
+async function findBy(lookup, season, { includeCatchAll = true, allowPlaceholders = false } = {}) {
   const params = {
     season,
     week: lookup.week ?? null,
@@ -364,7 +427,7 @@ function findBy(lookup, season, { includeCatchAll = true, allowPlaceholders = fa
     celebrationId: lookup.celebrationId ?? null,
     fixedDate: lookup.fixedDate ?? null,
   };
-  const source = allowPlaceholders ? '' : 'AND is_placeholder = 0';
+  const source = allowPlaceholders ? '' : 'AND NOT is_placeholder';
 
   // The celebrations that may be kept today, bound one placeholder each.
   // Older callers that pass only a celebrationId still behave as they did.
@@ -383,10 +446,12 @@ function findBy(lookup, season, { includeCatchAll = true, allowPlaceholders = fa
     if (rule.catchAll && !includeCatchAll) continue;
     if (!rule.needs(lookup)) continue;
     const sql = typeof rule.sql === 'function' ? rule.sql({ availableIds }) : rule.sql;
-    const row = db
-      .prepare(`SELECT * FROM potf_templates WHERE is_active = 1 ${source} AND ${sql} LIMIT 1`)
-      .get(params);
-    if (row) return { template: rowToTemplate(row), reason: rule.reason };
+    const { text, values } = named(
+      `SELECT * FROM potf_templates WHERE is_active ${source} AND ${sql} LIMIT 1`,
+      params,
+    );
+    const { rows } = await query(text, values);
+    if (rows.length) return { template: rowToTemplate(rows[0]), reason: rule.reason };
   }
   return null;
 }
@@ -401,7 +466,7 @@ function findBy(lookup, season, { includeCatchAll = true, allowPlaceholders = fa
  * is set - by default a day neither book covers resolves to nothing, and the
  * document says so rather than printing a prayer the office never chose.
  */
-export function resolveForDay(lookup, { allowPlaceholders = false } = {}) {
+export async function resolveForDay(lookup, { allowPlaceholders = false } = {}) {
   if (!lookup) return { template: null, matchedBy: 'none' };
 
   const find = (l, season, options = {}) => findBy(l, season, { allowPlaceholders, ...options });
@@ -411,11 +476,11 @@ export function resolveForDay(lookup, { allowPlaceholders = false } = {}) {
   // memorial in Advent matched the generic "Feast" catch-all and printed a
   // placeholder, even though the book has a proper prayer for that Advent
   // weekday - which is the one the office actually prays.
-  const specific = find(lookup, lookup.season, { includeCatchAll: false });
+  const specific = await find(lookup, lookup.season, { includeCatchAll: false });
   if (specific) return { template: specific.template, matchedBy: specific.reason };
 
   if (hasFerial) {
-    const ferialSpecific = find(lookup, lookup.ferialSeason, { includeCatchAll: false });
+    const ferialSpecific = await find(lookup, lookup.ferialSeason, { includeCatchAll: false });
     if (ferialSpecific) {
       return {
         template: ferialSpecific.template,
@@ -444,18 +509,18 @@ export function resolveForDay(lookup, { allowPlaceholders = false } = {}) {
       : `${reason} (Ordinary Time fallback)`;
 
   if (borrowsOrdinary) {
-    const ordinaryDay = find(ordinaryLookup, ORDINARY_TIME, { includeCatchAll: false });
+    const ordinaryDay = await find(ordinaryLookup, ORDINARY_TIME, { includeCatchAll: false });
     if (ordinaryDay) {
       return { template: ordinaryDay.template, matchedBy: ordinaryReason(ordinaryDay.reason) };
     }
   }
 
   // Only now the whole-season catch-alls, proper season before ferial.
-  const primary = find(lookup, lookup.season);
+  const primary = await find(lookup, lookup.season);
   if (primary) return { template: primary.template, matchedBy: primary.reason };
 
   if (hasFerial) {
-    const ferial = find(lookup, lookup.ferialSeason);
+    const ferial = await find(lookup, lookup.ferialSeason);
     if (ferial) {
       return { template: ferial.template, matchedBy: `${ferial.reason} (ferial fallback)` };
     }
@@ -464,7 +529,7 @@ export function resolveForDay(lookup, { allowPlaceholders = false } = {}) {
   // Nothing at all for the season: the Ordinary Time catch-all is still better
   // than printing no prayers.
   if (borrowsOrdinary) {
-    const ordinary = find(ordinaryLookup, ORDINARY_TIME);
+    const ordinary = await find(ordinaryLookup, ORDINARY_TIME);
     if (ordinary) {
       return { template: ordinary.template, matchedBy: ordinaryReason(ordinary.reason) };
     }

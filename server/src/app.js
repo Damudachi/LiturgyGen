@@ -10,6 +10,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import config, { ROOT } from './config.js';
 import calendarRoutes from './routes/calendar.js';
@@ -40,6 +42,40 @@ export function allowedOrigins() {
 
 export function createApp() {
   const app = express();
+
+  /**
+   * Security headers.
+   *
+   * The Content-Security-Policy is written out rather than left at helmet's
+   * default, because this same process serves the built client and the default
+   * policy blocks it: Tailwind injects a stylesheet at run time, and the fonts
+   * are served from this origin. The policy below allows exactly that and
+   * nothing else - no external scripts, no frames, no object embeds.
+   *
+   * `crossOriginEmbedderPolicy` is off: it buys nothing here and breaks the
+   * WebView2 desktop shell.
+   */
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          // Tailwind and the app's own inline style attributes.
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:'],
+          fontSrc: ["'self'", 'data:'],
+          // The client only ever talks to its own origin.
+          connectSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   app.use(cors({ origin: allowedOrigins() }));
   app.use(express.json({ limit: '25mb' })); // a saved USCCB page is ~60 KB; imports may be batched
@@ -78,6 +114,28 @@ export function createApp() {
    * the desktop build are unaffected. See src/middleware/basicAuth.js.
    */
   app.use(basicAuth({ realm: 'LiturgyGen' }));
+
+  /**
+   * Rate limiting, applied after the gate so a signed-in office is measured
+   * separately from anonymous traffic hammering the door.
+   *
+   * The numbers are generous because the app is genuinely chatty: opening a
+   * month fires one calendar request and one check for every chosen day, and a
+   * 200-day batch polls its own progress. This is a brake on abuse, not a quota.
+   * Disabled under NODE_ENV=test so the suite is not throttled.
+   */
+  if (process.env.NODE_ENV !== 'test') {
+    app.use(
+      '/api',
+      rateLimit({
+        windowMs: 60_000,
+        limit: 600,
+        standardHeaders: 'draft-7',
+        legacyHeaders: false,
+        message: { error: 'Too many requests. Wait a minute and try again.' },
+      }),
+    );
+  }
 
   /** Kept for the client's own boot check, which reports the live settings. */
   app.get('/api/health', (_req, res) => {

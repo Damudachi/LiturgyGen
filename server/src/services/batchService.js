@@ -108,7 +108,7 @@ export function jobDocuments(id) {
  * Start a batch. Returns immediately with the job record; progress arrives via
  * `jobEvents` (the SSE endpoint) or by polling `getJob`.
  */
-export function startBatch(dates, options = {}) {
+export async function startBatch(dates, options = {}) {
   sweep();
 
   const unique = sortUnique(dates);
@@ -123,7 +123,7 @@ export function startBatch(dates, options = {}) {
     throw err;
   }
 
-  const settings = getSettings();
+  const settings = await getSettings();
   const job = {
     id: randomUUID(),
     status: 'running',
@@ -171,7 +171,7 @@ export function startBatch(dates, options = {}) {
  * so a source that is genuinely down cannot stall the run indefinitely.
  */
 async function waitForPreferredSource(job) {
-  let remaining = preferredCooldownMs(job.options.providers);
+  let remaining = await preferredCooldownMs(job.options.providers);
   if (remaining <= 0) return;
 
   while (remaining > 0 && !job.cancelRequested && job.waitedMs < MAX_WAIT_MS) {
@@ -184,7 +184,7 @@ async function waitForPreferredSource(job) {
     const slice = Math.min(remaining, 1000);
     await sleep(slice);
     job.waitedMs += slice;
-    remaining = preferredCooldownMs(job.options.providers);
+    remaining = await preferredCooldownMs(job.options.providers);
   }
 }
 

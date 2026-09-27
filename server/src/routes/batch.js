@@ -10,7 +10,7 @@ const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingm
  * Start a batch.
  * Body: { dates: ["2026-10-01", ...], extraIntentions?, style?, force?, providers? }
  */
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
     const { dates, ...options } = req.body || {};
     if (!Array.isArray(dates)) return res.status(400).json({ error: 'Provide "dates" as an array of YYYY-MM-DD strings.' });
@@ -20,7 +20,7 @@ router.post('/', (req, res, next) => {
       return res.status(400).json({ error: `These are not valid dates: ${invalid.slice(0, 5).join(', ')}` });
     }
 
-    res.status(202).json(batchService.startBatch(sortUnique(dates), options));
+    res.status(202).json(await batchService.startBatch(sortUnique(dates), options));
   } catch (error) {
     next(error);
   }

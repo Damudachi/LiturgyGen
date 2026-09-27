@@ -87,16 +87,24 @@ router.put('/:date', async (req, res, next) => {
   }
 });
 
-router.get('/:date/override', (req, res) => {
+router.get('/:date/override', async (req, res, next) => {
   if (!requireDate(req, res)) return;
-  const override = getOverride(req.params.date);
-  if (!override) return res.status(404).json({ error: `No saved corrections for ${req.params.date}.` });
-  res.json(override);
+  try {
+    const override = await getOverride(req.params.date);
+    if (!override) return res.status(404).json({ error: `No saved corrections for ${req.params.date}.` });
+    res.json(override);
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.delete('/:date/override', (req, res) => {
+router.delete('/:date/override', async (req, res, next) => {
   if (!requireDate(req, res)) return;
-  res.json({ deleted: deleteOverride(req.params.date) });
+  try {
+    res.json({ deleted: await deleteOverride(req.params.date) });
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**

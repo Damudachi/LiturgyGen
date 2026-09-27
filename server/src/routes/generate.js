@@ -32,7 +32,7 @@ router.post('/', async (req, res, next) => {
 
     if (!isIsoDate(date)) return res.status(400).json({ error: 'Provide a date as YYYY-MM-DD.' });
 
-    const settings = getSettings();
+    const settings = await getSettings();
     const day = await buildDay(date, {
       force,
       potfTemplateId,

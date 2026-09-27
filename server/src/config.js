@@ -18,7 +18,12 @@ export const config = {
   port: Number(process.env.PORT || 4000),
   /** Unset listens everywhere; the installed app listens on this computer only. */
   host: process.env.HOST || undefined,
-  dbFile: process.env.DB_FILE || path.join(DATA_DIR || path.join(ROOT, 'data'), 'liturgygen.sqlite'),
+  /**
+   * The database is PostgreSQL and is addressed by DATABASE_URL, read in
+   * db/pool.js. There is no database file any more - what DATA_DIR still holds
+   * is the office's transcriptions and the saved readings cache.
+   */
+  dataDir: DATA_DIR || path.join(ROOT, 'data'),
 
   usccb: {
     baseUrl: 'https://bible.usccb.org/bible/readings',

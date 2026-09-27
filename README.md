@@ -40,11 +40,12 @@ like the office's printed missalette.
 
 ## Built with
 
-React and Vite on the front end, Express on the back end, and a database that is
-mid-move: **SQLite today, PostgreSQL in progress**. See
-[`docs/07-postgres-migration-map.md`](docs/07-postgres-migration-map.md) for
-exactly where that stands. The client deploys to GitHub Pages; the API and the
-database are not hosted yet.
+React and Vite on the front end, Express and **PostgreSQL** on the back end.
+The client deploys to GitHub Pages; the API and the database are not hosted yet.
+
+The database was SQLite until week 3;
+[`docs/07-postgres-migration-map.md`](docs/07-postgres-migration-map.md) is the
+record of the move and of the five things it turned up.
 
 There is also a **Windows desktop build** — the same app in its own window with
 a bundled Node runtime, installed per-user with no administrator rights. See
@@ -92,18 +93,7 @@ never live there.
     cp client/.env.example client/.env      # VITE_USE_MOCK_API stays true
     npm run dev:client                      # http://localhost:5173
 
-**The whole stack, as it is today (SQLite).** This is the path that works right
-now, and the one the desktop build uses.
-
-    npm install
-    npm run seed        # creates the SQLite database, loads the POTF templates
-    npm run dev         # API on :4000, Vite on :5173 with /api proxied
-
-Open <http://localhost:5173>. For a single-process run, `npm run build && npm
-start` and open <http://localhost:4000>.
-
-**The whole stack, once the PostgreSQL migration lands.** The scaffolding is in
-place; the queries are not converted yet.
+**The whole stack.** Needs a PostgreSQL, local or hosted.
 
     # 1. the database
     docker compose up -d db
@@ -119,6 +109,10 @@ place; the queries are not converted yet.
     cp client/.env.example client/.env
     # set VITE_USE_MOCK_API=false
     npm run dev:client
+
+For a single-process run, `npm run build && npm start` and open
+<http://localhost:4000> — Express serves the API and the built client together,
+which is what a deployment does.
 
 Check the API on its own before blaming the client:
 
@@ -263,13 +257,14 @@ Building the installers needs Windows and Inno Setup 6. The public installer is
 committed; the office one never is. Full notes in
 [`desktop/README.md`](desktop/README.md).
 
-**This is the part PostgreSQL costs.** LiturgyGen installs as a single `.exe`
-because SQLite is a file. PostgreSQL is a server, so once the migration lands
-the installed app needs either a hosted database — meaning the office needs
+**The desktop build is on hold, and PostgreSQL is why.** LiturgyGen installed as
+a single `.exe` because SQLite was a file. PostgreSQL is a server, so the
+installed app now needs either a hosted database — meaning the office needs
 internet to open the calendar, not just to fetch readings — or a bundled
-PostgreSQL, which is much larger and needs a service. Neither is as good as what
-it replaces. The web deployment becomes the primary artifact and the desktop
-build the secondary one. That is a real cost, named here rather than discovered
+PostgreSQL, which is far larger and has to run as a service. Neither is as good
+as what it replaced. The web deployment is the primary artifact; the installer
+in `desktop/release/` is the last SQLite build and still works, but it will not
+be rebuilt from this code. That is a real cost, named rather than discovered
 later.
 
 ## Tests
