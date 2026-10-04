@@ -1,19 +1,30 @@
 # LiturgyGen
 
+[![Made with AI assistance](https://img.shields.io/badge/Made_with-AI_assistance-blue)](AI-USAGE.md)
+
 Mass readings missalette and Prayers of the Faithful generator for a Campus
 Ministry Office. Pick the days you have a Mass — one, or a month of them — and
 LiturgyGen works out the liturgical day, fetches that day's readings, attaches
 the right Prayers of the Faithful, and hands back a `.docx` laid out exactly
 like the office's printed missalette.
 
-**Live site:** https://damudachi.github.io/LiturgyGen/
-**API:** not deployed yet — see [What I would do next](#what-i-would-do-next)
-**Demo video:** week 3
+Built with Claude (Anthropic) — it wrote most of the first draft of the services
+layer, the `.docx` builder and the React components. Who wrote what, entry by
+entry, is in [`AI-USAGE.md`](AI-USAGE.md).
 
-> **The live site is running in demo mode.** The interface is real; the backend
-> is simulated in your browser so the page works without a server. The calendar
-> is a snapshot of September and October 2026, the readings are citations
-> without their text, and the prayers are placeholders. See
+**The app — client and API on one Render service:** https://liturgygen.onrender.com
+(behind the accounts gate; the first visit after a quiet spell takes about a
+minute while the free tier wakes up)
+**Health check, outside the gate:** [`/healthz`](https://liturgygen.onrender.com/healthz)
+is the process, [`/readyz`](https://liturgygen.onrender.com/readyz) is the database
+**Demo mode — the interface, no login, no server:** https://damudachi.github.io/LiturgyGen/
+
+> **The two links are not the same app.** The Render service is the real thing:
+> Express, PostgreSQL and the live USCCB fetch, behind a sign-in. The GitHub
+> Pages link is the same built client with its backend simulated in your
+> browser, so the interface can be looked at without an account — its calendar
+> is a snapshot of September and October 2026, its readings are citations
+> without their text, and its prayers are placeholders. See
 > [Demo mode](#demo-mode).
 
 ![The calendar: the month as tiles, each with its liturgical colour and what the day keeps](docs/assets/screenshot.png)

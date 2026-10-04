@@ -95,7 +95,7 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
 - **What I kept, what I changed, and why:** kept it. The one thing I insisted on
   was that the demo seed strip the scripture text and the office's prayers
   before writing a file that goes into a public repository — see case 3 below.
-- **Commit:** (this week's commit)
+- **Commit:** `d6baf70` — https://github.com/Damudachi/LiturgyGen/commit/d6baf70
 
 ### 2026-09-27 — Security pass before going public
 
@@ -114,7 +114,8 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   an unimplemented check throws, and the middleware catches it and returns 401
   rather than calling `next()`. A gate that falls open when it breaks is worse
   than no gate, because you think you have one.
-- **Commit:** (this week's commit)
+- **Commit:** `9182b6d` — https://github.com/Damudachi/LiturgyGen/commit/9182b6d
+  (the audit's own write-up landed alongside it in `468c5a7`)
 
 ### 2026-10-04 — The credential check, and the Render deployment
 
@@ -150,7 +151,10 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   `docs/07-postgres-migration-map.md`.
 - **What this costs me:** `checkCredentials` was supposed to be mine, and
   section 3 now says it is not.
-- **Commit:** (this week's commit)
+- **Commit:** `99649e9` — https://github.com/Damudachi/LiturgyGen/commit/99649e9
+  (the credential check) and `00b5e65` —
+  https://github.com/Damudachi/LiturgyGen/commit/00b5e65 (`readings_cache` and
+  the three `scraperService` functions that read it)
 
 ### 2026-10-04 — The signed-out screens, a dedicated mark, and three auth regressions
 
@@ -191,7 +195,11 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
 - **What this costs me:** a fair amount. The entry screens, the mark and the
   importer are AI-written, and section 3 says so. The importer is also
   **untested** — written to be reviewed, not yet run against a real book.
-- **Commit:** (this week's commit)
+- **Commits:** `b989f40` — https://github.com/Damudachi/LiturgyGen/commit/b989f40 (the signed-out entry spread);
+  `c6bc7ab` — https://github.com/Damudachi/LiturgyGen/commit/c6bc7ab (the mark, the favicon and `/auth-forward.js`);
+  `ffcbf93` — https://github.com/Damudachi/LiturgyGen/commit/ffcbf93 (the `req`/`_req` boot regression and `boot.test.js`);
+  `8a5a2f4` — https://github.com/Damudachi/LiturgyGen/commit/8a5a2f4 (the importer, the authenticated stream and
+  `stream.test.js`); `7adcbfe` — https://github.com/Damudachi/LiturgyGen/commit/7adcbfe (OCR and the multi-file import flow)
 
 ---
 
@@ -242,7 +250,7 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   stand-in line and ships citations only, and the templates in the seed are the
   placeholder prayers written for this tool rather than anything from the books.
   `grep` for a distinctive phrase from the readings is part of the check.
-- **Commit:** `server/tools/build-demo-seed.mjs` — (this week's commit)
+- **Commit:** `server/tools/build-demo-seed.mjs`, added in `d6baf70` — https://github.com/Damudachi/LiturgyGen/commit/d6baf70
 
 ### Case 4 — It assumed the parser could be written from the page structure
 
@@ -279,6 +287,8 @@ were placeholders. The lesson is not to distrust it; it is that an absence is a
 much weaker finding than a presence, and I should ask which files it actually
 opened.
 
+**Commit:** the spread finally reached the real landing page in `c6bc7ab` — https://github.com/Damudachi/LiturgyGen/commit/c6bc7ab, after two redeploys that changed only `client/`.
+
 ### Case 6 — It hid its own error message behind a 500
 
 The prayer-book importer refused an image upload with "Something went wrong on
@@ -298,6 +308,8 @@ two correct lines that have never met. The fix was to let an error opt in to
 being shown (`error.expose`) and to use it only where the message was composed
 for the reader.
 
+**Commit:** `7adcbfe` — https://github.com/Damudachi/LiturgyGen/commit/7adcbfe.
+
 ### Case 7 — It gave me commands it had never run
 
 It told me to run `npm run seed -- --org <uuid>` to get the office's prayers
@@ -313,6 +325,8 @@ machine, and it had written that command, in a README section, twice.
 **What I take from it:** it will write instructions with the same confidence it
 writes code, and the instructions are the part nothing checks. Code at least
 has to import. From then on I asked it to run anything it told me to run.
+
+**Commit:** `cb90955` — https://github.com/Damudachi/LiturgyGen/commit/cb90955 — the commit that made `.env` load at all.
 
 ### Case 8 — It shipped the importer twice without running it
 
@@ -331,6 +345,9 @@ Both surfaced in the first thirty seconds of actually running it on a PNG.
 claim, and it does not reliably distinguish them. When it says a path is
 untested, that is a statement about its confidence, not about the odds.
 
+**Commit:** `7adcbfe` — https://github.com/Damudachi/LiturgyGen/commit/7adcbfe — both faults were fixed in the commit that
+added OCR, because running it was what found them.
+
 ### Case 9 — It estimated its own output instead of measuring it
 
 It wrote the presentation script with a word budget per slide and a stated
@@ -345,6 +362,10 @@ would have found out mid-take.
 **What I take from it:** the arithmetic it does about its own work is a guess
 wearing a number. It is good at writing the script and good at counting the
 words, and it will not do the second one unless told to.
+
+**Commit:** none in this repository — `docs/08-presentation-script.md` is
+git-ignored, because it says my name in its first line. It is in the private
+coursework folder with the rest of the identifying material.
 
 ### Case 10 — It ignored a note the codebase had already written for it
 
@@ -363,6 +384,9 @@ to copy the palette out of it.
 the file is telling it. The comments that exist to stop somebody repeating a
 mistake are the ones it is most likely to skim, which is an argument for the
 comments being there and not an argument against them.
+
+**Commit:** `b989f40` — https://github.com/Damudachi/LiturgyGen/commit/b989f40 — the entry spread as it landed, with one gold
+ribbon rather than six.
 
 ---
 
@@ -444,35 +468,13 @@ comments being there and not an argument against them.
   document, so it is replaced rather than quietly deleted.
 
 
-### Written by the AI this week, named here
-
-- **Files:** `client/src/components/auth/EntryLayout.jsx`,
-  `client/src/components/Logo.jsx`, `client/public/favicon.svg`, the spread in
-  `server/src/views/pages.js`, `server/src/services/importService.js`,
-  `server/src/routes/potfImport.js`,
-  `client/src/components/prayers/ImportBook.jsx`, `server/test/boot.test.js`,
-  `client/test/stream.test.js`, and the `/auth-forward.js` route.
-- **Commit:** (this week's commit)
-- **What they do and what I decided:** the signed-out spread and the app's own
-  mark, which replaced the chapel's seal because that seal belongs to one parish
-  and the app now serves more than one; the prayer-book importer; and the two
-  tests that cover the regressions nothing else caught. My decisions inside
-  them: one gold ribbon rather than six liturgical ones, and — the one I would
-  defend hardest — the importer does **not** guess a page's season, week or
-  weekday. It reads a title and stops. A page number is not liturgical data, and
-  the whole argument of `philippineOrdo.js` is that this application does not
-  invent that mapping. So every imported draft arrives unticked and needs a day
-  set by hand before it can be saved. That makes importing a hundred pages
-  slower, on purpose.
-
-
 - **File:** `server/src/routes/` — the whole HTTP surface
 - **Commit:** `7e30ee4` onward — https://github.com/Damudachi/LiturgyGen/commit/7e30ee4
 - **What it does and why it is built this way:** the REST API: `calendar`,
   `readings`, `generate`, `batch`, `potf`, `settings` and `account`. About nine
-  hundred lines, and until now attributed to nobody in this file, which was an
-  omission rather than a decision.
-  Two things in here are mine as judgement rather than as typing. The first is
+  hundred lines, and until now filed in this document under the AI, which was a
+  filing mistake rather than a decision: the AI did not write them.
+  Two things in here are worth naming. The first is
   what each route refuses: a malformed date is a 400 with a message written for
   the office rather than a 500 with a driver error in it, because the person
   reading it is a parish secretary and not me. The second is which routes are
@@ -493,6 +495,32 @@ comments being there and not an argument against them.
   handling finally settled. Every date in this application is a calendar day in
   the Philippines, never a moment in time, and these functions are the only
   place allowed to know that.
+
+### Written by the AI, named here
+
+- **Files:** `client/src/components/auth/EntryLayout.jsx`,
+  `client/src/components/Logo.jsx`, `client/public/favicon.svg`, the spread in
+  `server/src/views/pages.js`, `server/src/services/importService.js`,
+  `server/src/routes/potfImport.js`,
+  `client/src/components/prayers/ImportBook.jsx`, `server/test/boot.test.js`,
+  `client/test/stream.test.js`, and the `/auth-forward.js` route.
+- **Commits:** `b989f40` — https://github.com/Damudachi/LiturgyGen/commit/b989f40, `c6bc7ab` — https://github.com/Damudachi/LiturgyGen/commit/c6bc7ab,
+  `ffcbf93` — https://github.com/Damudachi/LiturgyGen/commit/ffcbf93, `8a5a2f4` — https://github.com/Damudachi/LiturgyGen/commit/8a5a2f4 and
+  `7adcbfe` — https://github.com/Damudachi/LiturgyGen/commit/7adcbfe
+- **What they do and what I decided:** the signed-out spread and the app's own
+  mark, which replaced the chapel's seal because that seal belongs to one parish
+  and the app now serves more than one; the prayer-book importer; and the two
+  tests that cover the regressions nothing else caught. My decisions inside
+  them: one gold ribbon rather than six liturgical ones, and — the one I would
+  defend hardest — the importer does **not** guess a page's season, week or
+  weekday. It reads a title and stops. A page number is not liturgical data, and
+  the whole argument of `philippineOrdo.js` is that this application does not
+  invent that mapping. So every imported draft arrives unticked and needs a day
+  set by hand before it can be saved. That makes importing a hundred pages
+  slower, on purpose.
+
+
+### Mine, but not a file in this repository
 
 - **Not in this repository:** the Supabase project
 - **Evidence:** migration `20261004110845_multi_parish_schema_with_rls`; ten
