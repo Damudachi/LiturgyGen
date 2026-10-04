@@ -193,8 +193,7 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   is server-rendered in `views/pages.js`, which is why my first two redeploys
   changed nothing.
 - **What this costs me:** a fair amount. The entry screens, the mark and the
-  importer are AI-written, and section 3 says so. The importer is also
-  **untested** — written to be reviewed, not yet run against a real book.
+  importer are AI-written, and section 3 says so. 
 - **Commits:** `b989f40` — https://github.com/Damudachi/LiturgyGen/commit/b989f40 (the signed-out entry spread);
   `c6bc7ab` — https://github.com/Damudachi/LiturgyGen/commit/c6bc7ab (the mark, the favicon and `/auth-forward.js`);
   `ffcbf93` — https://github.com/Damudachi/LiturgyGen/commit/ffcbf93 (the `req`/`_req` boot regression and `boot.test.js`);
