@@ -285,15 +285,28 @@ served instead of the readings. CI runs both suites plus a client build on Node
 
 ## What I would do next
 
-- **Finish the PostgreSQL migration.** Twenty call sites across five files, all
-  listed in [`docs/07-postgres-migration-map.md`](docs/07-postgres-migration-map.md)
-  with what each becomes. The schema, the pool and the seed are already written.
-- **A real REST pass.** Turn the four RPC-shaped endpoints into resources, get
-  the status codes right, and kill the one `WHERE` clause still built by string
-  concatenation in `routes/settings.js`.
-- **Deploy all three pieces** and add `helmet` and rate limiting, which have
-  been knowingly deferred while this is a single-office local tool. See
-  [`docs/06-security-and-privacy.md`](docs/06-security-and-privacy.md).
+> The three things that used to be listed here - finishing the PostgreSQL
+> migration, removing the concatenated `WHERE` clause, and deploying with
+> `helmet` and rate limiting - are all done. This is the list as it stands.
+
+- **Another parish runs its own copy.** Not accounts: nothing in LiturgyGen
+  belongs to a person, and two staff in one office must see the same prayer
+  library, so per-user data would be a bug rather than a feature. A second
+  parish clones this repository, points it at its own PostgreSQL and follows
+  [Running it yourself](#running-it-yourself). It supplies its own
+  transcriptions, because the General Intercessions volumes are copyrighted and
+  were never committed here - the thing that keeps this repository publishable
+  is the same thing that makes each parish's copy its own.
+- **One validation layer across every route.** Bad input is handled, but
+  unevenly: some routes check a date, some let it reach the database. A single
+  module applied at the edge, so a malformed request is always a readable 400
+  and never a 500.
+- **A real REST pass.** Four endpoints are still remote procedure calls wearing
+  HTTP - `/api/readings/check`, `/api/calendar/expand`, `/api/potf/parse` and
+  `/api/batch/:id/cancel`. They work; they are not resources.
+- **The desktop build, or a decision to retire it.** It shipped as one `.exe`
+  because SQLite was a file. PostgreSQL is a server, so the installer in
+  `desktop/release/` is the last SQLite build. See [Desktop build](#desktop-build).
 
 ## Author
 

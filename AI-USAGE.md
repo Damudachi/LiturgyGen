@@ -276,10 +276,15 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   is the usual way round `timingSafeEqual` throwing on buffers of unequal
   length, which would otherwise leak the password's length.
 
-- **Coming next week:** the PostgreSQL migration and the REST work, which are
-  mine end to end. `docs/07-postgres-migration-map.md` is the plan; the
-  scaffolding (`server/db/pool.js`, `schema.sql`, `seed.sql`) was set up with
-  assistance, and every one of the twenty query rewrites is my own.
+- **The PostgreSQL migration is NOT mine.** This bullet used to say it would be
+  "mine end to end" and that "every one of the twenty query rewrites is my
+  own". I wrote that as a plan, in advance, and then it is not how the week
+  went: I ran out of time and Claude did the migration - the schema, the twenty
+  query rewrites, the async conversion through every call site, the
+  `readings_cache` table, and the tests. `docs/07-postgres-migration-map.md`
+  records the work; section 1 of this file records who did it. Leaving the
+  original sentence in would have been the one dishonest line in this
+  document, so it is replaced rather than quietly deleted.
 
 ### The AI-written part I understand best
 
