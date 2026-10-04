@@ -32,7 +32,9 @@ like the office's printed missalette.
 - **Make a month at once** — a ZIP of one file per day, or one master document —
   with the days that need a look flagged and listed first before anything is
   made.
-- **Type the intercession books in once**, from the printed page, and keep them.
+- **Type the intercession books in once**, from the printed page, and keep them
+  — or hand over a PDF or a photograph of the pages and approve what is read
+  out of it.
 
 | The day book | The Prayers library |
 | --- | --- |
@@ -42,11 +44,12 @@ like the office's printed missalette.
 
 React and Vite on the front end, Express and **PostgreSQL** on the back end.
 The app runs as one Render web service - Express serves the built client and
-the API from the same origin - with PostgreSQL on Neon. It is behind HTTP Basic
-Authentication, so the URL alone will not open it; `/healthz` and `/readyz` are
-outside the gate and answer unauthenticated. GitHub Pages carries a separate
-client-only build that runs against a seeded snapshot in the browser, needs no
-login, and says so on the page.
+the API from the same origin - with the database and the accounts both on
+Supabase. Signing in is a screen inside the app: Supabase issues the session and
+the server verifies the token and resolves which parish is asking. The landing
+page, `/healthz` and `/readyz` are outside the gate and answer unauthenticated.
+GitHub Pages carries a separate client-only build that runs against a seeded
+snapshot in the browser, needs no account, and says so on the page.
 
 The database was SQLite until week 3;
 [`docs/07-postgres-migration-map.md`](docs/07-postgres-migration-map.md) is the
@@ -132,10 +135,22 @@ so they are kept out of version control. They belong in:
 
     server/data/orillo/*.json     # git-ignored, one file per section of the book
 
-A checkout without them still runs. `npm run seed` loads the placeholder set and
-reports which sections it could not find. To get the real prayers onto a
-machine, copy the office's `server/data/orillo` directory into place and re-run
-`npm run seed`, or type the pages in on the Prayers screen.
+A checkout without them still runs: founding a parish seeds the placeholder set
+and reports which sections it could not find. Seeding is **per parish**, so the
+command needs to be told which one:
+
+    cd server
+    npm run seed -- --list                 # which parishes exist
+    npm run seed -- --org <uuid>           # seed that parish
+    npm run seed -- --org <uuid> --force   # overwrite rows somebody has edited
+
+Point `DATABASE_URL` at whichever database you mean. That is also how the real
+prayers reach a **deployed** database without the book entering this
+repository: run the command from a machine that has `server/data/orillo`, with
+`DATABASE_URL` set to the host's.
+
+The other two ways in are the Prayers screen: **Type in** for one page, and
+**Import a prayer book** for a PDF or a photograph of one.
 
 Please keep it that way. Do not commit the transcriptions, the scans or the
 ORDO — see [`LICENSE`](LICENSE) for what this project does and does not cover.
@@ -148,8 +163,9 @@ placeholder values.
 | Name | Where | What it is |
 | --- | --- | --- |
 | `DATABASE_URL` | server | PostgreSQL connection string. Contains a password |
-| `BASIC_AUTH_USER` | server | username for the gate. Unset means the gate is off |
-| `BASIC_AUTH_PASS` | server | password for the gate. Set **both** to switch it on |
+| `SUPABASE_URL` | server | the Supabase project. Unset means accounts are off |
+| `SUPABASE_SERVICE_ROLE_KEY` | server | **bypasses RLS.** Host settings panel only, never a `VITE_` variable. Set **both** to switch accounts on |
+| `LITURGYGEN_DEV_ORG_ID` | server | development only: pins one parish so a checkout runs without signing in. Never set this on a host |
 | `CORS_ORIGINS` | server | comma-separated origins allowed to call the API |
 | `NODE_ENV` | server | `production` on a host |
 | `PORT` | server | **set by the host**; do not set it yourself |
@@ -160,28 +176,45 @@ placeholder values.
 | `VITE_USE_MOCK_API` | client, at build time | only `false` turns demo mode off; unset means on |
 | `VITE_API_BASE_URL` | client, at build time | the API's public URL, no trailing slash. Empty when the client and API share an origin |
 | `VITE_BASE_PATH` | client, at build time | set by the Pages workflow to `/<repo>/` |
+| `VITE_SUPABASE_URL` | client, at build time | the same project. Public |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | client, at build time | the **publishable** key, meant to be in the bundle. RLS is what protects the data, not this key's secrecy |
 
 Every `VITE_` value is compiled into the built JavaScript and is **public**.
 Never put a key, a password or a connection string in one.
 
 ## The door
 
-The deployed app sits behind **HTTP Basic Authentication**. LiturgyGen has no
-user model and does not need one — nobody logs in and nothing belongs to
-anybody — but it does have nineteen write routes, and `DELETE /api/potf/:id`
-removes a prayer somebody transcribed by hand out of a printed book. An open
-DELETE on a public URL gets found by a scanner, not by a person.
+LiturgyGen serves more than one parish, so the gate has to say **which** parish
+is asking rather than only whether the caller is allowed in. Supabase Auth
+issues the session; `server/src/middleware/requireAuth.js` verifies the token
+and resolves `req.orgId` from the caller's membership rows. Every query in the
+services names its `org_id` explicitly — RLS on Supabase is the second lock, for
+anything that reaches the database without coming through this application.
 
-`server/src/middleware/basicAuth.js` is registered before every route, so it
-covers all of them. Two things sit outside it on purpose: `/healthz` and
-`/readyz`, because a platform health check cannot authenticate and a gated one
-gets the service marked unhealthy and killed. Neither leaks anything.
+This replaced HTTP Basic Authentication, which was the right size of answer
+while one office used the tool and stopped being one the moment a second parish
+could sign up: a single shared password cannot name a parish. The retired
+middleware is still in the tree at
+`server/src/middleware/retired/basicAuth.js`.
 
-The gate is **off** when `BASIC_AUTH_USER` and `BASIC_AUTH_PASS` are unset, so
-local development and the desktop build are unaffected, and **on** when a host
-sets both. It fails closed: a credential check that throws produces a 401, never
-a pass-through. The credentials live in the host's settings panel and are never
-in this repository.
+**The gate guards `/api`, and only `/api`.** It was `app.use(requireAuth())`
+for about an hour and it could not work: a global gate sits above
+`express.static`, so a signed-out browser asking for the app got
+`{"error":"Sign in to continue."}` instead of the client — and the client is the
+only thing that can draw the sign-in form. Nobody could ever sign in. The built
+client is public because it holds no data: it is the same bundle for every
+parish, and everything it displays it fetches from `/api` with a token.
+
+Outside the gate on purpose: the landing page at `/`, `/healthz` and `/readyz`
+— a platform health check cannot sign in, and a gated one gets the service
+marked unhealthy and killed — and `/auth-forward.js`, which a visitor following
+an email confirmation link needs before they have a session at all.
+
+Accounts are **off** when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are
+unset, so local development and the desktop build are unaffected, and **on**
+when a host sets both. The service role key bypasses RLS and belongs only in the
+host's settings panel — never in a `VITE_` variable, every one of which is
+compiled into a file the whole internet can download.
 
 ## The API
 
@@ -204,6 +237,8 @@ in this repository.
 | `GET`/`POST` | `/api/potf` | list / create a prayer template |
 | `PUT`/`DELETE` | `/api/potf/:id` | update / delete one |
 | `POST` | `/api/potf/parse` | parse a typed-in prayer page |
+| `POST` | `/api/potf/import/extract` | a PDF or an image of a prayer book → drafts. **Saves nothing** |
+| `POST` | `/api/potf/import/commit` | save the drafts somebody approved |
 | `GET`/`PUT` | `/api/settings` | document defaults |
 | `GET`/`POST`/`DELETE` | `/api/settings/schedule` | the office's Mass schedule |
 
@@ -224,8 +259,8 @@ is the REST pass still to come, and it is listed in
     server/
       server.js            the entry point
       src/app.js           the Express app, importable without listening
-      src/routes/          calendar, readings, generate, batch, potf, settings
-      src/services/        calendar, scraper, POTF cascade, composition, docx, batch
+      src/routes/          calendar, readings, generate, batch, potf, potfImport, settings, account
+      src/services/        calendar, scraper, POTF cascade, composition, docx, batch, import
       src/lib/             dates, Bible books, the request queue, the prayer parser
       src/db/              the live SQLite layer, being replaced
       db/                  the PostgreSQL pool, schema.sql, seed.sql, a .sql runner
@@ -274,8 +309,17 @@ later.
 
 ## Tests
 
-    npm run test:server     # 132 tests (1 skips without a real PostgreSQL)
-    npm run test:client     # 10 tests
+    npm run test:server     # 133 tests (1 skips without a real PostgreSQL)
+    npm run test:client     # 14 tests
+
+Two of them are there because of regressions that left no trace anywhere.
+`server/test/boot.test.js` makes the four requests the client fires on sign-in,
+over HTTP, because every other server test drives a service function directly
+and the bug was in the wiring between a route and a service.
+`client/test/stream.test.js` asserts the real client never reaches for
+`EventSource`, which takes no options and so cannot send an `Authorization`
+header — behind the gate that stream answered 401 with no status on the error
+event, and the progress bar simply stopped moving.
 
 The parser tests run against real USCCB pages saved as fixtures, including the
 awkward ones: 8 September, where the First Reading is a choice between two books

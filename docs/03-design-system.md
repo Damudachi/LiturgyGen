@@ -1,7 +1,8 @@
 # 3. Design system
 
-Palette **"Vellum"**, taken from the Chapel of the Holy Guardian Angel seal:
-navy ink and gold on the paper of a missal.
+Palette **"Vellum"**, drawn from the Chapel of the Holy Guardian Angel seal:
+navy ink and gold on the paper of a missal. The palette kept that provenance
+after the app stopped using the seal itself — see **The mark** below.
 
 The full document, with the palette as rendered swatches and the type scale set
 at its real sizes, is a Word file kept outside this repository. Everything here
@@ -116,9 +117,10 @@ framework offered a set. At 375px nothing scrolls sideways.
 - Real elements: `<header>`, `<nav>`, `<main>`, `<section>`, `<aside>`,
   `<ul>`/`<li>`, and twenty real `<button>`s. A day tile is a `<button>`, which
   is what makes it keyboard-reachable for free.
-- One image in the app, the chapel seal, and it carries alt text. Icons are
-  `aria-hidden` because each sits beside a text label; the few that stand alone
-  carry an `aria-label`.
+- **No raster images in the app's own chrome.** The mark is inline SVG with
+  `role="img"` and an `aria-label`; the screenshots in `docs/assets` are
+  documentation, not interface. Icons are `aria-hidden` because each sits beside
+  a text label; the few that stand alone carry an `aria-label`.
 - The `Field` atom renders a real `<label>` wrapping its input, so association
   is structural and cannot be forgotten. Controls outside a Field carry
   `aria-label`.
@@ -129,3 +131,51 @@ framework offered a set. At 375px nothing scrolls sideways.
   buttons. The day book traps Tab while open, closes on Escape, and returns
   focus to the tile that opened it.
 - Every animation is dropped under `prefers-reduced-motion`.
+
+## The mark
+
+`client/src/components/Logo.jsx` — an open missal, two stroked leaves with a
+gold ribbon in the gutter.
+
+It replaced `assets/seal-128.png`, the chapel's own seal. That seal is the
+chapel's identity rather than the application's: it belongs to one parish, and
+the whole point of the accounts work is that LiturgyGen serves more than one. A
+second parish signing in and finding somebody else's emblem in the corner would
+be right to wonder whose software this is. The chapel is still named, in words,
+on the entry screen — which is the accurate claim: built for them, not owned by
+them.
+
+It is a **component rather than an SVG file** because the two leaves take
+`currentColor`. One mark reads cream on the navy header and navy on cream paper;
+an `<img>` cannot inherit a colour. The ribbon stays gold at every size, and is
+what makes the mark a missal rather than a generic book icon.
+
+`client/public/favicon.svg` carries the same geometry with fixed colours, since
+a browser tab inherits nothing. Vite copies `public/` through unhashed, so it
+ships at a stable `/favicon.svg`. **If the geometry changes, change it in both.**
+
+## The entry screen
+
+`client/src/components/auth/EntryLayout.jsx` — the shell behind both signed-out
+screens, laid out as an opened missal: an ink cover leaf carrying the mark, the
+headline and three points, and a paper leaf holding the form. One gold ribbon
+hangs in the seam, notched at the tail, matching how `Book.jsx` marks an open
+day.
+
+This was a 448px card centred on an empty background, which on a laptop read as
+an unfinished phone layout. The cover leaf exists because a parish office
+usually arrives having been sent a link by whoever set the tool up, with no idea
+what it is; a lone sign-in box answers none of that and leaves most of a screen
+unused.
+
+The ribbon was briefly **six** ribbons, one per liturgical colour. It read as a
+thin striped comb rather than a bookmark, and the white one disappeared against
+the paper leaf. Gold alone says the same thing. Where a liturgical colour does
+still need to show on paper — the calendar's white — it carries a dark hairline
+inside its own edge, which is the note `index.css` makes about
+`--color-lit-white`.
+
+The server renders the same spread at `/` without React, in
+`server/src/views/pages.js`: inline CSS, no script, and the mark inlined as
+markup so it cannot 404 on a host with no client build. **Nothing in the build
+will tell you when the two drift apart.**

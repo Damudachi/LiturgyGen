@@ -51,12 +51,22 @@ Boxes are ticked only where the thing is actually true today.
       property than "it cannot be unsafe". Replaced with four fixed query
       constants chosen by which bounds are present, so no SQL is built at run
       time at all
-- [x] **A door in front of the app.** `server/src/middleware/basicAuth.js`,
-      registered before every route in `src/app.js`. Off when
-      `BASIC_AUTH_USER`/`BASIC_AUTH_PASS` are unset, so development and the
-      desktop build are unaffected; on when the host sets both. `/healthz` and
-      `/readyz` stay outside it, because a platform health check cannot
-      authenticate and a gated one gets the service killed. The middleware
+- [x] **A door in front of the app.** `server/src/middleware/requireAuth.js`,
+      registered on `/api` in `src/app.js`. Supabase Auth issues the session;
+      the middleware verifies the token and resolves `req.orgId` from the
+      caller's membership rows, so the gate says **which** parish is asking and
+      not merely whether the caller is allowed in. Off when `SUPABASE_URL` and
+      `SUPABASE_SERVICE_ROLE_KEY` are unset, so development and the desktop
+      build are unaffected; on when the host sets both. It replaced an HTTP
+      Basic Authentication gate, retired to
+      `src/middleware/retired/basicAuth.js`: one shared password cannot name a
+      parish. It guards `/api` and only `/api` — above `express.static` a global
+      gate served a signed-out browser JSON instead of the page that draws the
+      sign-in form, so nobody could sign in. The built client is public because
+      it holds no data: the same bundle for every parish. The landing page,
+      `/healthz`, `/readyz` and `/auth-forward.js` stay outside, because a
+      platform health check cannot sign in and a visitor following an email
+      confirmation link has no session yet. The middleware
       **fails closed**: a credential check that throws produces a 401, never a
       pass-through
 - [x] **Server-side validation.** Dates go through `isIsoDate()`, the settings
@@ -91,10 +101,19 @@ Boxes are ticked only where the thing is actually true today.
       placeholder prayers written for this tool and three invented Mass dates
 - [x] No classmate's name, number, email or photo anywhere — not in seed data,
       not in the screenshots, and not in the demo video when it is recorded
-- [x] The only face-like image is the chapel seal, which is the institution's
-      own emblem
-- [x] Nothing in the Philippine Data Privacy Act applies, because no personal
-      information is collected
+- [x] No face-like image in the application at all. The chapel seal was the
+      only one and is no longer used; the mark is an inline SVG of an open book
+- [x] **One category of personal information, named rather than denied.** This
+      used to read "no personal information is collected", and that stopped
+      being true the moment accounts shipped: Supabase Auth holds an **email
+      address and a password hash** for each member of staff. That is personal
+      information under the Philippine Data Privacy Act. What follows from it:
+      the app itself never stores an email — `memberships` holds a `user_id`
+      and a role, and the server reads the address from the token when it needs
+      to show "signed in as". No name, no phone number, no address, nothing
+      about a parishioner, and nothing about anybody who has not signed up.
+      Deleting the Supabase user removes it. The prayers, dates and citations
+      beside it are not personal data at all
 
 ## Copyright, which is the real risk here
 

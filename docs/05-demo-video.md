@@ -78,6 +78,15 @@ authorship of code the git history can contradict.
       before the first frame
 - [ ] **Real API, not demo mode** — record against `liturgygen.onrender.com`,
       never GitHub Pages, and the demo notice must not be on screen
+- [ ] **Seed the prayers first.** A parish founded on the host gets the
+      placeholder set only — `server/data/orillo` is git-ignored, so Render has
+      never had it. From a machine that does have it, with `DATABASE_URL`
+      pointing at the host: `cd server && npm run seed -- --org <uuid>`. Check
+      the Prayers screen shows the real titles before recording
+- [ ] **Do not open the prayer-book importer on camera.** It is written but has
+      not been run against a real book. The Prayers screen's **Import a prayer
+      book** button is the one thing in the app that has not been walked
+      through; mention it on slide 12 if at all, do not demonstrate it
 - [ ] **Nothing secret in frame.** No `.env`, no terminal history, no Render
       environment panel, no Supabase dashboard, no connection string, and never
       the service role key

@@ -147,6 +147,47 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   section 3 now says it is not.
 - **Commit:** (this week's commit)
 
+### 2026-10-04 — The signed-out screens, a dedicated mark, and three auth regressions
+
+- **Tool:** Claude (Claude Code)
+- **What I asked for:** the landing page and the sign-in screen looked bland and
+  too narrow on a laptop. Then, as they came up: the prayers from my local folder
+  were not in the new accounts, the progress bar and the USCCB countdown had
+  stopped moving, the email confirmation link errored, and I wanted a dedicated
+  logo instead of the chapel's seal.
+- **What it gave back:**
+  - `client/src/components/auth/EntryLayout.jsx`, the signed-out spread, and the
+    same layout rewritten into `server/src/views/pages.js` for the page at `/`.
+  - `client/src/components/Logo.jsx` and `client/public/favicon.svg`.
+  - **Three bugs the accounts work had left behind**, all found by reading rather
+    than by a failing test: `routes/settings.js` took `_req` and then called
+    `req.orgId`, so `GET /api/settings` threw `ReferenceError: req is not
+    defined` on every call and the client reported "LiturgyGen's server is not
+    running"; progress used `new EventSource`, which takes no options and so
+    cannot send an `Authorization` header, meaning the stream 401'd and both the
+    progress bar and the server's own one-second USCCB countdown went dead; and
+    `npm run seed` called `seedPotfTemplates()` with no `orgId`, hit the
+    early-return guard and printed "0 inserted" as though it had worked.
+  - `/auth-forward.js`, because Supabase sends email links to the Site **origin**
+    and the app lives at `/app` — a fragment is never sent to the server, so a
+    valid confirmation link was dropping people on a page that could not read it.
+  - `server/test/boot.test.js` and `client/test/stream.test.js`, which cover the
+    two regressions that were invisible.
+  - The prayer-book importer: `server/src/services/importService.js`,
+    `routes/potfImport.js`, `client/src/components/prayers/ImportBook.jsx`.
+- **What I kept, what I changed, and why:** kept nearly all of it. Two things I
+  pushed back on. It first built the ribbon in the seam as **six** ribbons, one
+  per liturgical colour; it read as a striped comb and the white one vanished
+  against the paper, so it is one gold ribbon now — the same thing `Book.jsx`
+  already uses. And it had restyled the sign-in screen while telling me there was
+  no landing page in the repository, having searched only `client/`; the real one
+  is server-rendered in `views/pages.js`, which is why my first two redeploys
+  changed nothing.
+- **What this costs me:** a fair amount. The entry screens, the mark and the
+  importer are AI-written, and section 3 says so. The importer is also
+  **untested** — written to be reviewed, not yet run against a real book.
+- **Commit:** (this week's commit)
+
 ---
 
 ## 2. Where the AI got it wrong
@@ -211,6 +252,27 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   fixtures (`server/test/fixtures/usccb-2026-09-08-optional.html`) and rewrote
   the block-walking logic against them. This is why the parser tests exist.
 - **Commit:** `9e59339` — https://github.com/Damudachi/LiturgyGen/commit/9e59339
+
+### Case 5 — It restyled the wrong page, and told me there wasn't one
+
+I asked it to improve the landing page and the log-in. It searched `client/` for
+the landing page, found only the React sign-in screen, and told me plainly that
+there was no landing page in the codebase — then asked me a question built on
+that, and restyled the sign-in screen.
+
+The landing page is real. It is server-rendered at `/` by
+`server/src/views/pages.js`, with the React app mounted at `/app`. So I pushed
+and redeployed twice and saw nothing change, because the page I was looking at
+was the one file it had not looked in.
+
+**What I take from it:** the confident negative is the dangerous output. "There
+is no X in this codebase" is a claim about everything it did *not* read, and it
+had read one directory. When it told me later that `GET /api/settings` had been
+throwing on every call since the accounts commit, I checked that one against the
+database before believing it — and it was right, all 19 prayers in both parishes
+were placeholders. The lesson is not to distrust it; it is that an absence is a
+much weaker finding than a presence, and I should ask which files it actually
+opened.
 
 ---
 
@@ -285,6 +347,28 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   records the work; section 1 of this file records who did it. Leaving the
   original sentence in would have been the one dishonest line in this
   document, so it is replaced rather than quietly deleted.
+
+
+### Written by the AI this week, named here
+
+- **Files:** `client/src/components/auth/EntryLayout.jsx`,
+  `client/src/components/Logo.jsx`, `client/public/favicon.svg`, the spread in
+  `server/src/views/pages.js`, `server/src/services/importService.js`,
+  `server/src/routes/potfImport.js`,
+  `client/src/components/prayers/ImportBook.jsx`, `server/test/boot.test.js`,
+  `client/test/stream.test.js`, and the `/auth-forward.js` route.
+- **Commit:** (this week's commit)
+- **What they do and what I decided:** the signed-out spread and the app's own
+  mark, which replaced the chapel's seal because that seal belongs to one parish
+  and the app now serves more than one; the prayer-book importer; and the two
+  tests that cover the regressions nothing else caught. My decisions inside
+  them: one gold ribbon rather than six liturgical ones, and — the one I would
+  defend hardest — the importer does **not** guess a page's season, week or
+  weekday. It reads a title and stops. A page number is not liturgical data, and
+  the whole argument of `philippineOrdo.js` is that this application does not
+  invent that mapping. So every imported draft arrives unticked and needs a day
+  set by hand before it can be saved. That makes importing a hundred pages
+  slower, on purpose.
 
 ### The AI-written part I understand best
 
