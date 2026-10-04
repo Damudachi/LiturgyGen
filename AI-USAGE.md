@@ -117,44 +117,6 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
 - **Commit:** `9182b6d` — https://github.com/Damudachi/LiturgyGen/commit/9182b6d
   (the audit's own write-up landed alongside it in `468c5a7`)
 
-### 2026-10-04 — The credential check, and the Render deployment
-
-- **Tool:** Claude (Claude Code)
-- **What I asked for:** write `checkCredentials` — the one function the security
-  pass deliberately left for me — and tell me what deploying to Render actually
-  requires.
-- **What it gave back:** the implementation (scheme match, base64 shape check,
-  split on the first colon only, sha256 + `timingSafeEqual`), with the eleven
-  tests in `server/test/basicAuth.test.js` green and the whole server suite at
-  121 passing on that day. Both have since moved: Supabase Auth replaced the
-  Basic Auth gate later the same week, so that middleware now sits at
-  `server/src/middleware/retired/basicAuth.js` and its test file is parked as
-  `server/test/retired-basicAuth.test.js.txt` — kept, but no longer run. The
-  suite is 138 server tests and 14 client tests today. It also found that
-  Render's free web services have an **ephemeral
-  filesystem**, which matters because the readings cache is JSON files on disk:
-  every spin-down would throw away readings that cost a three-minute cooldown
-  each to fetch.
-- **What I kept, what I changed, and why:** kept it. The part I would not have
-  got right on my own is why hashing before `timingSafeEqual` is necessary at
-  all — not to hide the password but to make both buffers 32 bytes, because
-  `timingSafeEqual` throws on unequal lengths and the length is itself a leak.
-- **Also in this session:** it pointed out that the PostgreSQL migration had
-  stopped one table short. The readings - the only data in the app that is
-  expensive to get - were still one JSON file per day under
-  `server/.cache/readings`, and a free host's filesystem is ephemeral, so every
-  spin-down would have thrown them away and made the office re-pay the USCCB
-  cooldown. I had believed the migration already fixed the waiting; it had not,
-  and I would not have found that out until the demo. `readings_cache` and the
-  three `scraperService` functions that now read it are AI-written too, with
-  eleven tests in `server/test/readingsCache.test.js`. Recorded as finding 6 in
-  `docs/07-postgres-migration-map.md`.
-- **What this costs me:** `checkCredentials` was supposed to be mine, and
-  section 3 now says it is not.
-- **Commit:** `99649e9` — https://github.com/Damudachi/LiturgyGen/commit/99649e9
-  (the credential check) and `00b5e65` —
-  https://github.com/Damudachi/LiturgyGen/commit/00b5e65 (`readings_cache` and
-  the three `scraperService` functions that read it)
 
 ### 2026-10-04 — The signed-out screens, a dedicated mark, and three auth regressions
 
