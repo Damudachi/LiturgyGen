@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase.js';
 import { Alert, Button, Field, Input } from '../ui.jsx';
 import EntryLayout from './EntryLayout.jsx';
@@ -18,6 +18,35 @@ import EntryLayout from './EntryLayout.jsx';
  * Supabase's own responses are deliberately vague about it too, and the message
  * below stays vague to match.
  */
+/**
+ * What a failed email link left in the address bar.
+ *
+ * Supabase reports these in the URL FRAGMENT, not in a response and not in a
+ * callback: a dead confirmation link lands on
+ * `/app#error=access_denied&error_code=otp_expired&...` and that is the entire
+ * notification. Nothing throws, `getSession()` simply returns null, and without
+ * this the visitor gets the plain sign-in form plus a line of noise in the
+ * address bar explaining nothing.
+ *
+ * `error_description` is written for a developer ("Email link is invalid or has
+ * expired"), so the one code that actually happens gets wording that says what
+ * to do instead.
+ */
+function errorFromHash() {
+  const hash = window.location.hash;
+  if (!hash || hash.length < 2) return null;
+
+  const params = new URLSearchParams(hash.slice(1));
+  const code = params.get('error_code');
+  if (!params.get('error') && !code) return null;
+
+  if (code === 'otp_expired') {
+    return 'That confirmation link has expired, or it had already been used. Sign in below if the account is confirmed, or create it again to be sent a fresh link.';
+  }
+  return params.get('error_description') || 'That link did not work. Sign in below, or ask for a new one.';
+}
+
+
 export default function AuthScreen({ onSignedIn }) {
   const [mode, setMode] = useState('in');
   const [email, setEmail] = useState('');
@@ -26,6 +55,17 @@ export default function AuthScreen({ onSignedIn }) {
   const [notice, setNotice] = useState(null);
 
   const signingUp = mode === 'up';
+
+  // A dead email link is the only thing that arrives here as a URL fragment,
+  // and it has to be read before anything clears it.
+  useEffect(() => {
+    const message = errorFromHash();
+    if (!message) return;
+    setNotice({ tone: 'error', text: message });
+    // Take it out of the address bar, so reloading the page does not reopen a
+    // complaint about a link the visitor has already dealt with.
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }, []);
 
   async function submit(event) {
     event.preventDefault();
@@ -48,7 +88,14 @@ export default function AuthScreen({ onSignedIn }) {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
-          options: { emailRedirectTo: window.location.origin },
+          // /app, NOT the origin. The origin is the server-rendered landing
+          // page, which has no React on it - a confirmation link that lands
+          // there leaves the session sitting unread in the URL fragment and
+          // the visitor looking at a page that cannot sign them in. This path
+          // must also be on the Redirect URL allowlist in the Supabase
+          // dashboard, or Supabase substitutes the project's Site URL and the
+          // link goes wherever that points.
+          options: { emailRedirectTo: new URL('/app', window.location.origin).href },
         });
         if (error) throw error;
 

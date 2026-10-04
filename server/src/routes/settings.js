@@ -5,7 +5,7 @@ import { DEFAULT_STYLE } from '../services/docxService.js';
 
 const router = Router();
 
-router.get('/', async (_req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     res.json({ settings: await getSettings(req.orgId), defaults: DEFAULT_SETTINGS, style: DEFAULT_STYLE });
   } catch (error) {

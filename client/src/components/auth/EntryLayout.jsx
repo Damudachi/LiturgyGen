@@ -38,13 +38,22 @@ const DEFAULT_POINTS = [
 /* Violet, white, green, red, rose, gold - the year in the order it is worn,
  * at the uneven lengths ribbons actually fall to in a bound missal. */
 const RIBBONS = [
-  { color: 'var(--color-lit-violet)', height: '7.5rem' },
-  { color: 'var(--color-lit-white)', height: '10rem' },
-  { color: 'var(--color-lit-green)', height: '6.25rem' },
-  { color: 'var(--color-lit-red)', height: '8.75rem' },
-  { color: 'var(--color-lit-rose)', height: '5.5rem' },
-  { color: 'var(--color-lit-gold)', height: '7rem' },
+  { color: 'var(--color-lit-violet)', height: '11rem' },
+  { color: 'var(--color-lit-white)', height: '9.25rem' },
+  { color: 'var(--color-lit-green)', height: '7.75rem' },
+  { color: 'var(--color-lit-red)', height: '12.25rem' },
+  { color: 'var(--color-lit-rose)', height: '8.5rem' },
+  { color: 'var(--color-lit-gold)', height: '10.25rem' },
 ];
+
+/*
+ * Each ribbon carries a dark hairline inside its own edge. On the navy half
+ * that hairline is invisible and costs nothing; on the paper half it is the
+ * only reason the white ribbon is a ribbon rather than a gap in the row.
+ * `index.css` makes the same point about --color-lit-white in the calendar.
+ */
+const RIBBON_SHADOW =
+  'inset 0 0 0 1px rgba(27, 39, 64, 0.18), 0 3px 10px rgba(27, 39, 64, 0.38)';
 
 export default function EntryLayout({
   headline = 'Worship aids for every Mass, without retyping a word.',
@@ -59,13 +68,18 @@ export default function EntryLayout({
             into the spine rather than printed on the cover. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 right-0 z-10 hidden translate-x-1/2 gap-[5px] lg:flex"
+          className="pointer-events-none absolute top-0 right-0 z-10 hidden translate-x-1/2 gap-[6px] lg:flex"
         >
           {RIBBONS.map((ribbon, index) => (
             <span
               key={ribbon.color}
-              className="ribbon ribbon-drop block w-[7px] shadow-[0_2px_6px_rgba(27,39,64,0.35)]"
-              style={{ height: ribbon.height, background: ribbon.color, animationDelay: `${index * 70}ms` }}
+              className="ribbon ribbon-drop block w-4"
+              style={{
+                height: ribbon.height,
+                background: ribbon.color,
+                boxShadow: RIBBON_SHADOW,
+                animationDelay: `${index * 70}ms`,
+              }}
             />
           ))}
         </div>
@@ -96,9 +110,13 @@ export default function EntryLayout({
         </div>
 
         {/* Stacked, the ribbons lie flat along the fold instead. */}
-        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 flex h-1 lg:hidden">
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 flex h-1.5 lg:hidden">
           {RIBBONS.map((ribbon) => (
-            <span key={ribbon.color} className="flex-1" style={{ background: ribbon.color }} />
+            <span
+              key={ribbon.color}
+              className="flex-1"
+              style={{ background: ribbon.color, boxShadow: 'inset 0 0 0 1px rgba(27, 39, 64, 0.18)' }}
+            />
           ))}
         </div>
       </section>
