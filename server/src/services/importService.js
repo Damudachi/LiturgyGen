@@ -37,14 +37,24 @@
  * page belongs to. Inferring that from a page number would be inventing
  * liturgical data, and the whole point of this application is not doing that.
  *
- * OCR IS AN OPTIONAL DEPENDENCY
- * -----------------------------
+ * WHAT OCR COSTS AT RUN TIME
+ * --------------------------
+ * `tesseract.js` fetches its English language model - `eng.traineddata`, about
+ * 5 MB - on first use and caches it beside the process. On a host with an
+ * ephemeral filesystem that means one 5 MB download after every cold start,
+ * before the first photograph is read, and it needs outbound network to do it.
+ * A PDF with a text layer costs none of that. The file is git-ignored.
+ *
+ * OCR IS A SEPARATE DEPENDENCY
+ * ----------------------------
  * A PDF with a text layer - anything exported from a word processor, which is
- * most digital books - needs no OCR at all, and that path has no extra
- * dependency. Photographs and scanned PDFs do, and `tesseract.js` is loaded
- * only when one arrives. It is not in `package.json`: it pulls a WASM build and
- * a language model, which is a lot of install for an office that has a text
- * PDF, and the error below says exactly what to run if it is wanted.
+ * most digital books - needs no OCR at all. Photographs and scanned PDFs do,
+ * and `tesseract.js` is imported only when one arrives, so the cost above is
+ * paid only by an office that uploads pictures. If the import fails the error
+ * says so in a sentence the office can act on, and sets `expose` so the
+ * production error handler sends that sentence rather than replacing it with
+ * "Something went wrong on the server." - which is exactly what happened the
+ * first time, because the status was 501 and every 5xx message is hidden.
  */
 
 import { parseOrilloPage } from '../lib/orilloParser.js';
@@ -103,22 +113,38 @@ async function pdfTextLayer(bytes) {
  * model nobody has downloaded would be a worse experience than this message.
  */
 async function ocr(bytes) {
-  let Tesseract;
+  let recognise;
   try {
-    Tesseract = await import('tesseract.js');
-  } catch {
-    const error = new Error(
-      'This looks like a scan or a photograph, which needs optical character recognition. ' +
-        'Install it once with `npm install tesseract.js --workspace server` and try again, ' +
-        'or export the book as a PDF with a text layer and upload that instead.',
+    const module = await import('tesseract.js');
+    // v7 puts `recognize` on the default export only; the named exports are
+    // `createWorker`, `createScheduler` and the enums. Reading it off the
+    // namespace gives undefined and fails as "recognize is not a function",
+    // which is a confusing way to learn this.
+    recognise = (module.default && module.default.recognize) || module.recognize;
+    if (typeof recognise !== 'function') {
+      throw new Error('tesseract.js exposed no recognize()');
+    }
+  } catch (error) {
+    const missing = new Error(
+      'Reading text out of pictures needs tesseract.js, and it is not available on this server ' +
+        `(${error.message}). Upload a PDF with a text layer instead, or install it with ` +
+        '`npm install tesseract.js --workspace server`.',
     );
-    error.status = 501;
-    error.code = 'OCR_NOT_INSTALLED';
-    throw error;
+    missing.status = 503;
+    missing.code = 'OCR_UNAVAILABLE';
+    // The message names a fix and leaks nothing, so the error handler is allowed
+    // to send it through rather than replacing it with the generic 5xx line.
+    missing.expose = true;
+    throw missing;
   }
 
-  const { data } = await Tesseract.recognize(Buffer.from(bytes), 'eng');
-  return [String(data.text || '').trim()];
+  // Two arguments only. Passing a third options object - even one whose single
+  // key is undefined - makes v7 fail inside its worker with "recognize is not a
+  // function" reported from a MessagePort, which escapes a try/catch around this
+  // call and takes the process down rather than rejecting. There is no progress
+  // callback for that reason.
+  const { data } = await recognise(Buffer.from(bytes), 'eng');
+  return [String((data && data.text) || '').trim()];
 }
 
 /**

@@ -61,8 +61,8 @@ export default function EntryLayout({
             spine rather than printed on the cover. */}
         <span
           aria-hidden="true"
-          className="ribbon ribbon-drop pointer-events-none absolute top-0 right-0 z-10 hidden w-5 translate-x-1/2 bg-gold lg:block"
-          style={{ height: '10.5rem', boxShadow: RIBBON_SHADOW }}
+          className="ribbon ribbon-drop pointer-events-none absolute top-0 right-0 z-10 hidden w-[34px] translate-x-1/2 bg-gold lg:block"
+          style={{ height: '13rem', boxShadow: RIBBON_SHADOW }}
         />
 
         <div className="mx-auto flex min-h-full max-w-[34rem] flex-col lg:mx-0">
@@ -91,7 +91,7 @@ export default function EntryLayout({
         </div>
 
         {/* Stacked, the ribbon lies flat along the fold instead. */}
-        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 bg-gold lg:hidden" />
+        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-2.5 bg-gold lg:hidden" />
       </section>
 
       <section className="leaf-paper flex items-center px-6 py-14 sm:px-10 lg:px-14">

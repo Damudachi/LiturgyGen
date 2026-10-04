@@ -53,6 +53,7 @@ export default function ImportBook({ onSaved, onSkip, compact = false }) {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null);
   const [seasons, setSeasons] = useState([]);
+  const [progress, setProgress] = useState(null);
   const fileInput = useRef(null);
 
   // The season list is the same one the Template Manager offers, so an imported
@@ -64,33 +65,69 @@ export default function ImportBook({ onSaved, onSkip, compact = false }) {
       .catch(() => setSeasons([]));
   }, []);
 
-  async function upload(file) {
-    if (!file) return;
+  /**
+   * Upload one or more files, and keep whatever comes back.
+   *
+   * One request per file, because the route takes a file as its own body - so a
+   * book photographed page by page is twenty pictures, and they are sent in
+   * sequence rather than at once. Sequence matters: optical character
+   * recognition is not cheap, and twenty parallel requests would make the
+   * server fight itself for the same CPU.
+   *
+   * Drafts ACCUMULATE. Picking more files adds to the list rather than
+   * replacing it, which is what somebody going through a book a section at a
+   * time needs; one file failing does not lose the pages already read, and the
+   * failures are reported together at the end.
+   */
+  async function upload(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+
     setBusy(true);
     setNotice(null);
-    try {
-      const payload = await api.importExtract(file);
-      setHow(payload.how);
-      setDrafts(
-        payload.drafts.map((draft, index) => ({
-          ...draft,
-          key: `${draft.page}-${index}`,
-          // Unticked on purpose: see the note at the top.
-          include: false,
-        })),
-      );
-      const readable = payload.drafts.filter((draft) => draft.prayer).length;
+    setProgress({ done: 0, total: files.length, name: files[0].name });
+
+    let added = 0;
+    const failures = [];
+    let lastHow = how;
+
+    for (const [index, file] of files.entries()) {
+      setProgress({ done: index, total: files.length, name: file.name });
+      try {
+        const payload = await api.importExtract(file);
+        lastHow = payload.how;
+        setDrafts((current) => [
+          ...current,
+          ...payload.drafts.map((draft, position) => ({
+            ...draft,
+            key: `${file.name}-${draft.page}-${position}-${current.length}`,
+            source: file.name,
+            include: false,
+          })),
+        ]);
+        added += payload.drafts.length;
+      } catch (error) {
+        failures.push(`${file.name}: ${error.message}`);
+      }
+    }
+
+    setHow(lastHow);
+    setProgress(null);
+    setBusy(false);
+    if (fileInput.current) fileInput.current.value = '';
+
+    if (added && !failures.length) {
       setNotice({
-        tone: readable ? 'info' : 'warn',
-        text: readable
-          ? `Read ${readable} prayer${readable === 1 ? '' : 's'} out of ${file.name}. Nothing is saved yet — check each one and say which day it belongs to.`
-          : `Nothing in ${file.name} could be read as a prayer. The pages are below if you want to see what came out.`,
+        tone: 'info',
+        text: `Read ${added} prayer${added === 1 ? '' : 's'} from ${files.length} file${files.length === 1 ? '' : 's'}. Nothing is saved yet — check each one and say which day it belongs to.`,
       });
-    } catch (error) {
-      setNotice({ tone: 'error', text: error.message });
-    } finally {
-      setBusy(false);
-      if (fileInput.current) fileInput.current.value = '';
+    } else if (added) {
+      setNotice({
+        tone: 'warn',
+        text: `Read ${added} prayer${added === 1 ? '' : 's'}, but ${failures.length} file${failures.length === 1 ? '' : 's'} could not be read. ${failures.join(' ')}`,
+      });
+    } else {
+      setNotice({ tone: 'error', text: failures.join(' ') || 'Nothing could be read out of those files.' });
     }
   }
 
@@ -161,13 +198,16 @@ export default function ImportBook({ onSaved, onSkip, compact = false }) {
           ref={fileInput}
           id="book-file"
           type="file"
-          accept="application/pdf,image/png,image/jpeg"
+          accept="application/pdf,image/png,image/jpeg,image/webp"
           className="sr-only"
+          multiple
           disabled={busy}
-          onChange={(event) => upload(event.target.files?.[0])}
+          onChange={(event) => upload(event.target.files)}
         />
         <FileUp className="mx-auto size-7 text-tile-edge" aria-hidden="true" />
-        <p className="mt-2 text-sm text-muted">A PDF, or a JPEG or PNG of one page.</p>
+        <p className="mt-2 text-sm text-muted">
+          PDFs, or photographs of the pages. Pick as many as you like — they are read one after another.
+        </p>
         <Button
           icon={Upload}
           variant="secondary"
@@ -176,13 +216,15 @@ export default function ImportBook({ onSaved, onSkip, compact = false }) {
           disabled={busy}
           onClick={() => fileInput.current?.click()}
         >
-          {busy ? 'Reading the file…' : 'Choose a file'}
+          {busy ? 'Reading…' : drafts.length ? 'Add more files' : 'Choose files'}
         </Button>
       </div>
 
-      {busy && (
-        <p className="flex items-center gap-2 text-sm text-muted">
-          <Spinner /> A scanned book takes a while — recognition runs a page at a time.
+      {busy && progress && (
+        <p className="flex items-center gap-2 text-sm text-muted" aria-live="polite">
+          <Spinner />
+          Reading {progress.name} — file {progress.done + 1} of {progress.total}. A photographed
+          page takes a few seconds.
         </p>
       )}
 
@@ -232,10 +274,12 @@ export default function ImportBook({ onSaved, onSkip, compact = false }) {
                     </Field>
                   ) : (
                     <p className="font-serif text-lg font-semibold text-ink">
-                      Page {draft.page} could not be read
+                      Page {draft.page} of {draft.source} could not be read
                     </p>
                   )}
-                  <p className="mt-1 text-sm text-muted">Page {draft.page} of the upload</p>
+                  <p className="mt-1 text-sm text-muted">
+                    Page {draft.page}{draft.source ? ` of ${draft.source}` : ' of the upload'}
+                  </p>
                 </div>
               </header>
 

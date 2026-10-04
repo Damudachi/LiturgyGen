@@ -65,3 +65,9 @@ final-project-template-main/
 # in docs/, written without any identity in them.
 Docu/
 docs/05-demo-video.md
+
+# Tesseract's language model, downloaded on first use by the prayer-book
+# importer. It is a ~15 MB binary blob that tesseract.js caches beside the
+# process, it is not ours, and it is re-fetched whenever it is missing.
+eng.traineddata
+*.traineddata

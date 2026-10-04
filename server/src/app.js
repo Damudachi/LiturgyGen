@@ -262,8 +262,21 @@ export function createApp() {
   app.use((error, _req, res, _next) => {
     const status = error.status || 500;
     if (status >= 500) console.error(error);
+    /*
+     * A 5xx message is hidden in production, because a stack trace or a driver
+     * error describes the file layout and the dependencies to a stranger.
+     *
+     * `error.expose` opts one out. Some 5xx conditions are not bugs but
+     * configuration the office can act on - "optical character recognition is
+     * not installed on this server" is a 503 whose whole value is the sentence
+     * telling you what to do. Replacing that with "Something went wrong on the
+     * server." cost an afternoon of looking for a crash that was not there, so
+     * an error may now say that its message is written for the reader. Nothing
+     * sets it except where the message was composed for exactly that.
+     */
+    const hide = status >= 500 && process.env.NODE_ENV === 'production' && !error.expose;
     res.status(status).json({
-      error: status >= 500 && process.env.NODE_ENV === 'production'
+      error: hide
         ? 'Something went wrong on the server.'
         : error.message || 'Something went wrong.',
       code: error.code,

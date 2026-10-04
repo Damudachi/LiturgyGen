@@ -77,11 +77,87 @@ function rowFingerprint(row) {
   });
 }
 
+
+/**
+ * Copy one parish's prayer library into another, inside the database.
+ *
+ * WHY THIS EXISTS
+ * ---------------
+ * `collectSeeds()` reads the office's transcriptions from `server/data/orillo`,
+ * which is git-ignored and therefore exists on the office's machines and
+ * nowhere else. A deployed server has no copy, so founding a parish on the host
+ * seeded the placeholder set and nothing else - which is how two live parishes
+ * ended up holding 19 placeholders apiece and not one real prayer.
+ *
+ * The obvious fix is to commit the transcriptions. That is the one thing
+ * `seeds/orillo.seed.js` says must never happen: the books are under copyright
+ * and the repository is public. So instead the prayers are loaded into ONE
+ * parish on the host - once, by somebody running the command below from a
+ * machine that has the files - and every parish founded afterwards is filled
+ * from that one by `INSERT ... SELECT`, entirely inside the database.
+ *
+ * Set `LITURGYGEN_SEED_SOURCE_ORG_ID` on the host to the parish to copy from.
+ * Unset, nothing changes and seeding falls back to the files as before.
+ *
+ * `origin` is rewritten to 'seed' on the copies so the seeder still recognises
+ * them as its own and leaves an edited row alone; `id`, `org_id` and the
+ * timestamps are not copied, because they belong to the new parish.
+ */
+export async function cloneLibrary(targetOrgId, sourceOrgId) {
+  if (!targetOrgId || !sourceOrgId || targetOrgId === sourceOrgId) return { copied: 0 };
+
+  const { rows } = await query(
+    `INSERT INTO potf_templates
+       (org_id, title, season, week, day_of_week, celebration_id, fixed_date,
+        priest_invitation, response_options, intentions, priest_conclusion, notes,
+        origin, seed_hash, is_placeholder, is_active)
+     SELECT $1, title, season, week, day_of_week, celebration_id, fixed_date,
+            priest_invitation, response_options, intentions, priest_conclusion, notes,
+            'seed', seed_hash, is_placeholder, is_active
+       FROM potf_templates
+      WHERE org_id = $2
+     RETURNING id`,
+    [targetOrgId, sourceOrgId],
+  );
+  return { copied: rows.length };
+}
+
+/**
+ * Empty a parish's seeded prayers, leaving anything somebody edited or typed.
+ *
+ * Used before a re-clone, so running the backfill twice does not double every
+ * prayer in the library. `origin <> 'seed'` is the guard: a prayer the office
+ * typed in or imported from their own book is theirs and is never touched.
+ */
+export async function clearSeeded(orgId) {
+  const { rows } = await query(
+    `DELETE FROM potf_templates WHERE org_id = $1 AND origin = 'seed' RETURNING id`,
+    [orgId],
+  );
+  return { removed: rows.length };
+}
+
 export async function seedPotfTemplates({ orgId = null, force = false, log = () => {} } = {}) {
   // Seeding is per-parish now. Without an org there is nowhere to put the
   // starter prayers, and seeding them into every parish at once would be the
   // only other reading of a missing one.
   if (!orgId) return { inserted: 0, refreshed: 0, skipped: 0, total: 0 };
+
+  /*
+   * No transcriptions on this machine - which is every deployed host, since
+   * `data/orillo` is git-ignored. Copy them from the parish named by
+   * LITURGYGEN_SEED_SOURCE_ORG_ID instead of seeding placeholders alone.
+   * See cloneLibrary() above for why the files are not simply committed.
+   */
+  const sourceOrgId = process.env.LITURGYGEN_SEED_SOURCE_ORG_ID;
+  if (sourceOrgId && sourceOrgId !== orgId && !loadOrilloSeeds().seeds.length) {
+    const { copied } = await cloneLibrary(orgId, sourceOrgId);
+    if (copied) {
+      log(`  copied ${copied} prayers from the seed parish`);
+      return { inserted: copied, refreshed: 0, skipped: 0, total: copied };
+    }
+    log('  seed parish holds no prayers; falling back to the placeholders');
+  }
   const allSeeds = collectSeeds(log);
 
   /*
@@ -230,8 +306,6 @@ function flagValue(name) {
 }
 
 if (isDirectRun) {
-  const { query } = await import('./index.js');
-
   if (process.argv.includes('--list')) {
     const { rows } = await query('SELECT id, name, slug FROM organizations ORDER BY created_at');
     if (!rows.length) {
@@ -243,10 +317,58 @@ if (isDirectRun) {
     process.exit(0);
   }
 
+  /*
+   * Fill every other parish from one that already holds the real prayers,
+   * database to database. This is the command to run once after loading the
+   * transcriptions into the first parish, and it is what makes the prayers
+   * appear in accounts that already exist.
+   *
+   *   npm run seed -- --clone-to-all --source <uuid>
+   *
+   * Prayers the office typed in or imported are never touched: only rows with
+   * origin = 'seed' are replaced. Safe to run twice.
+   */
+  if (process.argv.includes('--clone-to-all')) {
+    const sourceOrgId = flagValue('--source');
+    if (!sourceOrgId) {
+      console.error('Which parish holds the prayers? Pass --source <uuid>.');
+      process.exit(1);
+    }
+    const { rows: source } = await query(
+      `SELECT name, (SELECT count(*) FROM potf_templates t WHERE t.org_id = o.id) AS prayers
+         FROM organizations o WHERE id = $1`,
+      [sourceOrgId],
+    );
+    if (!source.length) {
+      console.error(`No parish with id ${sourceOrgId}.`);
+      process.exit(1);
+    }
+    console.log(`Source: ${source[0].name} (${source[0].prayers} prayers).`);
+
+    const { rows: targets } = await query(
+      'SELECT id, name FROM organizations WHERE id <> $1 ORDER BY created_at',
+      [sourceOrgId],
+    );
+    if (!targets.length) console.log('No other parishes to fill.');
+    for (const target of targets) {
+      const { removed } = await clearSeeded(target.id);
+      const { copied } = await cloneLibrary(target.id, sourceOrgId);
+      console.log(`  ${target.name}: replaced ${removed} seeded, copied ${copied}.`);
+    }
+    console.log('');
+    console.log(
+      `For parishes founded from now on, set LITURGYGEN_SEED_SOURCE_ORG_ID=${sourceOrgId}`,
+    );
+    console.log("in the host's environment, so a new account is filled from that parish too.");
+    process.exit(0);
+  }
+
   const orgId = flagValue('--org');
   if (!orgId) {
     console.error('Which parish? Pass --org <uuid>, or --list to see them.');
     console.error('  npm run seed -- --list');
+    console.error('  npm run seed -- --org <uuid>                     seed from server/data/orillo');
+    console.error('  npm run seed -- --clone-to-all --source <uuid>   fill every other parish from that one');
     process.exit(1);
   }
 

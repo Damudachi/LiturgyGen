@@ -27,7 +27,8 @@
     "morgan": "^1.10.0",
     "pdfjs-dist": "^6.4.299",
     "pg": "^8.13.1",
-    "romcal": "3.0.0-dev.140"
+    "romcal": "3.0.0-dev.140",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "pg-mem": "^3.0.14"

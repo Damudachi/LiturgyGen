@@ -150,7 +150,24 @@ repository: run the command from a machine that has `server/data/orillo`, with
 `DATABASE_URL` set to the host's.
 
 The other two ways in are the Prayers screen: **Type in** for one page, and
-**Import a prayer book** for a PDF or a photograph of one.
+**Import a prayer book** for PDFs or photographs of the pages.
+
+### Getting them onto a deployed host
+
+A host has no `data/orillo`, so a parish founded there gets the placeholder set
+and nothing else. Rather than committing the books, the prayers are loaded into
+**one** parish and every parish founded afterwards is filled from that one by an
+`INSERT ... SELECT` inside the database. Once, from a machine that has the files:
+
+    cd server
+    npm run seed -- --list                           # find the parish id
+    npm run seed -- --org <uuid>                     # load the transcriptions
+    npm run seed -- --clone-to-all --source <uuid>   # fill the parishes that exist
+
+Then set `LITURGYGEN_SEED_SOURCE_ORG_ID=<uuid>` on the host, and new accounts
+are filled too. `--clone-to-all` replaces only rows with `origin = 'seed'`, so a
+prayer somebody typed in or imported is never touched and it is safe to re-run.
+`server/test/clone.test.js` covers it.
 
 Please keep it that way. Do not commit the transcriptions, the scans or the
 ORDO — see [`LICENSE`](LICENSE) for what this project does and does not cover.
@@ -166,6 +183,7 @@ placeholder values.
 | `SUPABASE_URL` | server | the Supabase project. Unset means accounts are off |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | **bypasses RLS.** Host settings panel only, never a `VITE_` variable. Set **both** to switch accounts on |
 | `LITURGYGEN_DEV_ORG_ID` | server | development only: pins one parish so a checkout runs without signing in. Never set this on a host |
+| `LITURGYGEN_SEED_SOURCE_ORG_ID` | server | the parish a **new** parish's prayer library is copied from, database to database. Without it a parish founded on a host gets placeholders only, because `data/orillo` is git-ignored |
 | `CORS_ORIGINS` | server | comma-separated origins allowed to call the API |
 | `NODE_ENV` | server | `production` on a host |
 | `PORT` | server | **set by the host**; do not set it yourself |
@@ -309,7 +327,7 @@ later.
 
 ## Tests
 
-    npm run test:server     # 133 tests (1 skips without a real PostgreSQL)
+    npm run test:server     # 138 tests (1 skips without a real PostgreSQL)
     npm run test:client     # 14 tests
 
 Two of them are there because of regressions that left no trace anywhere.

@@ -246,7 +246,7 @@ function shell({ title, description, body }) {
     top: 0;
     left: 0;
     right: 0;
-    height: 6px;
+    height: 10px;
     background: var(--gold);
     pointer-events: none;
   }
@@ -370,8 +370,8 @@ function shell({ title, description, body }) {
     .ribbon {
       left: auto;
       right: 0;
-      width: 20px;
-      height: 10.5rem;
+      width: 34px;
+      height: 13rem;
       transform: translateX(50%);
       z-index: 1;
       /* The notched tail of a bookmark ribbon. */
@@ -477,9 +477,10 @@ export function landingPage({
     <div class="leaf-inner">
       <div class="brand">
         <svg viewBox="0 0 48 40" fill="none" role="img" aria-label="LiturgyGen">
-          <rect x="4.25" y="8.25" width="17.5" height="27.5" rx="1.5" stroke="currentColor" stroke-width="2.5"/>
-          <rect x="26.25" y="8.25" width="17.5" height="27.5" rx="1.5" stroke="currentColor" stroke-width="2.5"/>
-          <path d="M20.5 2h7v22l-3.5-3-3.5 3z" fill="#f2bc1b"/>
+          <path d="M4 31.8 22.6 35.3M44 31.8 25.4 35.3" stroke="#f2bc1b" stroke-width="2.4" stroke-linecap="round"/>
+          <polygon points="4,7.5 22.6,11 22.6,34.5 4,31" fill="currentColor"/>
+          <polygon points="44,7.5 25.4,11 25.4,34.5 44,31" fill="currentColor"/>
+          <path d="M21.4 4h5.2v25l-2.6-2.4-2.6 2.4z" fill="#f2bc1b"/>
         </svg>
         <p class="wordmark">LiturgyGen</p>
       </div>
