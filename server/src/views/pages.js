@@ -217,9 +217,14 @@ ${body}
 /**
  * The page at `/`, outside the gate.
  *
- * It says what the app is, who it is for, and that it is private - so somebody
- * who follows the link from the repository understands the sign-in prompt
- * rather than meeting it cold. It names no credential and reveals no data.
+ * It says what the app is, who it is for, and that it needs an account - so
+ * somebody following the link from the repository understands what they are
+ * about to be asked for. It names no credential and reveals no data.
+ *
+ * Note what it no longer says. While the app was behind HTTP Basic Auth this
+ * page warned that "your browser will ask for a username and password", because
+ * the prompt was browser chrome arriving unannounced. There is no prompt any
+ * more: sign-in is a screen inside the app, and the button below goes to it.
  *
  * @param {{ demoUrl?: string, repoUrl?: string }} options
  */
@@ -240,20 +245,24 @@ export function landingPage({
   day &mdash; the liturgical day worked out from the Philippine calendar, the
   readings fetched from USCCB, and the right Prayers of the Faithful attached.</p>
 
-  <p>The app itself is private: it writes to the office&rsquo;s own prayer
-  library, so it sits behind a sign-in. Your browser will ask for a username and
-  password.</p>
+  <p>Each parish runs its own copy of the library. You sign in with your own
+  account, and your prayers, your house style and your Mass schedule belong to
+  your parish &mdash; shared with the people you work with, and with nobody
+  else.</p>
 
   <div class="actions">
-    <a class="btn primary" href="/app">Open the app</a>
+    <a class="btn primary" href="/app">Sign in</a>
     <a class="btn secondary" href="${demoUrl}">See the demo</a>
   </div>
 
+  <p style="margin-top:1.25rem">New here? The same button creates an account.
+  You will be asked for the name of your parish straight afterwards.</p>
+
   <div class="note">
-    <strong>Marking this project?</strong> The credentials are in the submitted
-    project README, not in the public repository. The first load after a quiet
-    spell takes about a minute while the free host wakes up &mdash; it is not
-    broken.
+    <strong>Marking this project?</strong> The account details are in the
+    submitted project README, not in the public repository. The first load after
+    a quiet spell takes about a minute while the free host wakes up &mdash; it is
+    not broken.
   </div>
 
   <footer>
@@ -281,9 +290,9 @@ export function unauthorizedPage({ repoUrl = 'https://github.com/Damudachi/Litur
 
   <hr class="rule">
 
-  <p>The office&rsquo;s prayer library and its saved readings live behind this
-  sign-in, so a username and password are needed to go further. If you cancelled
-  your browser&rsquo;s prompt, you can bring it back.</p>
+  <p>Your parish&rsquo;s prayer library and its saved readings live behind this
+  sign-in. If your session has expired, signing in again picks up where you left
+  off &mdash; nothing is lost.</p>
 
   <div class="actions">
     <a class="btn primary" href="/app">Sign in</a>
@@ -291,9 +300,9 @@ export function unauthorizedPage({ repoUrl = 'https://github.com/Damudachi/Litur
   </div>
 
   <div class="note">
-    <strong>Marking this project?</strong> The credentials are in the submitted
-    project README. If they are not working, <a href="/readyz">/readyz</a> will
-    tell you whether the server and its database are up.
+    <strong>Marking this project?</strong> The account details are in the
+    submitted project README. If they are not working, <a href="/readyz">/readyz</a>
+    will tell you whether the server and its database are up.
   </div>
 
   <footer>

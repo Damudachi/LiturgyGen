@@ -37,6 +37,7 @@
 
 import { query } from '../db/index.js';
 import { authConfigured, userFromToken } from '../lib/supabase.js';
+import { unauthorizedPage } from '../views/pages.js';
 
 export { authConfigured };
 
@@ -89,9 +90,20 @@ export default function requireAuth({ requireOrg = true } = {}) {
     try {
       const user = await userFromToken(bearerToken(req.headers.authorization));
       if (!user) {
-        return res.status(401).json({
-          error: 'Sign in to continue.',
-          code: 'NOT_SIGNED_IN',
+        /*
+         * Two bodies, one status. The client's `fetch` sends an Accept header
+         * that matches anything, which lands on `default` - so JSON stays the
+         * answer for the app itself, and an error handler never has to parse
+         * HTML. A person who opens an /api URL in the address bar asked for
+         * text/html and gets a page instead of a line of JSON on white.
+         *
+         * JSON is listed first because `res.format` uses the first key as the
+         * default for a client expressing no preference.
+         */
+        return res.status(401).format({
+          'application/json': () => res.json({ error: 'Sign in to continue.', code: 'NOT_SIGNED_IN' }),
+          'text/html': () => res.type('html').send(unauthorizedPage()),
+          default: () => res.json({ error: 'Sign in to continue.', code: 'NOT_SIGNED_IN' }),
         });
       }
 

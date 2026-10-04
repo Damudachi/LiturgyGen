@@ -143,10 +143,20 @@ export function createApp() {
   app.use('/api/account', accountRoutes);
 
   /*
-   * Everything below needs a signed-in user who belongs to a parish, because
-   * every query below is scoped by that parish.
+   * The gate guards the API, and ONLY the API.
+   *
+   * This was `app.use(requireAuth())` for about an hour and it could not work.
+   * A global gate sits above `express.static` below, so a signed-out browser
+   * asking for the app got `{"error":"Sign in to continue."}` instead of the
+   * client - and the client is the only thing that can draw the sign-in form.
+   * Nobody could ever sign in. The browser's own pop-up used to cover that gap;
+   * an in-app login has to be reachable while signed out.
+   *
+   * So the built client is public. It holds no data: it is markup, styles and
+   * code, the same bundle for every parish, and everything it displays it has
+   * to fetch from `/api` with a token. The scoping lives behind that line.
    */
-  app.use(requireAuth());
+  app.use('/api', requireAuth());
 
   /**
    * Rate limiting, applied after the gate so a signed-in office is measured
