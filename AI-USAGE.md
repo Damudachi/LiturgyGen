@@ -274,6 +274,91 @@ were placeholders. The lesson is not to distrust it; it is that an absence is a
 much weaker finding than a presence, and I should ask which files it actually
 opened.
 
+### Case 10 — It ignored a note the codebase had already written for it
+
+Asked to improve the sign-in screen, it put six ribbons in the seam, one per
+liturgical colour. Two things were wrong: at seven pixels they read as a striped
+comb rather than bookmarks, and the **white** one was invisible against the cream
+half of the page.
+
+That second fault is the interesting one. `client/src/index.css` has a comment
+directly above the liturgical colours that says, in so many words, that white is
+an ivory stripe and needs an edge so it shows — written months earlier for the
+calendar, for exactly this reason. The file was open. It had read it well enough
+to copy the palette out of it.
+
+**What I take from it:** it reads a file for what it is looking for, not for what
+the file is telling it. The comments that exist to stop somebody repeating a
+mistake are the ones it is most likely to skim, which is an argument for the
+comments being there and not an argument against them.
+
+### Case 6 — It hid its own error message behind a 500
+
+The prayer-book importer refused an image upload with "Something went wrong on
+the server." I sent it looking for a crash. There wasn't one.
+
+The code was raising a deliberately helpful error — "this looks like a scan,
+which needs optical character recognition, install it with..." — and giving it
+HTTP status **501**. The error handler hides the message of any 5xx in
+production, because a stack trace or a driver error describes your file layout
+to a stranger. 501 is a 5xx. So the one sentence that explained the problem was
+the exact sentence being suppressed, by a rule it had written itself a week
+earlier.
+
+**What I take from it:** it got both halves right and the interaction between
+them wrong. That is the shape of most of its mistakes — not a wrong line, but
+two correct lines that have never met. The fix was to let an error opt in to
+being shown (`error.expose`) and to use it only where the message was composed
+for the reader.
+
+### Case 7 — It gave me commands it had never run
+
+It told me to run `npm run seed -- --org <uuid>` to get the office's prayers
+onto the host. I ran it and got "DATABASE_URL is not set", while looking at a
+filled-in `.env`.
+
+Nothing in this project had ever loaded `.env`. Not the seed script, not
+`npm run dev`, not `npm run db:schema` — the project relied on Render putting
+variables in the environment, and `db/run.js`'s own header says to pass
+`--env-file=.env` by hand. The command it handed me could not work on any
+machine, and it had written that command, in a README section, twice.
+
+**What I take from it:** it will write instructions with the same confidence it
+writes code, and the instructions are the part nothing checks. Code at least
+has to import. From then on I asked it to run anything it told me to run.
+
+### Case 8 — It shipped the importer twice without running it
+
+I said it was fine not to test the prayer-book importer yet, and it took that
+further than I meant. Two separate faults were sitting in it:
+
+- `tesseract.js` v7 exposes `recognize` on its default export only, so reading
+  it off the module namespace gave `undefined`.
+- Passing a third options argument — one whose single key was `undefined` —
+  killed the OCR worker from inside a `MessagePort`, which escapes a
+  `try/catch` and takes the whole process down instead of rejecting.
+
+Both surfaced in the first thirty seconds of actually running it on a PNG.
+
+**What I take from it:** "not tested" and "probably works" are not the same
+claim, and it does not reliably distinguish them. When it says a path is
+untested, that is a statement about its confidence, not about the odds.
+
+### Case 9 — It estimated its own output instead of measuring it
+
+It wrote the presentation script with a word budget per slide and a stated
+total of four minutes fifty. Then it measured what it had actually written:
+**six minutes twelve**. Half the beats were over their own budgets, and three of
+the headings claimed word counts that did not match the words underneath them.
+
+It only caught this because I had asked for the timings in the first place; it
+would otherwise have handed me a script that overran a five-minute cap, and I
+would have found out mid-take.
+
+**What I take from it:** the arithmetic it does about its own work is a guess
+wearing a number. It is good at writing the script and good at counting the
+words, and it will not do the second one unless told to.
+
 ---
 
 ## 3. Who wrote what

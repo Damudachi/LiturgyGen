@@ -86,7 +86,14 @@ Boxes are ticked only where the thing is actually true today.
 - [ ] **No rate limiting.** Nothing here accepts a password or costs money, and
       the app is a local tool for one office, so this has been knowingly
       deferred. It becomes real the moment the API is on a public URL
-- [x] No accounts and no passwords, so nothing to hash and nothing to leak
+- [x] **Passwords are not ours to leak.** This row used to read "no accounts and
+      no passwords, so nothing to hash" — true until accounts shipped, and left
+      here corrected rather than deleted. Supabase Auth holds the credentials
+      and does the hashing; this application never sees a password, never stores
+      one, and has no code path that could. What it holds is a bearer token for
+      the length of a request. The service role key, which bypasses RLS, lives
+      only in the host's settings panel — never in a `VITE_` variable, every one
+      of which is compiled into a file the whole internet can download
 - [x] `npm audit` run on 2026-09-27: three moderate advisories in `qs`, reached
       through `body-parser` and `express`. `npm audit fix` cleared all three
       without a breaking change; `npm audit` now reports zero. Dependabot is on
@@ -135,8 +142,10 @@ this particular project.
 
 ## The one paragraph for the journal
 
-The riskiest thing in this project is not injection or credentials — there are
-no accounts and no secrets beyond a connection string. It is that the app's
+The riskiest thing in this project is not injection or credentials. The secrets
+are a connection string and a Supabase service role key, neither of which has
+ever been committed, and the only personal information is a staff email address
+and a password hash, both held by Supabase rather than by this application. It is that the app's
 entire value comes from text somebody else owns: two published books of
 intercessions and the New American Bible. A public repository that redistributed
 either would be a real problem with my name permanently attached, and the first

@@ -4,6 +4,58 @@ Newest at the top. Never edit an old one.
 
 ---
 
+## Week of 2026-09-29
+
+**Done.** Accounts. LiturgyGen serves more than one parish now: sign-in is a
+screen inside the app built on Supabase Auth, `organizations` and `memberships`
+joined the schema, and every table a parish owns carries an `org_id` that every
+query names. `readings_cache` deliberately does not — the readings for a date
+are the same everywhere, so one office's fetch warms the cache for all of them.
+Row Level Security is the second lock, ten policies in one Supabase migration.
+
+The signed-out screens were rebuilt as one spread, an ink cover leaf and a paper
+leaf, and the app got a mark of its own — an open missal with a gold ribbon —
+replacing the chapel's seal, which belongs to one parish and not to the
+software. The landing page at `/` is the same spread rendered without React.
+
+A prayer-book importer went in: upload PDFs or photographs of a General
+Intercessions book, and the pages are read and offered as drafts for approval.
+It is **written and not yet run against a real book**, and it is marked that way
+everywhere it is mentioned.
+
+**What broke, and what it cost.** Three regressions came in with the accounts
+work and all three were invisible — no failing test, nothing in a log:
+
+- `GET /api/settings` threw `ReferenceError: req is not defined` on every call,
+  because the handler's parameter was still `_req`. In production that becomes
+  "LiturgyGen's server is not running", which told me to start a server that was
+  already running. It shipped twice.
+- Progress used `new EventSource`, which cannot send an `Authorization` header.
+  Behind the new gate it answered 401 before a single frame, which killed both
+  the progress bar and the USCCB countdown — and a 401 on an EventSource is an
+  error event with no status on it, so nothing said why.
+- `npm run seed` called the seeder with no parish, hit an early return, and
+  printed "0 inserted" as though it had worked. Then it turned out nothing in
+  the project had ever loaded `.env`, so the command could not run at all.
+
+Both of the first two now have tests written specifically because they left no
+trace: `server/test/boot.test.js` drives the four requests the client fires on
+sign-in over real HTTP, and `client/test/stream.test.js` asserts the client
+never reaches for `EventSource`. I checked each by putting the bug back.
+
+**Also.** The office's 362 transcribed prayers reached the host — not by
+committing the books, which the licence forbids, but by loading one parish and
+cloning it inside the database. Confirmed: all three parishes hold 362 real
+prayers across seven seasons, where before they held 19 placeholders each and
+nothing else.
+
+**Open.** The Supabase Site URL still points at `localhost:3000`, so a fresh
+sign-up's confirmation link goes nowhere — two dashboard fields. One advisory
+left standing and written up rather than quietly fixed. The importer is still
+untested. 152 tests pass (138 server, 14 client).
+
+---
+
 ## Week of 2026-09-22
 
 **Done.** The application is feature-complete and runs end to end on a laptop

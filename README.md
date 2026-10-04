@@ -120,7 +120,18 @@ never live there.
 
 For a single-process run, `npm run build && npm start` and open
 <http://localhost:4000> — Express serves the API and the built client together,
-which is what a deployment does.
+which is what a deployment does. The app itself is at `/app`; `/` is the landing
+page.
+
+**`server/.env` is read automatically**, by `src/loadEnv.js`, which anything
+with a `main` imports first — the pool reads `DATABASE_URL` at import time, so
+listed second it would already be too late. It never overrides a variable that
+is already set, so a host's real environment always wins, and a missing file is
+fine because on a host there isn't one.
+
+One consequence worth knowing: a `NODE_ENV=production` left in a local `.env`
+now takes effect, and the error handler hides every 5xx message in production.
+That belongs in the host's panel, not in a file.
 
 Check the API on its own before blaming the client:
 
@@ -272,15 +283,19 @@ is the REST pass still to come, and it is listed in
         index.js             the switch
         httpApi.js           the real API client
         mockApi.js           demo mode, backed by seed.json + localStorage
-      src/components/      calendar/, day/, prayers/, and the shared atoms in ui.jsx
+      src/components/      calendar/, day/, prayers/, auth/, the mark in Logo.jsx,
+                           and the shared atoms in ui.jsx
       src/lib/             pure logic: dates, selection, tiles, issue checks
+      public/              favicon.svg — copied through unhashed, so the path is stable
     server/
       server.js            the entry point
       src/app.js           the Express app, importable without listening
       src/routes/          calendar, readings, generate, batch, potf, potfImport, settings, account
       src/services/        calendar, scraper, POTF cascade, composition, docx, batch, import
       src/lib/             dates, Bible books, the request queue, the prayer parser
-      src/db/              the live SQLite layer, being replaced
+      src/loadEnv.js       reads server/.env; imported FIRST by anything with a main
+      src/views/pages.js   the landing page at /, rendered without React
+      src/db/              the PostgreSQL layer, the seeder and the library clone
       db/                  the PostgreSQL pool, schema.sql, seed.sql, a .sql runner
       tools/               the demo-seed generator
     desktop/               the Windows launcher, Inno Setup script and build script
@@ -351,14 +366,15 @@ served instead of the readings. CI runs both suites plus a client build on Node
 > migration, removing the concatenated `WHERE` clause, and deploying with
 > `helmet` and rate limiting - are all done. This is the list as it stands.
 
-- **Another parish runs its own copy.** Not accounts: nothing in LiturgyGen
-  belongs to a person, and two staff in one office must see the same prayer
-  library, so per-user data would be a bug rather than a feature. A second
-  parish clones this repository, points it at its own PostgreSQL and follows
-  [Running it yourself](#running-it-yourself). It supplies its own
-  transcriptions, because the General Intercessions volumes are copyrighted and
-  were never committed here - the thing that keeps this repository publishable
-  is the same thing that makes each parish's copy its own.
+- **Invitations.** Signing up and *founding* a parish work. Joining one that
+  already exists does not, so a second member of staff currently cannot be added
+  at all. That needs an email flow and a token with an expiry, and a half-built
+  version of it is a way into somebody else's prayer library — so it is named
+  here rather than shipped broken.
+  Note what scoping to a parish and not to a person already settles: two staff
+  in one office see one library, because the library belongs to the parish. Each
+  parish still supplies its own transcriptions, since the General Intercessions
+  volumes are copyrighted and were never committed here.
 - **One validation layer across every route.** Bad input is handled, but
   unevenly: some routes check a date, some let it reach the database. A single
   module applied at the edge, so a malformed request is always a readable 400
@@ -379,10 +395,22 @@ GitHub: [@Damudachi](https://github.com/Damudachi)
 
 ![Built with AI assistance](https://img.shields.io/badge/built%20with-AI%20assistance-0b5fff)
 
-Built with Claude (Anthropic), through Claude Code and the Antigravity IDE. It
-wrote most of the first draft of the services layer, the `.docx` builder and the
-React components. It did not write the liturgical rules, the parser heuristics,
-the Prayers of the Faithful cascade, or the PostgreSQL migration.
+Built with Claude (Anthropic), through Claude Code and the Antigravity IDE.
+
+**It wrote** most of the first draft of the services layer, the `.docx` builder,
+the React components, the PostgreSQL migration — schema, query rewrites and the
+async conversion — the signed-out screens and the app's mark, and the
+prayer-book importer.
+
+**It did not write** the liturgical rules, the parser heuristics, the Prayers of
+the Faithful cascade, the REST API, or the calendar service. The Supabase
+project, its Auth configuration and its Row Level Security policies were set up
+by hand.
+
+[`AI-USAGE.md`](AI-USAGE.md) is the full record, entry by entry against a
+commit, including ten cases where it got something wrong and what that cost.
+This paragraph used to claim the migration was mine; it was not, and the
+correction is recorded there rather than quietly made.
 
 The full account — six worked examples with commits, four cases where it was
 wrong, and which files are mine — is in [AI-USAGE.md](AI-USAGE.md).
