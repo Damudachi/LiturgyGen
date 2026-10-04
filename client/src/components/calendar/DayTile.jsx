@@ -20,7 +20,9 @@ export default function DayTile({ iso, day, ticked, current, flagged, focusable,
       aria-pressed={ticked || undefined}
       title={label || undefined}
       className={cx(
-        'lift group relative flex min-h-[4.5rem] cursor-pointer flex-col overflow-hidden rounded-lg px-2.5 pt-3 pb-2 text-left',
+        // min-h must not exceed the grid row floor in MonthGrid, or the tile
+        // wins and the month overflows its screen again. The two are a pair.
+        'lift group relative flex min-h-[3.5rem] cursor-pointer flex-col overflow-hidden rounded-lg px-2.5 pt-2.5 pb-1.5 text-left',
         ticked
           ? 'bg-[#c9d3e3] shadow-raise ring-2 ring-inset ring-navy'
           : current

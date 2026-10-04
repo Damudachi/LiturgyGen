@@ -63,8 +63,23 @@ export default function MonthGrid({ year, month, days, loading, error, onRetry, 
       <div
         role="grid"
         aria-label={`${MONTH_NAMES[month - 1]} ${year}`}
-        className="grid min-h-0 flex-1 grid-cols-7 gap-1.5"
-        style={{ gridTemplateRows: `repeat(${rows}, minmax(4.5rem, 1fr))` }}
+        className="grid min-h-0 flex-1 grid-cols-7 gap-1.5 overflow-y-auto scroll-slim"
+        /*
+         * The floor is what decides whether a month fits on a laptop.
+         *
+         * A six-row month at the old 4.5rem floor needed 462px, and a 1366x768
+         * screen leaves about 452px for the grid once the navbar, the toolbar
+         * and the weekday row are paid for - so the last week was clipped, and
+         * CalendarScreen has a fixed height with no overflow, so it could not
+         * even be scrolled to. Worse while selecting, because the shortcut row
+         * takes another 52px.
+         *
+         * 3.5rem fits six rows in 366px. `1fr` still lets the rows grow to fill
+         * a tall window, so nothing changes on a big screen - the floor only
+         * ever applies when the space is not there. `overflow-y-auto` is the
+         * backstop for a window shorter than even this wants.
+         */
+        style={{ gridTemplateRows: `repeat(${rows}, minmax(3.5rem, 1fr))` }}
       >
         {cells.map((iso, index) =>
           iso ? (

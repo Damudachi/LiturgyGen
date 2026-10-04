@@ -75,8 +75,18 @@ export default function Book({ variant = 'overlay', label, onClose, left, right,
           Close book
         </button>
       )}
-      <div className="min-h-0 overflow-y-auto scroll-slim px-8 pt-12 pb-8 min-[900px]:pr-10 min-[900px]:pl-14">{left}</div>
-      <div className="min-h-0 overflow-y-auto scroll-slim border-t border-edge px-8 pt-12 pb-8 min-[900px]:border-t-0 min-[900px]:pr-14 min-[900px]:pl-10">
+      {/*
+        * The two pages scroll independently, so nothing is ever unreachable -
+        * but a full Liturgy of the Word is longer than any screen, and every
+        * row of padding is a row of scripture the reader has to scroll for.
+        *
+        * The left page starts higher than the right on purpose: only the right
+        * one has the close button overhead (top-3 plus min-h-9 = 48px of
+        * clearance). The ribbon sits at the far left and content clears it
+        * horizontally at pl-14, so it needs no room above.
+        */}
+      <div className="min-h-0 overflow-y-auto scroll-slim px-8 pt-7 pb-6 min-[900px]:pr-10 min-[900px]:pl-14">{left}</div>
+      <div className="min-h-0 overflow-y-auto scroll-slim border-t border-edge px-8 pt-12 pb-6 min-[900px]:border-t-0 min-[900px]:pr-14 min-[900px]:pl-10">
         {right}
       </div>
     </div>
@@ -85,7 +95,9 @@ export default function Book({ variant = 'overlay', label, onClose, left, right,
   if (!overlay) return book;
 
   return (
-    <div className="fixed inset-x-0 top-[60px] bottom-0 z-40 flex justify-center px-4 pt-6 sm:px-10">
+    // pt-3 rather than pt-6: the book is flush to the bottom already, so every
+    // pixel above it is a pixel off both pages.
+    <div className="fixed inset-x-0 top-[60px] bottom-0 z-40 flex justify-center px-4 pt-3 sm:px-10">
       <div className="animate-dim absolute inset-0 bg-ink/40" onClick={onClose} aria-hidden="true" />
       <div className="relative h-full w-full max-w-[1280px]">{book}</div>
     </div>
