@@ -71,3 +71,4 @@ docs/05-demo-video.md
 # process, it is not ours, and it is re-fetched whenever it is missing.
 eng.traineddata
 *.traineddata
+docs/08-presentation-script.md

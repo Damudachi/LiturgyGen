@@ -370,6 +370,54 @@ opened.
   set by hand before it can be saved. That makes importing a hundred pages
   slower, on purpose.
 
+
+- **File:** `server/src/routes/` — the whole HTTP surface
+- **Commit:** `7e30ee4` onward — https://github.com/Damudachi/LiturgyGen/commit/7e30ee4
+- **What it does and why it is built this way:** the REST API: `calendar`,
+  `readings`, `generate`, `batch`, `potf`, `settings` and `account`. About nine
+  hundred lines, and until now attributed to nobody in this file, which was an
+  omission rather than a decision.
+  Two things in here are mine as judgement rather than as typing. The first is
+  what each route refuses: a malformed date is a 400 with a message written for
+  the office rather than a 500 with a driver error in it, because the person
+  reading it is a parish secretary and not me. The second is which routes are
+  **streams** rather than requests — a batch over two hundred days cannot answer
+  in one response, so `POST /api/batch` returns a job and
+  `/api/batch/:id/events` reports on it as it goes, cancellable half way. That
+  shape is the reason the panel can say "making day 4 of 22" at all.
+
+- **Files:** `server/src/services/calendarService.js` and `server/src/lib/dates.js`
+- **Commit:** `7e30ee4` onward — https://github.com/Damudachi/LiturgyGen/commit/7e30ee4
+- **What they do and why they are built this way:** turning a date into a
+  liturgical day, and the month grid the calendar screen draws. These sit
+  directly on top of `philippineOrdo.js`, which is also mine: romcal answers
+  "what does the general calendar say", the ORDO overlay corrects it, and this is
+  the layer that asks both in the right order and hands one answer to the rest of
+  the app.
+  `lib/dates.js` is small and deliberately boring, and it is where the timezone
+  bug in section 2 was finally fixed. Every date in this application is a
+  calendar day in the Philippines, never a moment in time, and these functions
+  are the only place allowed to know that.
+
+- **Not in this repository:** the Supabase project
+- **Evidence:** migration `20261004110845_multi_parish_schema_with_rls`; ten
+  policies across seven tables, listable with `select * from pg_policies`
+- **What I did and why it is not a file here:** I set up and configured Supabase
+  — the project, the Auth settings, the Row Level Security migration, and the
+  environment wiring on Render. None of it is a line of code in this repository
+  and all of it is load-bearing, so it is named here rather than left out
+  because it does not show up in a diff.
+  The part worth defending is the RLS policies. The scoping the application
+  relies on is in the services, which name `org_id` on every query; these
+  policies are the second lock, for anything that reaches the database without
+  going through the app at all. They hang off one function, `user_org_ids()`,
+  which is `SECURITY DEFINER` for a specific reason: a policy on `memberships`
+  that reads `memberships` to decide who you are recurses into itself. That
+  function is also the one standing Supabase advisory, written up in
+  `Docu/project/SECURITY-CHECKLIST.md` rather than quietly fixed.
+  `readings_cache` is the one table whose policy is read-only and not scoped to a
+  parish, which is the same deliberate exception the schema makes.
+
 ### The AI-written part I understand best
 
 - **File:** `server/src/services/docxService.js`
