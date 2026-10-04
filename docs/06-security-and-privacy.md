@@ -25,10 +25,12 @@ Boxes are ticked only where the thing is actually true today.
       anything already pushed; it covers every commit from here. The history
       audit above is what says nothing has leaked so far — but an audit is a
       snapshot, not a control
-- [ ] **A name is still in the history.** Commit `db5e93b` added
-      `Docu/Sabando_Midterm Reflection Journal.pdf`. Removing a file does not
-      remove it from the history, so a surname is reachable by anyone who walks
-      the log. Nothing sensitive beyond the name is in it, and no credential was
+- [ ] **A name is still in the history.** Commit `db5e93b` added a reflection
+      journal PDF whose filename carried my surname. Removing a file does not
+      remove it from the history, so the name is reachable by anyone who walks
+      the log - and an author email is too, on the eighteen commits made before
+      27 September, when the repository-local `user.email` was switched to the
+      GitHub noreply address. Every commit since carries the noreply address. Nothing sensitive beyond the name is in it, and no credential was
       ever committed, so this is not urgent — but the fix is a history rewrite
       (`git filter-repo --path 'Docu/' --invert-paths`) followed by a force
       push, which rewrites every commit id and is not something to do casually.
@@ -36,8 +38,12 @@ Boxes are ticked only where the thing is actually true today.
 
 ## The application
 
-- [x] **Parameterised queries.** Every SQLite call uses `?` or `@named` binding;
-      no value is concatenated into SQL
+- [x] **Parameterised queries.** Every call passes values as numbered
+      PostgreSQL placeholders - `$1`, `$2`, with the values in an array - and no
+      value is concatenated into SQL. This row used to describe `?` and
+      `@named` binding, which was true of the better-sqlite3 layer this
+      replaced; the property is the same one, checked against the code that
+      actually ships
 - [x] **The one concatenated `WHERE` clause is gone.**
       `server/src/routes/settings.js` used to assemble its clause from an array
       of fragments. Always with bound values and behind `isIsoDate()`, so never

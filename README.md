@@ -41,11 +41,16 @@ like the office's printed missalette.
 ## Built with
 
 React and Vite on the front end, Express and **PostgreSQL** on the back end.
-The client deploys to GitHub Pages; the API and the database are not hosted yet.
+The app runs as one Render web service - Express serves the built client and
+the API from the same origin - with PostgreSQL on Neon. It is behind HTTP Basic
+Authentication, so the URL alone will not open it; `/healthz` and `/readyz` are
+outside the gate and answer unauthenticated. GitHub Pages carries a separate
+client-only build that runs against a seeded snapshot in the browser, needs no
+login, and says so on the page.
 
 The database was SQLite until week 3;
 [`docs/07-postgres-migration-map.md`](docs/07-postgres-migration-map.md) is the
-record of the move and of the five things it turned up.
+record of the move and of the six things it turned up.
 
 There is also a **Windows desktop build** — the same app in its own window with
 a bundled Node runtime, installed per-user with no administrator rights. See
