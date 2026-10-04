@@ -32,8 +32,9 @@ router.post('/', async (req, res, next) => {
 
     if (!isIsoDate(date)) return res.status(400).json({ error: 'Provide a date as YYYY-MM-DD.' });
 
-    const settings = await getSettings();
+    const settings = await getSettings(req.orgId);
     const day = await buildDay(date, {
+      orgId: req.orgId,
       force,
       potfTemplateId,
       potfOverride,
@@ -73,7 +74,7 @@ router.post('/preview', async (req, res, next) => {
   try {
     const { date, ...rest } = req.body || {};
     if (!isIsoDate(date)) return res.status(400).json({ error: 'Provide a date as YYYY-MM-DD.' });
-    res.json(await buildDay(date, rest));
+    res.json(await buildDay(date, { ...rest, orgId: req.orgId }));
   } catch (error) {
     next(error);
   }

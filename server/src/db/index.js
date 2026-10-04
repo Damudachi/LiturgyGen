@@ -154,8 +154,11 @@ export const DEFAULT_SETTINGS = {
  * string, an array. The SQLite version stored JSON in a TEXT column and had to
  * JSON.parse every row inside a try/catch; that work is gone.
  */
-export async function getSettings() {
-  const { rows } = await query('SELECT key, value FROM settings');
+export async function getSettings(orgId) {
+  // No parish means no stored settings to find - which is the honest answer
+  // for a brand new account, and better than reading every parish's rows.
+  if (!orgId) return { ...DEFAULT_SETTINGS };
+  const { rows } = await query('SELECT key, value FROM settings WHERE org_id = $1', [orgId]);
   const stored = Object.fromEntries(rows.map((row) => [row.key, row.value]));
   return { ...DEFAULT_SETTINGS, ...stored };
 }
@@ -166,20 +169,23 @@ export async function getSettings() {
  * JSON.stringify stays on the way IN: a JS value has to be serialised to go
  * into a JSONB parameter. It is only the read side that got simpler.
  */
-export async function setSettings(patch) {
+export async function setSettings(orgId, patch) {
+  if (!orgId) {
+    throw Object.assign(new Error('Settings belong to a parish, and this account has none yet.'), { status: 403 });
+  }
   const entries = Object.entries(patch);
   if (entries.length) {
     await withTransaction(async (client) => {
       for (const [key, value] of entries) {
         await client.query(
-          `INSERT INTO settings (key, value, updated_at) VALUES ($1, $2::jsonb, now())
-           ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = now()`,
-          [key, JSON.stringify(value)],
+          `INSERT INTO settings (org_id, key, value, updated_at) VALUES ($1, $2, $3::jsonb, now())
+           ON CONFLICT (org_id, key) DO UPDATE SET value = excluded.value, updated_at = now()`,
+          [orgId, key, JSON.stringify(value)],
         );
       }
     });
   }
-  return getSettings();
+  return getSettings(orgId);
 }
 
 export default { query, withTransaction, getSettings, setSettings, DEFAULT_SETTINGS };

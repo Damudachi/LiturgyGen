@@ -6,7 +6,7 @@
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { makeTestDb } from './helpers/pgMem.js';
+import { makeTestDb, TEST_ORG_ID } from './helpers/pgMem.js';
 import { useTestPool } from '../src/db/index.js';
 
 // A throwaway in-process PostgreSQL and no readings cache, so the office's data
@@ -22,13 +22,13 @@ const DATE = '2099-06-15';
 
 test('a day never fetched is not fetched by the check', async () => {
   assert.equal(await peekReadings(DATE), null);
-  const check = await checkDay(DATE, { settings: { usePlaceholderPotf: true } });
+  const check = await checkDay(DATE, { orgId: TEST_ORG_ID, settings: { usePlaceholderPotf: true } });
   assert.equal(check.fetched, false);
   assert.ok(check.warnings.every((warning) => !/not been fetched/.test(warning)));
 });
 
 test('saved readings are checked for their gaps', async () => {
-  await saveOverride(
+  await saveOverride(TEST_ORG_ID, 
     DATE,
     {
       source: 'manual',
@@ -40,11 +40,11 @@ test('saved readings are checked for their gaps', async () => {
     { merge: false },
   );
   try {
-    const check = await checkDay(DATE, { settings: { usePlaceholderPotf: true } });
+    const check = await checkDay(DATE, { orgId: TEST_ORG_ID, settings: { usePlaceholderPotf: true } });
     assert.equal(check.fetched, true);
     assert.equal(check.refetchable, false);
     assert.ok(check.warnings.some((warning) => /no response/.test(warning)));
   } finally {
-    await deleteOverride(DATE);
+    await deleteOverride(TEST_ORG_ID, DATE);
   }
 });

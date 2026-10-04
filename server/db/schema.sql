@@ -14,6 +14,18 @@
 --   npm run db:schema      (node db/run.js db/schema.sql)
 
 
+-- WHERE ROW LEVEL SECURITY LIVES
+-- ------------------------------
+-- Not in this file, and that is deliberate. RLS policies reference auth.uid()
+-- and memberships reference auth.users, both of which exist only on Supabase.
+-- This file is the PORTABLE core: it runs on any PostgreSQL, which is what the
+-- test suite and a self-hosted copy need. The policies are a Supabase migration
+-- (multi_parish_schema_with_rls) and the deployment applies both.
+--
+-- The scoping itself does not depend on RLS: every query in the services names
+-- its org_id explicitly. RLS is the second lock, for anything that reaches the
+-- database without going through this application.
+
 -- ---------------------------------------------------------------------------
 -- Prayers of the Faithful templates
 -- ---------------------------------------------------------------------------
@@ -27,8 +39,41 @@
 -- has JSONB, so they are stored as what they are and the application stops
 -- doing that work.
 
+-- ---------------------------------------------------------------------------
+-- Parishes, and who belongs to them
+-- ---------------------------------------------------------------------------
+-- LiturgyGen serves more than one parish. Everything an office owns hangs off
+-- one of these rows; a prayer or a setting with no parish is meaningless.
+--
+-- On Supabase, memberships.user_id references auth.users. That reference is
+-- added by the Supabase migration rather than here, because auth.users does not
+-- exist on a plain PostgreSQL and this file has to run on one.
+
+CREATE TABLE IF NOT EXISTS organizations (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        TEXT         NOT NULL,
+  slug        TEXT         NOT NULL UNIQUE,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+
+  CONSTRAINT org_name_length CHECK (char_length(name) BETWEEN 1 AND 120)
+);
+
+CREATE TABLE IF NOT EXISTS memberships (
+  org_id      UUID         NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id     UUID         NOT NULL,
+  role        TEXT         NOT NULL DEFAULT 'member',
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+
+  PRIMARY KEY (org_id, user_id),
+  CONSTRAINT membership_role_known CHECK (role IN ('owner', 'member'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_memberships_user ON memberships (user_id);
+
+
 CREATE TABLE IF NOT EXISTS potf_templates (
-  id                 SERIAL       PRIMARY KEY,
+  id                 BIGSERIAL    PRIMARY KEY,
+  org_id             UUID         NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   title              TEXT         NOT NULL,
   season             TEXT         NOT NULL,
   week               INTEGER,
@@ -59,14 +104,16 @@ CREATE TABLE IF NOT EXISTS potf_templates (
 
 -- The cascade's hot path: season + week + weekday, checked for every date in a
 -- batch. Without this the matcher reads the whole table per day.
+-- org_id leads every one of these: each query is already filtered by it, so an
+-- index that does not start there cannot serve the scoping.
 CREATE INDEX IF NOT EXISTS idx_potf_lookup
-  ON potf_templates (season, week, day_of_week);
+  ON potf_templates (org_id, season, week, day_of_week);
 
 CREATE INDEX IF NOT EXISTS idx_potf_celebration
-  ON potf_templates (celebration_id);
+  ON potf_templates (org_id, celebration_id);
 
 CREATE INDEX IF NOT EXISTS idx_potf_fixed_date
-  ON potf_templates (fixed_date);
+  ON potf_templates (org_id, fixed_date);
 
 
 -- ---------------------------------------------------------------------------
@@ -76,11 +123,13 @@ CREATE INDEX IF NOT EXISTS idx_potf_fixed_date
 -- override always wins over the scrape, for that date, permanently.
 
 CREATE TABLE IF NOT EXISTS readings_overrides (
-  date        DATE         PRIMARY KEY,
+  org_id      UUID         NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  date        DATE         NOT NULL,
   payload     JSONB        NOT NULL,
   source      TEXT         NOT NULL DEFAULT 'manual',
   updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
 
+  PRIMARY KEY (org_id, date),
   CONSTRAINT readings_source_known CHECK (source IN ('manual', 'import', 'usccb', 'evangelizo'))
 );
 
@@ -127,9 +176,12 @@ CREATE INDEX IF NOT EXISTS idx_readings_cache_version
 -- and a new checkbox should not be a migration.
 
 CREATE TABLE IF NOT EXISTS settings (
-  key         TEXT         PRIMARY KEY,
+  org_id      UUID         NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  key         TEXT         NOT NULL,
   value       JSONB        NOT NULL,
-  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+
+  PRIMARY KEY (org_id, key)
 );
 
 
@@ -140,13 +192,15 @@ CREATE TABLE IF NOT EXISTS settings (
 -- scheduled Masses" rather than re-picking them every month.
 
 CREATE TABLE IF NOT EXISTS scheduled_masses (
-  date        DATE         PRIMARY KEY,
+  org_id      UUID         NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  date        DATE         NOT NULL,
   label       TEXT,
   notes       TEXT,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
 
+  PRIMARY KEY (org_id, date),
   CONSTRAINT scheduled_label_length CHECK (label IS NULL OR char_length(label) <= 200)
 );
 
 CREATE INDEX IF NOT EXISTS idx_scheduled_date
-  ON scheduled_masses (date);
+  ON scheduled_masses (org_id, date);

@@ -7,11 +7,16 @@ import PrayersScreen from './components/prayers/PrayersScreen';
 import SettingsPanel from './components/SettingsPanel';
 import { Alert, Spinner, cx } from './components/ui';
 import WindowControls, { inDesktopWindow, titleBarProps } from './components/WindowControls';
+import AuthScreen from './components/auth/AuthScreen';
+import ParishSetup from './components/auth/ParishSetup';
+import AccountScreen from './components/auth/AccountScreen';
+import { authEnabled, supabase } from './lib/supabase';
 
 const TABS = [
   { id: 'calendar', label: 'Calendar' },
   { id: 'prayers', label: 'Prayers' },
   { id: 'settings', label: 'Settings' },
+  { id: 'account', label: 'Account' },
 ];
 
 export default function App() {
@@ -21,12 +26,46 @@ export default function App() {
   const [seasons, setSeasons] = useState([]);
   const [bootError, setBootError] = useState(null);
 
+  /*
+   * `session` is undefined until we have asked, then null or a session. The
+   * three states are deliberately distinct: rendering the sign-in screen while
+   * still checking would flash it at somebody who is already signed in, every
+   * single load.
+   */
+  const [session, setSession] = useState(authEnabled ? undefined : null);
+  const [account, setAccount] = useState(null);
+
+  useEffect(() => {
+    if (!authEnabled) return undefined;
+    supabase.auth.getSession().then(({ data }) => setSession(data.session ?? null));
+    // Fires on sign-in, sign-out and on every silent token refresh, which is
+    // what keeps a long editing session from quietly expiring underneath you.
+    const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
+    return () => data.subscription.unsubscribe();
+  }, []);
+
   const loadTemplates = useCallback(async () => {
     const payload = await api.potfList({ includeInactive: false });
     setTemplates(payload.templates);
   }, []);
 
+  // Who am I, and do I have a parish? Asked first, because the answer decides
+  // whether the rest is worth fetching at all.
   useEffect(() => {
+    if (authEnabled && !session) {
+      setAccount(null);
+      return;
+    }
+    api.account().then(setAccount).catch((error) => setBootError(error.message));
+  }, [session]);
+
+  const hasParish = Boolean(account && (account.authDisabled || account.organisation));
+
+  useEffect(() => {
+    // Not signed in, or signed in with no parish yet: there is nothing to load,
+    // and asking would be four 401s and a misleading boot error.
+    if (!account || !hasParish) return;
+
     Promise.all([api.health(), api.settings(), api.potfMeta(), api.potfList()])
       .then(([, settingsPayload, meta, list]) => {
         setSettings(settingsPayload.settings);
@@ -34,7 +73,29 @@ export default function App() {
         setTemplates(list.templates);
       })
       .catch((error) => setBootError(error.message));
-  }, []);
+  }, [account, hasParish]);
+
+  if (authEnabled && session === undefined) {
+    return (
+      <div className="flex h-full items-center justify-center gap-2 text-muted">
+        <Spinner /> Checking your session…
+      </div>
+    );
+  }
+
+  if (authEnabled && !session) {
+    return <AuthScreen onSignedIn={() => setBootError(null)} />;
+  }
+
+  if (account && !hasParish) {
+    return (
+      <ParishSetup
+        email={account.user?.email}
+        onReady={() => api.account().then(setAccount)}
+        onSignOut={() => supabase?.auth.signOut()}
+      />
+    );
+  }
 
   if (bootError) {
     return (
@@ -68,7 +129,9 @@ export default function App() {
         <img src={seal} alt="Chapel of the Holy Guardian Angel seal" draggable={false} className="size-9 rounded-full" />
         <span className="font-serif text-xl font-bold">LiturgyGen</span>
         <nav className="ml-auto flex h-full gap-1" aria-label="Main">
-          {TABS.map((entry) => (
+          {/* No accounts in the desktop build or in demo mode, so the tab would
+              open a screen explaining that it does not apply. Hide it instead. */}
+          {TABS.filter((entry) => entry.id !== 'account' || authEnabled).map((entry) => (
             <button
               key={entry.id}
               type="button"
@@ -92,6 +155,9 @@ export default function App() {
         {tab === 'calendar' && <CalendarScreen settings={settings} templates={templates} />}
         {tab === 'prayers' && <PrayersScreen templates={templates} seasons={seasons} reload={loadTemplates} />}
         {tab === 'settings' && <SettingsPanel settings={settings} onSaved={setSettings} />}
+        {tab === 'account' && (
+          <AccountScreen account={account} onSignedOut={() => setSession(null)} />
+        )}
       </main>
     </div>
   );

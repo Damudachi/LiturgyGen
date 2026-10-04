@@ -21,7 +21,8 @@ import batchRoutes from './routes/batch.js';
 import potfRoutes from './routes/potf.js';
 import settingsRoutes from './routes/settings.js';
 import { checkDatabase } from './db/index.js';
-import basicAuth, { gateEnabled } from './middleware/basicAuth.js';
+import requireAuth, { authConfigured } from './middleware/requireAuth.js';
+import accountRoutes from './routes/account.js';
 import { landingPage } from './views/pages.js';
 
 /**
@@ -126,15 +127,26 @@ export function createApp() {
   /**
    * The door. Everything below this line is behind it; everything above -
    * /healthz, /readyz and the landing page - is deliberately not, because a
-   * host's health check
-   * cannot authenticate and a gated one gets the service marked unhealthy and
-   * killed. Neither leaks anything: one says the process is alive, the other
-   * says whether the database answered.
+   * host's health check cannot sign in and a gated one gets the service marked
+   * unhealthy and killed. Neither leaks anything: one says the process is
+   * alive, the other says whether the database answered.
    *
-   * Off when BASIC_AUTH_USER and BASIC_AUTH_PASS are unset, so development and
-   * the desktop build are unaffected. See src/middleware/basicAuth.js.
+   * Off when SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are unset, so local
+   * development and the desktop build are unaffected. See
+   * src/middleware/requireAuth.js.
    */
-  app.use(basicAuth({ realm: 'LiturgyGen' }));
+  /*
+   * Signing in and founding a parish happen BEFORE you have a parish, so these
+   * sit above the parish requirement. They have their own gate inside, which
+   * checks the session but not the membership.
+   */
+  app.use('/api/account', accountRoutes);
+
+  /*
+   * Everything below needs a signed-in user who belongs to a parish, because
+   * every query below is scoped by that parish.
+   */
+  app.use(requireAuth());
 
   /**
    * Rate limiting, applied after the gate so a signed-in office is measured

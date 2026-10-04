@@ -77,7 +77,11 @@ function rowFingerprint(row) {
   });
 }
 
-export async function seedPotfTemplates({ force = false, log = () => {} } = {}) {
+export async function seedPotfTemplates({ orgId = null, force = false, log = () => {} } = {}) {
+  // Seeding is per-parish now. Without an org there is nowhere to put the
+  // starter prayers, and seeding them into every parish at once would be the
+  // only other reading of a missing one.
+  if (!orgId) return { inserted: 0, refreshed: 0, skipped: 0, total: 0 };
   const allSeeds = collectSeeds(log);
 
   /*
@@ -97,7 +101,8 @@ export async function seedPotfTemplates({ force = false, log = () => {} } = {}) 
            title, priest_invitation, response_options, intentions,
            priest_conclusion, notes
     FROM potf_templates
-    WHERE season = $1
+    WHERE org_id = $6
+      AND season = $1
       AND (week           = $2 OR (week           IS NULL AND $2::int  IS NULL))
       AND (day_of_week    = $3 OR (day_of_week    IS NULL AND $3::text IS NULL))
       AND (celebration_id = $4 OR (celebration_id IS NULL AND $4::text IS NULL))
@@ -106,10 +111,13 @@ export async function seedPotfTemplates({ force = false, log = () => {} } = {}) 
 
   const INSERT = `
     INSERT INTO potf_templates
-      (title, season, week, day_of_week, celebration_id, fixed_date, priest_invitation,
+      (org_id, title, season, week, day_of_week, celebration_id, fixed_date, priest_invitation,
        response_options, intentions, priest_conclusion, notes, origin, is_active, seed_hash,
        is_placeholder)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::jsonb, $10, $11, 'seed', TRUE, $12, $13)
+    -- org_id is $14 (appended to the params array) so the existing $1..$13
+    -- keep their meaning. Renumbering them instead shifted every column by
+    -- one and fed the title into a JSONB cast.
+    VALUES ($14, $1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::jsonb, $10, $11, 'seed', TRUE, $12, $13)
   `;
 
   const UPDATE = `
@@ -117,7 +125,7 @@ export async function seedPotfTemplates({ force = false, log = () => {} } = {}) 
       title = $1, fixed_date = $2, priest_invitation = $3,
       response_options = $4::jsonb, intentions = $5::jsonb, priest_conclusion = $6,
       notes = $7, seed_hash = $8, is_placeholder = $9, updated_at = now()
-    WHERE id = $10
+    WHERE org_id = $11 AND id = $10
   `;
 
   let inserted = 0;
@@ -153,7 +161,7 @@ export async function seedPotfTemplates({ force = false, log = () => {} } = {}) 
       params.isPlaceholder = Boolean(seed.placeholder);
 
       const found = await client.query(FIND_EXISTING, [
-        params.season, params.week, params.dayOfWeek, params.celebrationId, params.fixedDate,
+        params.season, params.week, params.dayOfWeek, params.celebrationId, params.fixedDate, orgId,
       ]);
       const existing = found.rows[0];
 
@@ -161,7 +169,7 @@ export async function seedPotfTemplates({ force = false, log = () => {} } = {}) 
         await client.query(INSERT, [
           params.title, params.season, params.week, params.dayOfWeek, params.celebrationId,
           params.fixedDate, params.priestInvitation, params.responseOptions, params.intentions,
-          params.priestConclusion, params.notes, params.seedHash, params.isPlaceholder,
+          params.priestConclusion, params.notes, params.seedHash, params.isPlaceholder, orgId,
         ]);
         inserted += 1;
         continue;
@@ -181,7 +189,7 @@ export async function seedPotfTemplates({ force = false, log = () => {} } = {}) 
         await client.query(UPDATE, [
           params.title, params.fixedDate, params.priestInvitation, params.responseOptions,
           params.intentions, params.priestConclusion, params.notes, params.seedHash,
-          params.isPlaceholder, existing.id,
+          params.isPlaceholder, existing.id, orgId,
         ]);
         refreshed += 1;
       } else {

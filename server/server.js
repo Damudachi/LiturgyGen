@@ -11,7 +11,7 @@
 
 import config from './src/config.js';
 import createApp, { allowedOrigins } from './src/app.js';
-import { gateEnabled } from './src/middleware/basicAuth.js';
+import { authConfigured } from './src/middleware/requireAuth.js';
 import { checkDatabase } from './src/db/index.js';
 import { seedPotfTemplates } from './src/db/seed.js';
 
@@ -38,9 +38,17 @@ try {
   process.exit(1);
 }
 
-const seeded = await seedPotfTemplates();
-if (seeded.inserted) {
-  console.log(`Seeded ${seeded.inserted} Prayers of the Faithful templates.`);
+/*
+ * Starter prayers are seeded per parish now, when a parish is founded - see
+ * routes/account.js. There is no longer a single table to seed at boot, so this
+ * only runs for a development checkout that pins one parish.
+ */
+const devOrgId = process.env.LITURGYGEN_DEV_ORG_ID;
+if (devOrgId) {
+  const seeded = await seedPotfTemplates({ orgId: devOrgId });
+  if (seeded.inserted) {
+    console.log(`Seeded ${seeded.inserted} Prayers of the Faithful templates.`);
+  }
 }
 
 /**
@@ -73,5 +81,5 @@ createApp().listen(port, config.host, () => {
   console.log(`  CORS allows: ${allowedOrigins().join(', ')}`);
   // Never print the credential itself - only whether there is one. A log is
   // the commonest way a secret escapes a service that never committed one.
-  console.log(`  basic auth : ${gateEnabled() ? 'ON' : 'off (set BASIC_AUTH_USER and BASIC_AUTH_PASS to enable)'}`);
+  console.log(`  accounts   : ${authConfigured() ? 'ON (Supabase)' : 'off (set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to enable)'}`);
 });

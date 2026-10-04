@@ -183,9 +183,11 @@ export function normaliseInput(input, { partial = false } = {}) {
  * CRUD
  * ------------------------------------------------------------------ */
 
-export async function listTemplates({ season, week, dayOfWeek, search, includeInactive = false } = {}) {
-  const clauses = [];
-  const params = {};
+export async function listTemplates(orgId, { season, week, dayOfWeek, search, includeInactive = false } = {}) {
+  if (!orgId) return [];
+  // org_id leads every clause, and is not optional the way the filters are.
+  const clauses = ['org_id = @orgId'];
+  const params = { orgId };
 
   // `is_active` is a real BOOLEAN now, so it is the condition rather than
   // something compared to 1.
@@ -211,7 +213,7 @@ export async function listTemplates({ season, week, dayOfWeek, search, includeIn
     params.search = `%${search}%`;
   }
 
-  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const where = `WHERE ${clauses.join(' AND ')}`;
   const { text, values } = named(
     `SELECT * FROM potf_templates ${where}
      ORDER BY season, COALESCE(week, 99), COALESCE(day_of_week, 'zz'), title`,
@@ -221,8 +223,14 @@ export async function listTemplates({ season, week, dayOfWeek, search, includeIn
   return rows.map(rowToTemplate);
 }
 
-export async function getTemplate(id) {
-  const { rows } = await query('SELECT * FROM potf_templates WHERE id = $1', [id]);
+export async function getTemplate(orgId, id) {
+  if (!orgId) return null;
+  // Both, always. `WHERE id = $1` alone would hand another parish's prayer
+  // to anyone who guessed the number, and the numbers are sequential.
+  const { rows } = await query(
+    'SELECT * FROM potf_templates WHERE org_id = $1 AND id = $2',
+    [orgId, id],
+  );
   return rowToTemplate(rows[0]);
 }
 
@@ -231,15 +239,17 @@ export async function getTemplate(id) {
  * no lastInsertRowid at all, and asking for the row back in the same statement
  * is one round trip instead of two.
  */
-export async function createTemplate(input) {
+export async function createTemplate(orgId, input) {
+  if (!orgId) throw Object.assign(new Error('A prayer belongs to a parish.'), { status: 403 });
   const data = normaliseInput(input);
   const { rows } = await query(
     `INSERT INTO potf_templates
-      (title, season, week, day_of_week, celebration_id, fixed_date, priest_invitation,
+      (org_id, title, season, week, day_of_week, celebration_id, fixed_date, priest_invitation,
        response_options, intentions, priest_conclusion, notes, origin, is_active)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::jsonb, $10, $11, $12, $13)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11, $12, $13, $14)
      RETURNING *`,
     [
+      orgId,
       data.title,
       data.season,
       data.week ?? null,
@@ -258,8 +268,8 @@ export async function createTemplate(input) {
   return rowToTemplate(rows[0]);
 }
 
-export async function updateTemplate(id, input) {
-  const existing = await getTemplate(id);
+export async function updateTemplate(orgId, id, input) {
+  const existing = await getTemplate(orgId, id);
   if (!existing) {
     const err = new Error(`No Prayers of the Faithful template with id ${id}.`);
     err.status = 404;
@@ -313,32 +323,40 @@ export async function updateTemplate(id, input) {
 
   sets.push('updated_at = now()');
   params.id = id;
+  // The WHERE clause names @orgId, so it has to be bound too - without this
+  // the statement throws rather than quietly updating the wrong parish, but
+  // it still has to be here.
+  params.orgId = orgId;
   const { text, values } = named(
-    `UPDATE potf_templates SET ${sets.join(', ')} WHERE id = @id RETURNING *`,
+    `UPDATE potf_templates SET ${sets.join(', ')} WHERE org_id = @orgId AND id = @id RETURNING *`,
     params,
   );
   const { rows } = await query(text, values);
   return rowToTemplate(rows[0]);
 }
 
-export async function deleteTemplate(id) {
-  const { rowCount } = await query('DELETE FROM potf_templates WHERE id = $1', [id]);
+export async function deleteTemplate(orgId, id) {
+  if (!orgId) return false;
+  const { rowCount } = await query(
+    'DELETE FROM potf_templates WHERE org_id = $1 AND id = $2',
+    [orgId, id],
+  );
   return rowCount > 0;
 }
 
-export async function duplicateTemplate(id) {
-  const source = await getTemplate(id);
+export async function duplicateTemplate(orgId, id) {
+  const source = await getTemplate(orgId, id);
   if (!source) {
     const err = new Error(`No Prayers of the Faithful template with id ${id}.`);
     err.status = 404;
     throw err;
   }
-  const copy = await createTemplate({ ...source, title: `${source.title} (copy)`, origin: 'custom' });
+  const copy = await createTemplate(orgId, { ...source, title: `${source.title} (copy)`, origin: 'custom' });
   // A copy of a placeholder is still the placeholder's text until someone edits it.
   if (source.isPlaceholder) {
     const { rows } = await query(
-      'UPDATE potf_templates SET is_placeholder = TRUE WHERE id = $1 RETURNING *',
-      [copy.id],
+      'UPDATE potf_templates SET is_placeholder = TRUE WHERE org_id = $1 AND id = $2 RETURNING *',
+      [orgId, copy.id],
     );
     return rowToTemplate(rows[0]);
   }
@@ -419,8 +437,9 @@ const MATCH_RULES = [
  * three orders of magnitude - so it is left as seven readable queries rather
  * than folded into one CASE-ranked query that nobody could follow.
  */
-async function findBy(lookup, season, { includeCatchAll = true, allowPlaceholders = false } = {}) {
+async function findBy(orgId, lookup, season, { includeCatchAll = true, allowPlaceholders = false } = {}) {
   const params = {
+    orgId,
     season,
     week: lookup.week ?? null,
     dayOfWeek: lookup.dayOfWeek ?? null,
@@ -447,7 +466,7 @@ async function findBy(lookup, season, { includeCatchAll = true, allowPlaceholder
     if (!rule.needs(lookup)) continue;
     const sql = typeof rule.sql === 'function' ? rule.sql({ availableIds }) : rule.sql;
     const { text, values } = named(
-      `SELECT * FROM potf_templates WHERE is_active ${source} AND ${sql} LIMIT 1`,
+      `SELECT * FROM potf_templates WHERE org_id = @orgId AND is_active ${source} AND ${sql} LIMIT 1`,
       params,
     );
     const { rows } = await query(text, values);
@@ -466,10 +485,10 @@ async function findBy(lookup, season, { includeCatchAll = true, allowPlaceholder
  * is set - by default a day neither book covers resolves to nothing, and the
  * document says so rather than printing a prayer the office never chose.
  */
-export async function resolveForDay(lookup, { allowPlaceholders = false } = {}) {
+export async function resolveForDay(orgId, lookup, { allowPlaceholders = false } = {}) {
   if (!lookup) return { template: null, matchedBy: 'none' };
 
-  const find = (l, season, options = {}) => findBy(l, season, { allowPlaceholders, ...options });
+  const find = (l, season, options = {}) => findBy(orgId, l, season, { allowPlaceholders, ...options });
   const hasFerial = Boolean(lookup.ferialSeason) && lookup.ferialSeason !== lookup.season;
 
   // Anything specific wins first, in both seasons. Without this, an ordinary

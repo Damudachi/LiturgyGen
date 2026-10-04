@@ -15,13 +15,31 @@
  * from its API, as on GitHub Pages.
  */
 
+import { accessToken } from '../lib/supabase.js';
+
 const BASE = import.meta.env.VITE_API_BASE_URL || '';
+
+/**
+ * The headers every call carries.
+ *
+ * The access token goes on as a Bearer header rather than relying on a cookie,
+ * which is what lets the client live on a different origin from the API without
+ * any CORS credential dance. It is fetched per request because supabase-js
+ * refreshes it in the background - caching it here would mean sending an expired
+ * one for the first call after every refresh.
+ */
+async function authHeaders(hasBody) {
+  const headers = hasBody ? { 'Content-Type': 'application/json' } : {};
+  const token = await accessToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
 
 async function request(path, { method = 'GET', body, signal } = {}) {
   const response = await fetch(`${BASE}/api${path}`, {
     method,
     signal,
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    headers: await authHeaders(Boolean(body)),
     body: body ? JSON.stringify(body) : undefined,
   });
 
@@ -51,7 +69,7 @@ async function request(path, { method = 'GET', body, signal } = {}) {
 async function download(path, { method = 'GET', body } = {}) {
   const response = await fetch(`${BASE}/api${path}`, {
     method,
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    headers: await authHeaders(Boolean(body)),
     body: body ? JSON.stringify(body) : undefined,
   });
 
@@ -135,6 +153,10 @@ export const api = {
   potfImport: (body) => request('/potf/import', { method: 'POST', body }),
 
   // Settings & schedule
+  // Account and parish.
+  account: () => request('/account'),
+  createOrganisation: (name) => request('/account/organisation', { method: 'POST', body: { name } }),
+
   settings: () => request('/settings'),
   saveSettings: (body) => request('/settings', { method: 'PUT', body }),
   schedule: (range = {}) => {

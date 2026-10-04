@@ -245,6 +245,13 @@ export const api = {
   potfImport: () => Promise.reject(demoError('Importing a prayer page')),
 
   // Settings & schedule
+  // Demo mode has no accounts: the whole point is that it opens without one.
+  // `authDisabled` is the same shape the real API sends when Supabase is not
+  // configured, so App.jsx takes one path for both and the demo never renders
+  // a half-signed-in state.
+  account: () => settle({ authDisabled: true, user: null, organisation: null, organisations: [] }),
+  createOrganisation: () => Promise.reject(demoError('Creating a parish')),
+
   settings: () =>
     settle({ settings: { ...seed.settings, ...load().settings }, defaults: seed.defaults, style: seed.style }),
   saveSettings: (body) =>

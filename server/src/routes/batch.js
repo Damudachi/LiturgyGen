@@ -20,7 +20,10 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: `These are not valid dates: ${invalid.slice(0, 5).join(', ')}` });
     }
 
-    res.status(202).json(await batchService.startBatch(sortUnique(dates), options));
+    // orgId comes from the verified session, never from the body: a batch is
+    // long-lived and runs after this request has returned, so it carries the
+    // parish it was started for rather than looking it up later.
+    res.status(202).json(await batchService.startBatch(sortUnique(dates), { ...options, orgId: req.orgId }));
   } catch (error) {
     next(error);
   }

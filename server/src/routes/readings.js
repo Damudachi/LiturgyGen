@@ -44,7 +44,7 @@ router.post('/check', async (req, res, next) => {
     if (unique.length > 400) return res.status(400).json({ error: 'Check at most 400 days at a time.' });
 
     const days = [];
-    for (const date of unique) days.push(await checkDay(date));
+    for (const date of unique) days.push(await checkDay(date, { orgId: req.orgId }));
     res.json({ days });
   } catch (error) {
     next(error);
@@ -56,6 +56,7 @@ router.get('/:date', async (req, res, next) => {
   if (!requireDate(req, res)) return;
   try {
     const readings = await getReadings(req.params.date, {
+      orgId: req.orgId,
       force: req.query.force === '1' || req.query.force === 'true',
     });
     res.json(readings);
@@ -72,6 +73,7 @@ router.get('/:date/full', async (req, res, next) => {
   if (!requireDate(req, res)) return;
   try {
     const day = await buildDay(req.params.date, {
+      orgId: req.orgId,
       force: req.query.force === '1',
       potfTemplateId: req.query.potfTemplateId ? Number(req.query.potfTemplateId) : null,
     });
@@ -85,7 +87,7 @@ router.get('/:date/full', async (req, res, next) => {
 router.put('/:date', async (req, res, next) => {
   if (!requireDate(req, res)) return;
   try {
-    res.json(await saveOverride(req.params.date, req.body || {}, { merge: req.query.merge !== 'false' }));
+    res.json(await saveOverride(req.orgId, req.params.date, req.body || {}, { merge: req.query.merge !== 'false' }));
   } catch (error) {
     next(error);
   }
@@ -94,7 +96,7 @@ router.put('/:date', async (req, res, next) => {
 router.get('/:date/override', async (req, res, next) => {
   if (!requireDate(req, res)) return;
   try {
-    const override = await getOverride(req.params.date);
+    const override = await getOverride(req.orgId, req.params.date);
     if (!override) return res.status(404).json({ error: `No saved corrections for ${req.params.date}.` });
     res.json(override);
   } catch (error) {
@@ -105,7 +107,7 @@ router.get('/:date/override', async (req, res, next) => {
 router.delete('/:date/override', async (req, res, next) => {
   if (!requireDate(req, res)) return;
   try {
-    res.json({ deleted: await deleteOverride(req.params.date) });
+    res.json({ deleted: await deleteOverride(req.orgId, req.params.date) });
   } catch (error) {
     next(error);
   }
@@ -119,7 +121,7 @@ router.post('/:date/import', async (req, res, next) => {
   if (!requireDate(req, res)) return;
   try {
     const { html } = req.body || {};
-    res.json(await importFromHtml(req.params.date, html));
+    res.json(await importFromHtml(req.orgId, req.params.date, html));
   } catch (error) {
     next(error);
   }

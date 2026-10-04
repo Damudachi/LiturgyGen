@@ -14,7 +14,7 @@
 
 import assert from 'node:assert/strict';
 import test, { beforeEach, afterEach } from 'node:test';
-import { makeTestDb } from './helpers/pgMem.js';
+import { makeTestDb, TEST_ORG_ID } from './helpers/pgMem.js';
 import { makeRealDb, needsRealPg } from './helpers/realPg.js';
 import { isoFromDb, query, resetPool, useTestPool } from '../src/db/index.js';
 import { PARSER_VERSION, clearCache, getReadings, peekReadings } from '../src/services/scraperService.js';
@@ -161,11 +161,16 @@ test('clearing everything empties the table', async () => {
 test('an override still beats the cache', async () => {
   await seedCache(DAY.date, DAY);
   await query(
-    `INSERT INTO readings_overrides (date, payload, source) VALUES ($1, $2::jsonb, 'manual')`,
-    [DAY.date, JSON.stringify({ ...DAY, title: 'Typed off the printed page' })],
+    `INSERT INTO readings_overrides (org_id, date, payload, source)
+          VALUES ($1, $2, $3::jsonb, 'manual')`,
+    [TEST_ORG_ID, DAY.date, JSON.stringify({ ...DAY, title: 'Typed off the printed page' })],
   );
 
-  const peeked = await peekReadings(DAY.date);
+  // The override is the parish's, so the peek has to say which parish is
+  // asking. Without an orgId there is no override to find and the SHARED cache
+  // answers instead - which is the correct behaviour, and not what this is
+  // testing.
+  const peeked = await peekReadings(DAY.date, { orgId: TEST_ORG_ID });
   assert.equal(peeked.origin, 'override');
   assert.equal(peeked.title, 'Typed off the printed page');
 });

@@ -167,10 +167,11 @@ export async function clearCache(iso = null) {
  * try/catch against a row that might hold something unparseable; a JSONB column
  * cannot hold invalid JSON, so that whole branch is gone.
  */
-export async function getOverride(iso) {
+export async function getOverride(orgId, iso) {
+  if (!orgId) return null;
   const { rows } = await query(
-    'SELECT payload, source, updated_at FROM readings_overrides WHERE date = $1',
-    [iso],
+    'SELECT payload, source, updated_at FROM readings_overrides WHERE org_id = $1 AND date = $2',
+    [orgId, iso],
   );
   if (!rows.length) return null;
   const [row] = rows;
@@ -181,12 +182,16 @@ export async function getOverride(iso) {
  * Save corrected readings for a date. Accepts a full readings object or a patch
  * merged onto whatever we already have (that is how the editor saves one field).
  */
-export async function saveOverride(iso, patch, { merge = true } = {}) {
+export async function saveOverride(orgId, iso, patch, { merge = true } = {}) {
   assertIsoDate(iso);
+  if (!orgId) throw Object.assign(new Error('A correction belongs to a parish.'), { status: 403 });
   let payload = patch;
 
   if (merge) {
-    const base = (await getOverride(iso)) || readParsedCache(iso) || emptyReadings(iso, 'manual');
+    // The parish's own correction first, then the SHARED cache as a base to
+    // edit from. Reading the shared cache here is right: it is the scripture
+    // everyone gets, and what the office saves on top of it is theirs alone.
+    const base = (await getOverride(orgId, iso)) || (await readParsedCache(iso)) || emptyReadings(iso, 'manual');
     payload = { ...base, ...patch, date: iso };
     // Merge one level into the section objects so a caller can send just
     // { psalm: { refrain: "..." } } without wiping the verses.
@@ -200,19 +205,23 @@ export async function saveOverride(iso, patch, { merge = true } = {}) {
   payload.warnings = auditReadings(payload);
 
   await query(
-    `INSERT INTO readings_overrides (date, payload, source, updated_at)
-     VALUES ($1, $2::jsonb, $3, now())
-     ON CONFLICT (date) DO UPDATE SET
+    `INSERT INTO readings_overrides (org_id, date, payload, source, updated_at)
+     VALUES ($1, $2, $3::jsonb, $4, now())
+     ON CONFLICT (org_id, date) DO UPDATE SET
        payload = excluded.payload, source = excluded.source, updated_at = now()`,
-    [iso, JSON.stringify(payload), payload.source],
+    [orgId, iso, JSON.stringify(payload), payload.source],
   );
 
   return payload;
 }
 
 /** `.changes` became `rowCount`. */
-export async function deleteOverride(iso) {
-  const { rowCount } = await query('DELETE FROM readings_overrides WHERE date = $1', [iso]);
+export async function deleteOverride(orgId, iso) {
+  if (!orgId) return false;
+  const { rowCount } = await query(
+    'DELETE FROM readings_overrides WHERE org_id = $1 AND date = $2',
+    [orgId, iso],
+  );
   return rowCount > 0;
 }
 
@@ -221,7 +230,7 @@ export async function deleteOverride(iso) {
  * reused, so a saved MMDDYY.cfm page gives exactly the same fidelity as a live
  * fetch - the practical answer when USCCB is showing its bot check.
  */
-export async function importFromHtml(iso, html) {
+export async function importFromHtml(orgId, iso, html) {
   assertIsoDate(iso);
   if (!html || typeof html !== 'string' || html.length < 200) {
     const err = new Error('Paste the full saved USCCB readings page - that looked too short to be one.');
@@ -232,15 +241,15 @@ export async function importFromHtml(iso, html) {
   parsed.source = 'usccb (imported)';
   parsed.warnings = auditReadings(parsed);
   writeParsedCache(iso, parsed);
-  return saveOverride(iso, parsed, { merge: false });
+  return saveOverride(orgId, iso, parsed, { merge: false });
 }
 
 /* ------------------------------------------------------------------ *
  * Fetching
  * ------------------------------------------------------------------ */
 
-async function resolveProviderOrder(requested) {
-  const configured = requested || (await getSettings()).providerOrder || ['usccb'];
+async function resolveProviderOrder(orgId, requested) {
+  const configured = requested || (await getSettings(orgId)).providerOrder || ['usccb'];
   const order = configured.filter((name) => PROVIDERS[name]);
   return order.length ? order : ['usccb'];
 }
@@ -251,10 +260,10 @@ async function resolveProviderOrder(requested) {
  */
 export async function getReadings(iso, options = {}) {
   assertIsoDate(iso);
-  const { force = false, providers = null, useCache = true, useOverride = true } = options;
+  const { orgId = null, force = false, providers = null, useCache = true, useOverride = true } = options;
 
   if (useOverride) {
-    const override = await getOverride(iso);
+    const override = await getOverride(orgId, iso);
     if (override) {
       override.warnings = auditReadings(override);
       override.fromCache = true;
@@ -263,7 +272,7 @@ export async function getReadings(iso, options = {}) {
     }
   }
 
-  const order = await resolveProviderOrder(providers);
+  const order = await resolveProviderOrder(orgId, providers);
   const attempts = [];
 
   /**
@@ -329,9 +338,9 @@ export async function getReadings(iso, options = {}) {
  * `refetchable` marks a partial copy from the fallback feed: getReadings would
  * go back to the preferred source for it, so fetching again may fill the gaps.
  */
-export async function peekReadings(iso, { providers = null } = {}) {
+export async function peekReadings(iso, { orgId = null, providers = null } = {}) {
   assertIsoDate(iso);
-  const override = await getOverride(iso);
+  const override = await getOverride(orgId, iso);
   if (override) {
     return { ...override, warnings: auditReadings(override), origin: 'override', refetchable: false };
   }
@@ -341,7 +350,7 @@ export async function peekReadings(iso, { providers = null } = {}) {
     ...cached,
     warnings: auditReadings(cached),
     origin: 'cache',
-    refetchable: !canServeFromCache(cached, (await resolveProviderOrder(providers))[0]),
+    refetchable: !canServeFromCache(cached, (await resolveProviderOrder(orgId, providers))[0]),
   };
 }
 
@@ -352,8 +361,8 @@ export async function peekReadings(iso, { providers = null } = {}) {
  * Batch generation uses this to hold between dates rather than spend the rest of
  * the run on the fallback feed - see batchService.
  */
-export async function preferredCooldownMs(requested = null) {
-  const provider = PROVIDERS[(await resolveProviderOrder(requested))[0]];
+export async function preferredCooldownMs(orgId, requested = null) {
+  const provider = PROVIDERS[(await resolveProviderOrder(orgId, requested))[0]];
   return provider && provider.challengeCooldownMs ? provider.challengeCooldownMs() : 0;
 }
 

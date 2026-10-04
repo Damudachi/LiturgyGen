@@ -16,9 +16,28 @@
 -- the office has made.
 
 -- ---------------------------------------------------------------------------
+-- A parish to hang the sample data on
+-- ---------------------------------------------------------------------------
+-- Everything an office owns is scoped to a parish now, so a seed file needs one
+-- to exist before it can insert a single row. This is the demo parish a
+-- self-hosted copy starts with; a deployment with accounts creates a real one
+-- when somebody signs up, and never runs this file.
+--
+-- The id is fixed so the statements below can find it by slug without needing a
+-- variable, which plain SQL does not have.
+
+INSERT INTO organizations (id, name, slug)
+VALUES ('00000000-0000-4000-8000-0000000000de', 'Demo Parish', 'demo-parish')
+ON CONFLICT (slug) DO NOTHING;
+
+
+-- ---------------------------------------------------------------------------
 -- Settings: the document defaults
 -- ---------------------------------------------------------------------------
-INSERT INTO settings (key, value) VALUES
+INSERT INTO settings (org_id, key, value)
+SELECT o.id, v.key, v.value
+  FROM organizations o,
+       (VALUES
   ('includeGospel',          'false'::jsonb),
   ('includeSequence',        'true'::jsonb),
   ('separatePages',          'true'::jsonb),
@@ -31,7 +50,9 @@ INSERT INTO settings (key, value) VALUES
   ('schoolWideIntentions',   '[]'::jsonb),
   ('usePlaceholderPotf',     'false'::jsonb),
   ('providerOrder',          '["usccb","evangelizo"]'::jsonb)
-ON CONFLICT (key) DO NOTHING;
+       ) AS v(key, value)
+ WHERE o.slug = 'demo-parish'
+ON CONFLICT (org_id, key) DO NOTHING;
 
 
 -- ---------------------------------------------------------------------------
@@ -43,9 +64,11 @@ ON CONFLICT (key) DO NOTHING;
 -- hand. The office should never print a prayer they did not choose.
 
 INSERT INTO potf_templates
-  (title, season, week, day_of_week, priest_invitation, response_options,
+  (org_id, title, season, week, day_of_week, priest_invitation, response_options,
    intentions, priest_conclusion, origin, is_placeholder)
-VALUES
+SELECT o.id, v.*
+  FROM organizations o,
+       (VALUES
   (
     'Placeholder - Ordinary Time',
     'Ordinary Time', NULL, NULL,
@@ -117,6 +140,9 @@ VALUES
     'Father, you gave us your Son. Hear the prayers of your people. Through Christ our Lord.',
     'placeholder', TRUE
   )
+       ) AS v(title, season, week, day_of_week, priest_invitation, response_options,
+              intentions, priest_conclusion, origin, is_placeholder)
+ WHERE o.slug = 'demo-parish'
 ON CONFLICT DO NOTHING;
 
 
@@ -126,8 +152,13 @@ ON CONFLICT DO NOTHING;
 -- Invented dates, so the "our Mass schedule" shortcut has something to expand
 -- on a fresh install.
 
-INSERT INTO scheduled_masses (date, label) VALUES
-  (DATE '2026-09-02', 'First Wednesday Mass'),
-  (DATE '2026-09-04', 'First Friday Mass'),
-  (DATE '2026-09-08', 'Nativity of the Blessed Virgin Mary')
-ON CONFLICT (date) DO NOTHING;
+INSERT INTO scheduled_masses (org_id, date, label)
+SELECT o.id, v.date, v.label
+  FROM organizations o,
+       (VALUES
+         (DATE '2026-09-02', 'First Wednesday Mass'),
+         (DATE '2026-09-04', 'First Friday Mass'),
+         (DATE '2026-09-08', 'Nativity of the Blessed Virgin Mary')
+       ) AS v(date, label)
+ WHERE o.slug = 'demo-parish'
+ON CONFLICT (org_id, date) DO NOTHING;

@@ -123,7 +123,7 @@ export async function startBatch(dates, options = {}) {
     throw err;
   }
 
-  const settings = await getSettings();
+  const settings = await getSettings(options.orgId);
   const job = {
     id: randomUUID(),
     status: 'running',
@@ -171,7 +171,7 @@ export async function startBatch(dates, options = {}) {
  * so a source that is genuinely down cannot stall the run indefinitely.
  */
 async function waitForPreferredSource(job) {
-  let remaining = await preferredCooldownMs(job.options.providers);
+  let remaining = await preferredCooldownMs(job.options.orgId, job.options.providers);
   if (remaining <= 0) return;
 
   while (remaining > 0 && !job.cancelRequested && job.waitedMs < MAX_WAIT_MS) {
@@ -184,7 +184,7 @@ async function waitForPreferredSource(job) {
     const slice = Math.min(remaining, 1000);
     await sleep(slice);
     job.waitedMs += slice;
-    remaining = await preferredCooldownMs(job.options.providers);
+    remaining = await preferredCooldownMs(job.options.orgId, job.options.providers);
   }
 }
 
@@ -212,6 +212,7 @@ async function run(job) {
 
     try {
       const day = await buildDay(date, {
+        orgId: job.options.orgId,
         force: job.options.force,
         providers: job.options.providers,
         extraIntentions: job.options.extraIntentions ?? job.settings.schoolWideIntentions,
@@ -294,6 +295,7 @@ async function fillGaps(job, style) {
 
     try {
       const day = await buildDay(result.date, {
+        orgId: job.options.orgId,
         providers: job.options.providers,
         extraIntentions: job.options.extraIntentions ?? job.settings.schoolWideIntentions,
         settings: job.settings,

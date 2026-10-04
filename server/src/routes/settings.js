@@ -7,7 +7,7 @@ const router = Router();
 
 router.get('/', async (_req, res, next) => {
   try {
-    res.json({ settings: await getSettings(), defaults: DEFAULT_SETTINGS, style: DEFAULT_STYLE });
+    res.json({ settings: await getSettings(req.orgId), defaults: DEFAULT_SETTINGS, style: DEFAULT_STYLE });
   } catch (error) {
     next(error);
   }
@@ -21,7 +21,7 @@ router.put('/', async (req, res, next) => {
     if (unknown.length) {
       return res.status(400).json({ error: `Unknown setting(s): ${unknown.join(', ')}` });
     }
-    res.json({ settings: await setSettings(patch) });
+    res.json({ settings: await setSettings(req.orgId, patch) });
   } catch (error) {
     next(error);
   }

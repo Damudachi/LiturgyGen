@@ -33,6 +33,7 @@ export function potfHeading(template, liturgy, occasionTitle) {
 export async function buildDay(iso, options = {}) {
   assertIsoDate(iso);
   const {
+    orgId = null,
     force = false,
     providers = null,
     potfTemplateId = null,
@@ -48,7 +49,7 @@ export async function buildDay(iso, options = {}) {
   // `settings = await getSettings()` cannot be a default parameter, so the
   // fetch moved into the body. Callers that already have the settings still
   // pass them and save the round trip.
-  const settings = suppliedSettings ?? (await getSettings());
+  const settings = suppliedSettings ?? (await getSettings(orgId));
 
   const liturgy = await getLiturgicalDay(iso);
 
@@ -56,14 +57,14 @@ export async function buildDay(iso, options = {}) {
   let readingsError = null;
   try {
     if (offline) {
-      readings = await peekReadings(iso, { providers });
+      readings = await peekReadings(iso, { orgId, providers });
       if (!readings) {
         const err = new Error('The readings for this day have not been fetched yet.');
         err.code = 'NOT_FETCHED';
         throw err;
       }
     } else {
-      readings = await getReadings(iso, { force, providers });
+      readings = await getReadings(iso, { orgId, force, providers });
     }
   } catch (error) {
     readingsError = { code: error.code || 'ERROR', message: error.message };
@@ -82,11 +83,11 @@ export async function buildDay(iso, options = {}) {
     potf = potfOverride;
     potfMatch = 'supplied by the editor';
   } else {
-    template = potfTemplateId ? getTemplate(potfTemplateId) : null;
+    template = potfTemplateId ? await getTemplate(orgId, potfTemplateId) : null;
     if (template) {
       potfMatch = 'chosen manually';
     } else {
-      const resolved = await resolveForDay(liturgy.potfLookup, {
+      const resolved = await resolveForDay(orgId, liturgy.potfLookup, {
         allowPlaceholders: Boolean(settings.usePlaceholderPotf),
       });
       potfMatch = resolved.matchedBy;
