@@ -6,7 +6,7 @@ LiturgyGen works out the liturgical day, fetches that day's readings, attaches
 the right Prayers of the Faithful, and hands back a `.docx` laid out exactly
 like the office's printed missalette.
 
-**Live site:** https://damudachi.github.io/LiturgyGen/ liturgygen.onrender.com
+**Live site:** https://damudachi.github.io/LiturgyGen/ https://liturgygen.onrender.com
 **API:** see [What I would do next](#what-i-would-do-next)
 **Demo video:** week 3
 
