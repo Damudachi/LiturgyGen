@@ -64,7 +64,7 @@ target.
 fails even the 3 : 1 asked of a meaningful graphic. It is never carrying meaning
 alone — every one of those icons sits beside a text label saying the same thing,
 and the icon carries an `aria-label` — but it should be darkened to `#8A6500`
-(4.64 : 1). Open.
+(4.77 : 1). Open.
 
 ## Type
 
@@ -95,10 +95,11 @@ One base unit, 4px, and four steps: **6px** (`gap-1.5`, tile internals), **12px*
 Radius 8–12px on panels and buttons; fully round on the pill actions, so the
 shape itself reads as "this is an action".
 
-Three shadow tokens only — `--shadow-rest` (lying on the page), `--shadow-raise`
+Three levels of depth — `--shadow-rest` (lying on the page), `--shadow-raise`
 (under the pointer or chosen), `--shadow-float` (the navbar, the side panel) —
 all tinted with the palette's navy rather than grey, so they sit in the same warm
-light as the paper. `.lift` pairs the raise shadow with a 2px upward translate,
+light as the paper. A fourth token, `--shadow-well`, is an inset rather than a
+level: it presses a field into the page instead of lifting anything off it. `.lift` pairs the raise shadow with a 2px upward translate,
 and drops the translate under `prefers-reduced-motion`.
 
 ## Responsive
@@ -127,7 +128,7 @@ framework offered a set. At 375px nothing scrolls sideways.
 - One focus style for the whole app: a 3px navy outline with a 2px offset,
   switched to gold inside the dark navbar.
 - The month grid supports arrow-key navigation with a roving tabindex, so a
-  keyboard user moves between days rather than tabbing through thirty-five
+  keyboard user moves between days rather than tabbing through all thirty-odd
   buttons. The day book traps Tab while open, closes on Escape, and returns
   focus to the tile that opened it.
 - Every animation is dropped under `prefers-reduced-motion`.

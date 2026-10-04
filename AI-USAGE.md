@@ -125,7 +125,12 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
 - **What it gave back:** the implementation (scheme match, base64 shape check,
   split on the first colon only, sha256 + `timingSafeEqual`), with the eleven
   tests in `server/test/basicAuth.test.js` green and the whole server suite at
-  121 passing. It also found that Render's free web services have an **ephemeral
+  121 passing on that day. Both have since moved: Supabase Auth replaced the
+  Basic Auth gate later the same week, so that middleware now sits at
+  `server/src/middleware/retired/basicAuth.js` and its test file is parked as
+  `server/test/retired-basicAuth.test.js.txt` — kept, but no longer run. The
+  suite is 138 server tests and 14 client tests today. It also found that
+  Render's free web services have an **ephemeral
   filesystem**, which matters because the readings cache is JSON files on disk:
   every spin-down would throw away readings that cost a three-minute cooldown
   each to fetch.
@@ -274,24 +279,6 @@ were placeholders. The lesson is not to distrust it; it is that an absence is a
 much weaker finding than a presence, and I should ask which files it actually
 opened.
 
-### Case 10 — It ignored a note the codebase had already written for it
-
-Asked to improve the sign-in screen, it put six ribbons in the seam, one per
-liturgical colour. Two things were wrong: at seven pixels they read as a striped
-comb rather than bookmarks, and the **white** one was invisible against the cream
-half of the page.
-
-That second fault is the interesting one. `client/src/index.css` has a comment
-directly above the liturgical colours that says, in so many words, that white is
-an ivory stripe and needs an edge so it shows — written months earlier for the
-calendar, for exactly this reason. The file was open. It had read it well enough
-to copy the palette out of it.
-
-**What I take from it:** it reads a file for what it is looking for, not for what
-the file is telling it. The comments that exist to stop somebody repeating a
-mistake are the ones it is most likely to skim, which is an argument for the
-comments being there and not an argument against them.
-
 ### Case 6 — It hid its own error message behind a 500
 
 The prayer-book importer refused an image upload with "Something went wrong on
@@ -359,6 +346,24 @@ would have found out mid-take.
 wearing a number. It is good at writing the script and good at counting the
 words, and it will not do the second one unless told to.
 
+### Case 10 — It ignored a note the codebase had already written for it
+
+Asked to improve the sign-in screen, it put six ribbons in the seam, one per
+liturgical colour. Two things were wrong: at seven pixels they read as a striped
+comb rather than bookmarks, and the **white** one was invisible against the cream
+half of the page.
+
+That second fault is the interesting one. `client/src/index.css` has a comment
+directly above the liturgical colours that says, in so many words, that white is
+an ivory stripe and needs an edge so it shows — written months earlier for the
+calendar, for exactly this reason. The file was open. It had read it well enough
+to copy the palette out of it.
+
+**What I take from it:** it reads a file for what it is looking for, not for what
+the file is telling it. The comments that exist to stop somebody repeating a
+mistake are the ones it is most likely to skim, which is an argument for the
+comments being there and not an argument against them.
+
 ---
 
 ## 3. Who wrote what
@@ -404,12 +409,17 @@ words, and it will not do the second one unless told to.
   file I rewrote most often, because every new section of the book broke an
   assumption in it.
 
-- **File:** `server/src/middleware/basicAuth.js` — the `checkCredentials`
+- **File:** `server/src/middleware/retired/basicAuth.js` — the `checkCredentials`
   function. **Not mine. Written by Claude on 4 October 2026** and disclosed in
   section 1 under that date. I had planned to write it myself; I ran out of week
   and asked for it instead. The surrounding middleware, the wiring in `app.js`
-  and the eleven tests in `server/test/basicAuth.test.js` were also scaffolded
-  with assistance.
+  and the eleven tests that covered it were also scaffolded with assistance.
+  **This gate is retired.** Supabase Auth replaced it later the same week —
+  a single shared password cannot name a parish — so the file sits under
+  `retired/` and its tests are parked as
+  `server/test/retired-basicAuth.test.js.txt`. It is left in the repository, and
+  described here, because the disclosure stands whether or not the code is still
+  wired in: `server/src/middleware/requireAuth.js` is what guards `/api` today.
 - **What it does and why it is built this way:** decides whether an
   `Authorization: Basic <base64>` header carries the configured username and
   password. Four things in it are not obvious until you read RFC 7617: the
@@ -480,9 +490,9 @@ words, and it will not do the second one unless told to.
   the layer that asks both in the right order and hands one answer to the rest of
   the app.
   `lib/dates.js` is small and deliberately boring, and it is where the timezone
-  bug in section 2 was finally fixed. Every date in this application is a
-  calendar day in the Philippines, never a moment in time, and these functions
-  are the only place allowed to know that.
+  handling finally settled. Every date in this application is a calendar day in
+  the Philippines, never a moment in time, and these functions are the only
+  place allowed to know that.
 
 - **Not in this repository:** the Supabase project
 - **Evidence:** migration `20261004110845_multi_parish_schema_with_rls`; ten

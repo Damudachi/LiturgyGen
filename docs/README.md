@@ -12,7 +12,11 @@ repository so it is versioned alongside the thing it describes.
 | [05-demo-video.md](05-demo-video.md) | the recording, and its plan |
 | [06-security-and-privacy.md](06-security-and-privacy.md) | what was checked before this went public |
 | [07-postgres-migration-map.md](07-postgres-migration-map.md) | every SQLite call site and what it becomes on PostgreSQL |
-| [08-presentation-script.md](08-presentation-script.md) | the spoken script, word for word, with per-slide word counts |
+
+`08-presentation-script.md` is deliberately **not in this repository**: it is the
+spoken script, and it says my name out loud in the first line. It is git-ignored
+and kept in the private coursework folder with the rest of the identifying
+material.
 
 Images are in [`assets/`](assets/). `assets/screenshot.png` is the one the main
 README shows.

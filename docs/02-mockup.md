@@ -67,7 +67,10 @@ Answers to the three questions the map has to settle:
 
 The month grid stays seven columns at every width. A month has seven days; a
 calendar that stacks into a list stops being a calendar. The tiles get narrower
-instead, down to a 4.5rem minimum height.
+instead, down to a **3.5rem** minimum row height. That floor was 4.5rem until a
+six-row month stopped fitting a 1366×768 laptop — six rows needed 462px and the
+screen left about 452px, so the last week was clipped in a container that does
+not scroll. `MonthGrid.jsx` carries the arithmetic in a comment.
 
 ## Component tree
 
@@ -82,8 +85,11 @@ instead, down to a 4.5rem minimum height.
 A level uses the levels below it and never above. Two repeats that pay for
 themselves:
 
-- **`DayTile`** renders thirty-five times per month, keyed by ISO date — which
-  is also how the arrow-key focus tracking knows which tile is which.
+- **`DayTile`** renders once per day of the month — twenty-eight to thirty-one
+  times — keyed by ISO date, which is also how the arrow-key focus tracking
+  knows which tile is which. `monthGrid()` pads the grid to a whole number of
+  weeks with `null`, and a `null` cell draws a blank, not a tile; the grid is
+  five or six rows depending on where the first of the month falls.
 - **`Book`** is written once and used twice, differently: as a modal dialog over
   the calendar (`variant="overlay"`) and inline on the Prayers screen
   (`variant="inline"`). It knows nothing about liturgy; the caller hands it a
