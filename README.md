@@ -12,6 +12,10 @@ Built with Claude (Anthropic) — it wrote most of the first draft of the servic
 layer, the `.docx` builder and the React components. Who wrote what, entry by
 entry, is in [`AI-USAGE.md`](AI-USAGE.md).
 
+**Live site:** https://damudachi.github.io/LiturgyGen/ https://liturgygen.onrender.com
+**API:** see [What I would do next](#what-i-would-do-next)
+**Demo video:** week 3
+
 **The app — client and API on one Render service:** https://liturgygen.onrender.com
 (behind the accounts gate; the first visit after a quiet spell takes about a
 minute while the free tier wakes up)
