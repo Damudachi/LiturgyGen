@@ -65,6 +65,7 @@
  */
 
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { unauthorizedPage } from '../views/pages.js';
 
 /**
  * @param {string|undefined} header  the raw Authorization header
@@ -154,8 +155,30 @@ export default function basicAuth({ realm = 'LiturgyGen' } = {}) {
     if (ok) return next();
 
     res.setHeader('WWW-Authenticate', `Basic realm="${realm}", charset="UTF-8"`);
-    // No detail in the body. "Wrong password" and "no such user" are the same
-    // answer here, because there is only ever one account.
-    return res.status(401).json({ error: 'Authentication required.' });
+
+    /*
+     * Same status, same header, two bodies.
+     *
+     * The header is what makes the browser show its own prompt, and that is
+     * unstyleable - it is browser chrome, not our page. What IS ours is what
+     * sits behind it when the prompt is cancelled or dismissed. A person who
+     * presses Escape used to land on a blank page holding
+     * {"error":"Authentication required."}, which reads as a crash.
+     *
+     * So: a page for anything that asked for HTML, and the JSON for everything
+     * else. The order of `res.format` keys matters - the first is the default
+     * for a client that expresses no preference, and `fetch` sends
+     * an Accept header that matches anything, so JSON has to come first or the
+     * client would be handed a web page where it expects an error object.
+     *
+     * No detail in either body. "Wrong password" and "no such user" are the
+     * same answer here, because there is only ever one account.
+     */
+    res.status(401).format({
+      'application/json': () => res.json({ error: 'Authentication required.' }),
+      'text/html': () => res.type('html').send(unauthorizedPage()),
+      default: () => res.json({ error: 'Authentication required.' }),
+    });
+    return undefined;
   };
 }

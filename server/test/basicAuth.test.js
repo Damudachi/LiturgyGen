@@ -59,21 +59,85 @@ test('the gate is on once both variables are set', () => {
   withCredentials(() => assert.equal(gateEnabled(), true));
 });
 
+/**
+ * Enough of an Express response to drive the gate.
+ *
+ * `format` is modelled rather than stubbed away, because the gate now sends
+ * two different bodies through it. Express picks the handler whose key best
+ * matches the request's Accept header and falls back to `default`; this does
+ * the same, crudely - an exact match on the type, otherwise `default`, which
+ * is all the branching the gate actually asks of it.
+ */
+function fakeRes(accept = null) {
+  const sent = {};
+  const res = {
+    sent,
+    setHeader: (k, v) => { sent[k] = v; },
+    status(code) { sent.code = code; return this; },
+    type(t) { sent.type = t; return this; },
+    json(body) { sent.body = body; sent.type = sent.type || 'json'; return this; },
+    send(body) { sent.body = body; return this; },
+    format(map) {
+      const handler = (accept && map[accept]) || map.default;
+      sent.chose = accept && map[accept] ? accept : 'default';
+      return handler();
+    },
+  };
+  return res;
+}
+
 test('a broken credential check denies rather than letting everything through', () => {
-  // The stub throws. Whatever you replace it with, a thrown error must still
-  // produce a 401 - this is the one place the app has to fail closed.
+  // A thrown error must still produce a 401 - this is the one place the app
+  // has to fail closed.
   withCredentials(() => {
-    const sent = {};
-    const res = {
-      setHeader: (k, v) => { sent[k] = v; },
-      status(code) { sent.code = code; return this; },
-      json(body) { sent.body = body; return this; },
-    };
+    const res = fakeRes();
     let nexted = false;
     basicAuth()({ headers: { authorization: 'Basic ' + Buffer.from('x:y').toString('base64') } }, res, () => { nexted = true; });
     assert.equal(nexted, false, 'a failing check must not call next()');
-    assert.equal(sent.code, 401);
+    assert.equal(res.sent.code, 401);
   });
+});
+
+test('the 401 always carries WWW-Authenticate, whichever body it sends', () => {
+  // This header, not the body, is what makes a browser show its own prompt.
+  // Lose it and the gate silently stops being usable by a person.
+  for (const accept of [null, 'text/html', 'application/json']) {
+    withCredentials(() => {
+      const res = fakeRes(accept);
+      basicAuth()({ headers: {} }, res, () => assert.fail('must not call next()'));
+      assert.equal(res.sent.code, 401);
+      assert.match(
+        res.sent['WWW-Authenticate'],
+        /^Basic realm="LiturgyGen", charset="UTF-8"$/,
+        `missing or malformed for Accept: ${String(accept)}`,
+      );
+    });
+  }
+});
+
+test('a browser gets a page, so a cancelled prompt is not raw JSON', () => {
+  withCredentials(() => {
+    const res = fakeRes('text/html');
+    basicAuth()({ headers: {} }, res, () => assert.fail('must not call next()'));
+    assert.equal(res.sent.type, 'html');
+    assert.equal(typeof res.sent.body, 'string');
+    assert.match(res.sent.body, /<!doctype html>/i);
+    // It must not leak the credential it is guarding, nor name a username.
+    assert.equal(res.sent.body.includes(PASS), false, 'the page must not contain the password');
+  });
+});
+
+test('an API client still gets JSON, not a web page', () => {
+  // `fetch` sends an Accept header that matches anything, which lands on
+  // `default`. That has to stay JSON or every client-side error handler in the
+  // app starts trying to parse HTML.
+  for (const accept of [null, 'application/json']) {
+    withCredentials(() => {
+      const res = fakeRes(accept);
+      basicAuth()({ headers: {} }, res, () => assert.fail('must not call next()'));
+      assert.deepEqual(res.sent.body, { error: 'Authentication required.' });
+    });
+  }
 });
 
 /* ------------------------------------------------------------------ *

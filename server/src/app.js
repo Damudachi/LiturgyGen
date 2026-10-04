@@ -22,6 +22,7 @@ import potfRoutes from './routes/potf.js';
 import settingsRoutes from './routes/settings.js';
 import { checkDatabase } from './db/index.js';
 import basicAuth, { gateEnabled } from './middleware/basicAuth.js';
+import { landingPage } from './views/pages.js';
 
 /**
  * CORS goes on before the routes: middleware registered after a route never
@@ -104,8 +105,28 @@ export function createApp() {
   });
 
   /**
+   * The front door mat, outside the gate.
+   *
+   * Without this, the first thing a stranger following the repository link
+   * meets is the browser's sign-in prompt with no explanation, and cancelling
+   * it leaves them on a blank page holding a JSON error. This says what the
+   * app is, that it is private, and where the demo is.
+   *
+   * It is safe to leave open because it is a fixed string: no data, no
+   * database call, no credential, nothing derived from the request. The app
+   * itself moves to /app, which is behind the gate along with everything else.
+   * `express.static` below would otherwise answer / with the client's
+   * index.html, so this has to be registered before it as well as before the
+   * gate.
+   */
+  app.get('/', (_req, res) => {
+    res.type('html').send(landingPage());
+  });
+
+  /**
    * The door. Everything below this line is behind it; everything above -
-   * /healthz and /readyz - is deliberately not, because a host's health check
+   * /healthz, /readyz and the landing page - is deliberately not, because a
+   * host's health check
    * cannot authenticate and a gated one gets the service marked unhealthy and
    * killed. Neither leaks anything: one says the process is alive, the other
    * says whether the database answered.
@@ -156,6 +177,13 @@ export function createApp() {
 
   // Serve the built client when it exists, so `npm start` runs the whole app.
   // A deployed API host has no client build beside it and simply skips this.
+  //
+  // The catch-all answers /app - the app's entry point now that / is the
+  // landing page - and any other path with the client's index.html. The app
+  // keeps its screens in React state rather than in the URL, so there is no
+  // router to teach about /app and nothing to rebuild; index.html references
+  // its assets from the root, and the browser sends the Authorization header
+  // with those requests once the gate has let it through.
   const clientDist = path.join(ROOT, '..', 'client', 'dist');
   if (fs.existsSync(clientDist)) {
     app.use(express.static(clientDist));
