@@ -23,7 +23,7 @@ import settingsRoutes from './routes/settings.js';
 import { checkDatabase } from './db/index.js';
 import requireAuth, { authConfigured } from './middleware/requireAuth.js';
 import accountRoutes from './routes/account.js';
-import { landingPage } from './views/pages.js';
+import { authForwardScript, landingPage } from './views/pages.js';
 
 /**
  * CORS goes on before the routes: middleware registered after a route never
@@ -149,6 +149,17 @@ export function createApp() {
    */
   app.get('/', (_req, res) => {
     res.type('html').send(landingPage());
+  });
+
+  /*
+   * Hands an email link's URL fragment on to /app. Outside the gate, because a
+   * visitor following a confirmation link is by definition not signed in yet,
+   * and served from here rather than from the client build so it exists even on
+   * a host with no `client/dist`. See views/pages.js for why it cannot be an
+   * inline <script>.
+   */
+  app.get('/auth-forward.js', (_req, res) => {
+    res.type('application/javascript').send(authForwardScript());
   });
 
   /**

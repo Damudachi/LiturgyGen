@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import api from './api';
-import seal from './assets/seal-128.png';
+import Logo from './components/Logo';
 import DemoNotice from './components/DemoNotice';
 import CalendarScreen from './components/calendar/CalendarScreen';
 import PrayersScreen from './components/prayers/PrayersScreen';
@@ -126,7 +126,7 @@ export default function App() {
         {...titleBarProps()}
         className={cx('on-dark sticky top-0 z-50 flex h-[60px] shrink-0 items-center gap-3 bg-ink px-6 text-page shadow-float', inDesktopWindow && 'select-none')}
       >
-        <img src={seal} alt="Chapel of the Holy Guardian Angel seal" draggable={false} className="size-9 rounded-full" />
+        <Logo className="h-8 w-10 shrink-0" />
         <span className="font-serif text-xl font-bold">LiturgyGen</span>
         <nav className="ml-auto flex h-full gap-1" aria-label="Main">
           {/* No accounts in the desktop build or in demo mode, so the tab would

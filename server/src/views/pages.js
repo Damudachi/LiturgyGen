@@ -21,7 +21,7 @@
  * `/` and `/app` are one journey: a visitor reads this page and presses Sign in,
  * and the next thing they see is the React entry screen. So this page is the
  * same spread - an ink cover leaf on the left, a paper leaf on the right, and
- * the liturgical ribbons sewn into the seam between them. The headline, the
+ * a gold ribbon sewn into the seam between them. The headline, the
  * lede and the three points are deliberately the same words in both places.
  *
  * There is no build step that will tell you when the two drift apart. If you
@@ -35,14 +35,15 @@
  * blocked, which is a miserable thing to debug. Everything here is markup and
  * CSS; the buttons are plain links, so neither page needs a line of JavaScript.
  *
- * NO IMAGES EITHER, INCLUDING THE SEAL
+ * THE MARK IS INLINE SVG, NOT AN IMAGE
  * ------------------------------------
- * The React entry screen opens with the chapel seal. This page cannot: the only
- * copy of it is Vite-hashed inside `client/dist/assets`, so any path written
- * here is correct until the next build, and an API host deployed without a
- * client build beside it has no copy at all. A broken-image icon in the corner
- * of the front door is worse than no seal, so the wordmark carries the brand
- * here and a short gold rule above it stands in for the seal's edge.
+ * No `<img>` on either page, deliberately. A PNG would have to be Vite-hashed
+ * inside `client/dist/assets`, so any path written here is correct until the
+ * next build, and an API host deployed without a client build beside it has no
+ * copy at all - a broken-image icon in the corner of the front door. The mark
+ * is markup instead, so it cannot 404. Keep its geometry in step with
+ * `client/src/components/Logo.jsx`; it is the same two leaves and the same
+ * ribbon, drawn from the same numbers.
  *
  * COLOURS
  * -------
@@ -55,6 +56,42 @@
  * Light only, and `color-scheme: light` says so. The app itself has no dark
  * mode, and a dark landing page in front of a cream app looks like a mistake.
  */
+
+/**
+ * The one script either page loads, and the reason it is a file.
+ *
+ * Supabase sends an email link to the project's Site URL, which is an ORIGIN -
+ * so a confirmation or recovery link lands on `/`, and `/` is this
+ * hand-written page with no React on it. The session, or the error, arrives in
+ * the URL FRAGMENT. A fragment is never sent to the server, so nothing here
+ * can read it and nothing here can act on it: without this, a perfectly valid
+ * confirmation link drops somebody on the front door with their session
+ * sitting unread in the address bar, and a dead one shows them a landing page
+ * and a line of noise.
+ *
+ * So the fragment is handed to `/app`, where `detectSessionInUrl` consumes a
+ * session and `AuthScreen` explains an error.
+ *
+ * It is a FILE, not an inline <script>, because `src/app.js` sets
+ * `scriptSrc: ["'self'"]` with no `'unsafe-inline'`. An inline block would be
+ * silently blocked. It is served by its own route rather than from the client
+ * build, so it still works on a host with no `client/dist` beside it.
+ *
+ * Setting the project's Site URL to `<origin>/app` is the better fix and makes
+ * this redundant. This stays because it costs 200 bytes and removes a whole
+ * class of silent breakage - including the case where somebody changes that
+ * setting back.
+ */
+export function authForwardScript() {
+  return `(function () {
+  var hash = window.location.hash;
+  if (!hash || hash.length < 2) return;
+  if (!/(^|[#&])(access_token|refresh_token|error|error_code|type)=/.test(hash)) return;
+  window.location.replace('/app' + window.location.search + hash);
+})();
+`;
+}
+
 
 /** Shared head and styles, so the two pages cannot drift apart. */
 function shell({ title, description, body }) {
@@ -82,13 +119,6 @@ function shell({ title, description, body }) {
     --on-ink: #c9d3dc;
     --on-ink-dim: #b6c2cf;
     --on-ink-faint: #8d9aad;
-    /* The liturgical year, for the ribbons and nothing else. */
-    --lit-violet: #6d28d9;
-    --lit-white: #fffdf6;
-    --lit-green: #2e7d4f;
-    --lit-red: #b3261e;
-    --lit-rose: #db7093;
-    --lit-gold: #ca8a04;
     --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
     --sans: 'Source Sans 3', 'Segoe UI', system-ui, -apple-system, sans-serif;
     --shadow-rest: 0 1px 2px rgba(27, 39, 64, 0.08), 0 3px 8px rgba(27, 39, 64, 0.09);
@@ -149,15 +179,13 @@ function shell({ title, description, body }) {
     letter-spacing: -0.01em;
   }
 
-  /* Stands in for the seal: its gold edge, without the image. */
-  .wordmark::before {
-    content: '';
-    display: block;
-    width: 2.25rem;
-    height: 3px;
-    margin-bottom: 0.875rem;
-    background: var(--gold);
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
+
+  .brand svg { width: 2.5rem; height: 2.0833rem; flex: 0 0 auto; }
 
   .leaf-cover h1 {
     margin: 2.25rem 0 0;
@@ -208,34 +236,20 @@ function shell({ title, description, body }) {
   }
 
   /* ---------------------------------------------------------------- *
-   * The ribbons sewn into the seam, in the order the colours are worn.
-   *
-   * Each carries a dark hairline inside its own edge. On the navy half that
-   * hairline is invisible and costs nothing; on the paper half it is the only
-   * reason the white ribbon is a ribbon rather than a gap in the row.
+   * The one gold ribbon, sewn into the seam. This was six - one per
+   * liturgical colour - and it read as a thin striped comb rather than as a
+   * bookmark. Gold alone says the same thing, and matches the app.
    * ---------------------------------------------------------------- */
 
-  .ribbons {
+  .ribbon {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    display: flex;
     height: 6px;
+    background: var(--gold);
     pointer-events: none;
   }
-
-  .ribbons span {
-    flex: 1 1 auto;
-    box-shadow: inset 0 0 0 1px rgba(27, 39, 64, 0.18);
-  }
-
-  .ribbons span:nth-child(1) { background: var(--lit-violet); }
-  .ribbons span:nth-child(2) { background: var(--lit-white); }
-  .ribbons span:nth-child(3) { background: var(--lit-green); }
-  .ribbons span:nth-child(4) { background: var(--lit-red); }
-  .ribbons span:nth-child(5) { background: var(--lit-rose); }
-  .ribbons span:nth-child(6) { background: var(--lit-gold); }
 
   /* ---------------------------------------------------------------- *
    * The paper leaf's own furniture.
@@ -331,7 +345,7 @@ function shell({ title, description, body }) {
 
   /* ---------------------------------------------------------------- *
    * A laptop opens the book. Below this width the two leaves stack and the
-   * ribbons lie flat along the fold instead of hanging in the seam.
+   * ribbon lies flat along the fold instead of hanging in the seam.
    * ---------------------------------------------------------------- */
   @media (min-width: 64rem) {
     .spread { grid-template-columns: 1.08fr 0.92fr; }
@@ -353,31 +367,19 @@ function shell({ title, description, body }) {
 
     .leaf-cover footer { margin-top: auto; padding-top: 3rem; }
 
-    .ribbons {
+    .ribbon {
       left: auto;
       right: 0;
-      height: auto;
-      gap: 6px;
+      width: 20px;
+      height: 10.5rem;
       transform: translateX(50%);
       z-index: 1;
-    }
-
-    .ribbons span {
-      flex: 0 0 auto;
-      width: 16px;
       /* The notched tail of a bookmark ribbon. */
       clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
       box-shadow:
         inset 0 0 0 1px rgba(27, 39, 64, 0.18),
         0 3px 10px rgba(27, 39, 64, 0.38);
     }
-
-    .ribbons span:nth-child(1) { height: 11rem; }
-    .ribbons span:nth-child(2) { height: 9.25rem; }
-    .ribbons span:nth-child(3) { height: 7.75rem; }
-    .ribbons span:nth-child(4) { height: 12.25rem; }
-    .ribbons span:nth-child(5) { height: 8.5rem; }
-    .ribbons span:nth-child(6) { height: 10.25rem; }
   }
 
   /* ---------------------------------------------------------------- *
@@ -471,9 +473,16 @@ export function landingPage({
       'Mass readings missalette and Prayers of the Faithful generator for the Campus Ministry Office.',
     body: `<main class="spread">
   <section class="leaf-cover">
-    <div class="ribbons" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <span class="ribbon" aria-hidden="true"></span>
     <div class="leaf-inner">
-      <p class="wordmark">LiturgyGen</p>
+      <div class="brand">
+        <svg viewBox="0 0 48 40" fill="none" role="img" aria-label="LiturgyGen">
+          <rect x="4.25" y="8.25" width="17.5" height="27.5" rx="1.5" stroke="currentColor" stroke-width="2.5"/>
+          <rect x="26.25" y="8.25" width="17.5" height="27.5" rx="1.5" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M20.5 2h7v22l-3.5-3-3.5 3z" fill="#f2bc1b"/>
+        </svg>
+        <p class="wordmark">LiturgyGen</p>
+      </div>
 
       <h1>Worship aids for every Mass, without retyping a word.</h1>
 
@@ -530,6 +539,7 @@ export function landingPage({
       </footer>
     </div>
   </section>
+  <script src="/auth-forward.js"></script>
 </main>`,
   });
 }
@@ -573,4 +583,4 @@ export function unauthorizedPage({ repoUrl = 'https://github.com/Damudachi/Litur
   });
 }
 
-export default { landingPage, unauthorizedPage };
+export default { landingPage, unauthorizedPage, authForwardScript };

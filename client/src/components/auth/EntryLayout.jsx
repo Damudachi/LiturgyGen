@@ -1,11 +1,11 @@
-import seal from '../../assets/seal-128.png';
+import Logo from '../Logo.jsx';
 
 /**
  * The shell every signed-out screen sits in: an opened missal.
  *
- * The left leaf is the cover - the seal, what the tool does, and how it does
+ * The left leaf is the cover - the mark, what the tool does, and how it does
  * it. The right leaf is paper, and holds whatever the visitor has to fill in.
- * Sewn into the seam are the six liturgical colours, cut as ribbon markers.
+ * One gold ribbon hangs in the seam between them.
  *
  * WHY A WHOLE LEAF OF PROSE
  * -------------------------
@@ -35,22 +35,15 @@ const DEFAULT_POINTS = [
   },
 ];
 
-/* Violet, white, green, red, rose, gold - the year in the order it is worn,
- * at the uneven lengths ribbons actually fall to in a bound missal. */
-const RIBBONS = [
-  { color: 'var(--color-lit-violet)', height: '11rem' },
-  { color: 'var(--color-lit-white)', height: '9.25rem' },
-  { color: 'var(--color-lit-green)', height: '7.75rem' },
-  { color: 'var(--color-lit-red)', height: '12.25rem' },
-  { color: 'var(--color-lit-rose)', height: '8.5rem' },
-  { color: 'var(--color-lit-gold)', height: '10.25rem' },
-];
-
 /*
- * Each ribbon carries a dark hairline inside its own edge. On the navy half
- * that hairline is invisible and costs nothing; on the paper half it is the
- * only reason the white ribbon is a ribbon rather than a gap in the row.
- * `index.css` makes the same point about --color-lit-white in the calendar.
+ * The ribbon in the seam.
+ *
+ * This was six ribbons, one per liturgical colour. It read as a thin striped
+ * comb rather than as a bookmark, and the white one disappeared against the
+ * paper half. One gold ribbon is what the app already uses to mark an open day
+ * (see components/Book.jsx), so it carries the same meaning with none of the
+ * noise, and gold is the one accent this palette spends on the thing that
+ * matters most.
  */
 const RIBBON_SHADOW =
   'inset 0 0 0 1px rgba(27, 39, 64, 0.18), 0 3px 10px rgba(27, 39, 64, 0.38)';
@@ -64,29 +57,17 @@ export default function EntryLayout({
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.08fr_0.92fr]">
       <section className="leaf-cover on-dark relative px-6 py-12 text-page sm:px-10 lg:px-16 lg:py-14">
-        {/* The ribbons straddle the seam on a wide screen, so they read as sewn
-            into the spine rather than printed on the cover. */}
-        <div
+        {/* Straddles the seam on a wide screen, so it reads as sewn into the
+            spine rather than printed on the cover. */}
+        <span
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 right-0 z-10 hidden translate-x-1/2 gap-[6px] lg:flex"
-        >
-          {RIBBONS.map((ribbon, index) => (
-            <span
-              key={ribbon.color}
-              className="ribbon ribbon-drop block w-4"
-              style={{
-                height: ribbon.height,
-                background: ribbon.color,
-                boxShadow: RIBBON_SHADOW,
-                animationDelay: `${index * 70}ms`,
-              }}
-            />
-          ))}
-        </div>
+          className="ribbon ribbon-drop pointer-events-none absolute top-0 right-0 z-10 hidden w-5 translate-x-1/2 bg-gold lg:block"
+          style={{ height: '10.5rem', boxShadow: RIBBON_SHADOW }}
+        />
 
         <div className="mx-auto flex min-h-full max-w-[34rem] flex-col lg:mx-0">
           <div className="flex items-center gap-3">
-            <img src={seal} alt="" draggable={false} className="size-11 rounded-full ring-1 ring-gold/30" />
+            <Logo className="h-10 w-12 shrink-0" />
             <span className="font-serif text-[22px] font-bold tracking-tight">LiturgyGen</span>
           </div>
 
@@ -109,16 +90,8 @@ export default function EntryLayout({
           </p>
         </div>
 
-        {/* Stacked, the ribbons lie flat along the fold instead. */}
-        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 flex h-1.5 lg:hidden">
-          {RIBBONS.map((ribbon) => (
-            <span
-              key={ribbon.color}
-              className="flex-1"
-              style={{ background: ribbon.color, boxShadow: 'inset 0 0 0 1px rgba(27, 39, 64, 0.18)' }}
-            />
-          ))}
-        </div>
+        {/* Stacked, the ribbon lies flat along the fold instead. */}
+        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 bg-gold lg:hidden" />
       </section>
 
       <section className="leaf-paper flex items-center px-6 py-14 sm:px-10 lg:px-14">

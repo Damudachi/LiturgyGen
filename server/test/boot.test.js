@@ -62,3 +62,26 @@ test('settings arrive with the defaults the client needs to render', async () =>
   assert.ok(payload.defaults, 'defaults');
   assert.ok(payload.style, 'style');
 });
+
+/*
+ * The front door, and the one script on it.
+ *
+ * Supabase email links land on `/` with the session or the error in the URL
+ * fragment, which the server never sees. `/auth-forward.js` is what carries it
+ * to `/app`; if the page stops loading it, or the route stops answering, a
+ * valid confirmation link silently does nothing and nobody finds out from a
+ * log. Both are outside the gate on purpose - the visitor is not signed in yet.
+ */
+test('the landing page loads the fragment forwarder', async () => {
+  const html = await (await fetch(`${base}/`)).text();
+  assert.match(html, /<script src="\/auth-forward\.js"><\/script>/);
+});
+
+test('the forwarder is served as javascript and hands the fragment to /app', async () => {
+  const response = await fetch(`${base}/auth-forward.js`);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type') || '', /javascript/);
+  const body = await response.text();
+  assert.match(body, /location\.replace\('\/app'/);
+  assert.match(body, /access_token/);
+});

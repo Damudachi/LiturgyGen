@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 40" fill="none">
+  <!-- LiturgyGen's mark. Fixed colours: a browser tab inherits nothing, so the
+       navy of the app's header stands in for currentColor here. Keep the
+       geometry in step with client/src/components/Logo.jsx. -->
+  <rect x="4.25" y="8.25" width="17.5" height="27.5" rx="1.5" stroke="#263551" stroke-width="2.5"/>
+  <rect x="26.25" y="8.25" width="17.5" height="27.5" rx="1.5" stroke="#263551" stroke-width="2.5"/>
+  <path d="M20.5 2h7v22l-3.5-3-3.5 3z" fill="#f2bc1b"/>
+</svg>
