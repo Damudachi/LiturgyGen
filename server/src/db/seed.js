@@ -12,6 +12,8 @@
  *   npm run seed -- --force refresh every seed row, discarding edits to them
  */
 
+// First, and before ./index.js: the pool reads DATABASE_URL at import time.
+import '../loadEnv.js';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -157,6 +159,18 @@ export async function seedPotfTemplates({ orgId = null, force = false, log = () 
       return { inserted: copied, refreshed: 0, skipped: 0, total: copied };
     }
     log('  seed parish holds no prayers; falling back to the placeholders');
+  } else if (!sourceOrgId && !loadOrilloSeeds().seeds.length) {
+    /*
+     * The exact state that produced three live parishes holding nothing but
+     * placeholders. It is invisible from the application - the parish is
+     * created, prayers appear, and they are all stand-ins - so it is said out
+     * loud here rather than left for somebody to notice during a demo.
+     */
+    console.warn(
+      `[seed] ${orgId} is being founded with PLACEHOLDER prayers only: this machine has no ` +
+        'server/data/orillo and LITURGYGEN_SEED_SOURCE_ORG_ID is not set. Set it to a parish ' +
+        'that holds the real prayers so new parishes are filled from it.',
+    );
   }
   const allSeeds = collectSeeds(log);
 

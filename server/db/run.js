@@ -1,11 +1,14 @@
 // Run a .sql file against DATABASE_URL.
 //
-//   node --env-file=.env db/run.js db/schema.sql
+//   npm run db:schema          (server/.env is loaded for you)
+//   node db/run.js db/schema.sql
 //
 // This exists instead of a psql command in package.json so the same script
 // works on macOS, Windows, Linux and a Codespace, and so you do not need the
 // PostgreSQL client tools installed to set up the database.
 
+// First: the pool reads DATABASE_URL as it is imported.
+import '../src/loadEnv.js';
 import { readFileSync } from 'node:fs';
 import { pool } from './pool.js';
 

@@ -9,6 +9,8 @@
  * opening a socket.
  */
 
+// First: everything below reads the environment as it is imported.
+import './src/loadEnv.js';
 import config from './src/config.js';
 import createApp, { allowedOrigins } from './src/app.js';
 import { authConfigured } from './src/middleware/requireAuth.js';
