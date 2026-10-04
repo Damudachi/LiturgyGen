@@ -205,7 +205,7 @@ first, because nothing depends on them until the day of the switch.
 
 ## What the migration actually turned up
 
-Five things that were not on the plan.
+Six things that were not on the plan.
 
 **1. Dates were a live bug waiting to happen.** `node-postgres` parses a `DATE`
 into `new Date(y, m-1, d)` — **local** midnight. The API host runs UTC and the
@@ -238,6 +238,32 @@ written longhand as `(week = $2 OR (week IS NULL AND $2::int IS NULL))` —
 plain SQL that both understand. Without a null-safe match every seeded row looks
 new on every run and duplicates itself, because most of these keys are NULL most
 of the time.
+
+
+**6. The readings cache had to come too, and had been left behind.** The
+migration moved the four tables and stopped there, which left the thing the
+app's speed actually depends on — the parsed readings — as one JSON file per
+day under `server/.cache/readings`. On a laptop that is fine. On a free host it
+is not: the filesystem is ephemeral, so every spin-down threw the whole cache
+away and the office paid the USCCB cooldown again from scratch. Finishing the
+job meant a fifth table, `readings_cache`, and three functions in
+`scraperService.js` becoming `async`:
+
+| Was | Is |
+| --- | --- |
+| `readParsedCache` — `fs.readFileSync`, then compare `parserVersion` in JS | `SELECT ... WHERE date = $1 AND parser_version = $2`, so a stale row costs nothing to skip |
+| `writeParsedCache` — `fs.writeFileSync` | `INSERT ... ON CONFLICT (date) DO UPDATE`, because a batch and a single generate can be in flight for the same date |
+| `clearCache` — `fs.rmSync` on the folder | `DELETE` for one date, `TRUNCATE` for all; still `rmSync` for the providers' raw HTML |
+
+The raw HTML cache stays on disk deliberately. Losing it costs a re-parse of a
+page the provider still has; losing a parsed day cost a fetch and possibly
+three minutes of cooldown. Only the expensive half is worth a table.
+
+One trap worth recording: the transient fields a request attaches to its
+result — `fromCache`, `origin`, `attempts` — were harmless in a file nobody
+read back as authoritative, and are not harmless in a row. Stored, a later
+cache hit hands back `fromCache: false` and the UI reports a fetch that never
+happened. `writeParsedCache` strips them, and a test asserts it does.
 
 ## How it is tested
 

@@ -4,15 +4,17 @@
  *
  * Resolution order for a date:
  *   1. a hand-edited override saved in the database  (always wins)
- *   2. the on-disk cache of a previous successful fetch
+ *   2. the readings_cache table, from a previous successful fetch
  *   3. each configured provider in turn, USCCB first
  *
  * Readings for a past date never change, so anything fetched is cached
- * permanently. That is what makes re-running a month's batch free.
+ * permanently. That is what makes re-running a month's batch free - and what
+ * makes a pre-fetched year instant, which is the whole point of the cache
+ * living in PostgreSQL rather than in a folder of files. See the note on
+ * readings_cache in db/schema.sql.
  */
 
 import fs from 'node:fs';
-import path from 'node:path';
 import config from '../config.js';
 import { assertIsoDate } from '../lib/dates.js';
 import { auditReadings, emptyReadings, isComplete } from '../lib/readingsShape.js';
@@ -25,7 +27,13 @@ const PROVIDERS = {
   [evangelizoProvider.id]: evangelizoProvider,
 };
 
-const CACHE_DIR = path.join(path.dirname(config.usccb.cacheDir), 'readings');
+/**
+ * The providers still keep their raw HTML here. Only the PARSED readings
+ * moved to the database: re-parsing a page a provider already has is free, so
+ * losing this folder costs a re-parse, whereas losing a parsed day used to
+ * cost a fetch and possibly a three-minute cooldown.
+ */
+const RAW_CACHE_DIR = config.usccb.cacheDir;
 
 /* ------------------------------------------------------------------ *
  * Parsed-readings cache
@@ -50,32 +58,62 @@ const CACHE_DIR = path.join(path.dirname(config.usccb.cacheDir), 'readings');
  */
 export const PARSER_VERSION = 4;
 
-function cacheFile(iso) {
-  return path.join(CACHE_DIR, `${iso}.json`);
-}
-
-function readParsedCache(iso) {
+/**
+ * A cached day, or null when the date was never fetched or was stamped by an
+ * older parser.
+ *
+ * The WHERE clause asks for the current parser version rather than reading
+ * the row and comparing in JavaScript, so a stale row costs nothing to skip.
+ */
+async function readParsedCache(iso) {
   if (!config.usccb.cacheEnabled) return null;
   try {
-    const cached = JSON.parse(fs.readFileSync(cacheFile(iso), 'utf8'));
-    if (cached.parserVersion !== PARSER_VERSION) return null;
-    return cached;
-  } catch {
+    const { rows } = await query(
+      `SELECT payload, parser_version
+          FROM readings_cache
+         WHERE date = $1 AND parser_version = $2`,
+      [iso, PARSER_VERSION],
+    );
+    if (!rows.length) return null;
+    // payload is JSONB, so the driver has already parsed it.
+    return { ...rows[0].payload, parserVersion: rows[0].parser_version };
+  } catch (error) {
+    // A cache is an optimisation. If the database is unreachable the caller
+    // should go on to the provider, not fail.
+    console.error('readings cache read failed:', error.message);
     return null;
   }
 }
 
-function writeParsedCache(iso, readings) {
+/**
+ * Save a fetched day.
+ *
+ * ON CONFLICT rather than a DELETE then an INSERT: a batch run and a single
+ * generate can be in flight for the same date at once, and the upsert makes
+ * the later one win instead of one of them failing on the primary key.
+ *
+ * The transient fields the caller attached - whether this came from a cache,
+ * which provider answered, what was attempted on the way - describe one
+ * request, not the readings, and are stripped before storing. Keeping them
+ * would mean later serving a cached day that claims `fromCache: false`.
+ */
+async function writeParsedCache(iso, readings) {
   if (!config.usccb.cacheEnabled) return;
+  // eslint-disable-next-line no-unused-vars
+  const { fromCache, origin, attempts, refetchable, ...payload } = readings;
   try {
-    fs.mkdirSync(CACHE_DIR, { recursive: true });
-    fs.writeFileSync(
-      cacheFile(iso),
-      JSON.stringify({ ...readings, parserVersion: PARSER_VERSION }, null, 2),
-      'utf8',
+    await query(
+      `INSERT INTO readings_cache (date, payload, parser_version)
+            VALUES ($1, $2::jsonb, $3)
+       ON CONFLICT (date) DO UPDATE
+               SET payload        = EXCLUDED.payload,
+                   parser_version = EXCLUDED.parser_version,
+                   fetched_at     = now()`,
+      [iso, JSON.stringify(payload), PARSER_VERSION],
     );
-  } catch {
+  } catch (error) {
     /* the cache is an optimisation, never a requirement */
+    console.error('readings cache write failed:', error.message);
   }
 }
 
@@ -97,16 +135,24 @@ export function canServeFromCache(cached, preferred) {
   return String(cached.source || '').startsWith(preferred);
 }
 
-export function clearCache(iso = null) {
+/**
+ * Throw away cached readings - one date, or everything.
+ *
+ * Clearing everything drops the raw HTML too, because the two caches are
+ * only consistent together: keeping pages whose parsed rows are gone would
+ * make the next fetch look instant and come from a page nobody re-checked.
+ */
+export async function clearCache(iso = null) {
   try {
     if (iso) {
-      fs.rmSync(cacheFile(iso), { force: true });
+      await query('DELETE FROM readings_cache WHERE date = $1', [iso]);
     } else {
-      fs.rmSync(CACHE_DIR, { recursive: true, force: true });
-      fs.rmSync(config.usccb.cacheDir, { recursive: true, force: true });
+      await query('TRUNCATE readings_cache');
+      fs.rmSync(RAW_CACHE_DIR, { recursive: true, force: true });
     }
     return true;
-  } catch {
+  } catch (error) {
+    console.error('clearCache failed:', error.message);
     return false;
   }
 }
@@ -230,7 +276,7 @@ export async function getReadings(iso, options = {}) {
   let provisional = null;
 
   if (useCache && !force) {
-    const cached = readParsedCache(iso);
+    const cached = await readParsedCache(iso);
     if (cached) {
       cached.warnings = auditReadings(cached);
       cached.fromCache = true;
@@ -248,7 +294,7 @@ export async function getReadings(iso, options = {}) {
       readings.fromCache = false;
       readings.origin = name;
       readings.attempts = attempts;
-      writeParsedCache(iso, readings);
+      await writeParsedCache(iso, readings);
       return readings;
     } catch (error) {
       attempts.push({
@@ -289,7 +335,7 @@ export async function peekReadings(iso, { providers = null } = {}) {
   if (override) {
     return { ...override, warnings: auditReadings(override), origin: 'override', refetchable: false };
   }
-  const cached = readParsedCache(iso);
+  const cached = await readParsedCache(iso);
   if (!cached) return null;
   return {
     ...cached,

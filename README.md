@@ -269,7 +269,7 @@ later.
 
 ## Tests
 
-    npm run test:server     # 82 tests
+    npm run test:server     # 132 tests (1 skips without a real PostgreSQL)
     npm run test:client     # 10 tests
 
 The parser tests run against real USCCB pages saved as fixtures, including the

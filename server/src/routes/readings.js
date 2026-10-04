@@ -21,9 +21,13 @@ const requireDate = (req, res) => {
 
 router.get('/providers', (_req, res) => res.json({ providers: providerStatus() }));
 
-router.delete('/cache', (req, res) => {
-  const date = req.query.date;
-  res.json({ cleared: clearCache(date && isIsoDate(date) ? date : null) });
+router.delete('/cache', async (req, res, next) => {
+  try {
+    const date = req.query.date;
+    res.json({ cleared: await clearCache(date && isIsoDate(date) ? date : null) });
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**

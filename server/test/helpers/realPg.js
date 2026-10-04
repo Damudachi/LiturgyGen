@@ -42,7 +42,7 @@ export async function makeRealDb({ seed = false } = {}) {
   const pool = new pg.Pool({ connectionString: REAL_PG_URL, max: 4 });
 
   await pool.query(`
-    DROP TABLE IF EXISTS potf_templates, readings_overrides, settings, scheduled_masses CASCADE;
+    DROP TABLE IF EXISTS potf_templates, readings_overrides, readings_cache, settings, scheduled_masses CASCADE;
   `);
   await pool.query(fs.readFileSync(SCHEMA, 'utf8'));
   if (seed) await pool.query(fs.readFileSync(SEED, 'utf8'));

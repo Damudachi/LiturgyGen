@@ -86,6 +86,41 @@ CREATE TABLE IF NOT EXISTS readings_overrides (
 
 
 -- ---------------------------------------------------------------------------
+-- Fetched readings
+-- ---------------------------------------------------------------------------
+-- The cache that makes the app usable, and the reason it is a table rather
+-- than a folder of JSON files.
+--
+-- Readings for a date never change once fetched, so a successful fetch is kept
+-- for good. Getting one costs a request to USCCB, and a USCCB bot challenge
+-- costs three minutes of leaving the site completely alone - so a cache miss
+-- is not a slow page, it is a page the office waits minutes for. A year
+-- pre-fetched into here is a year of instant Mass sheets.
+--
+-- This lived in server/.cache/readings as one file per day until 4 October
+-- 2026. That works on a laptop and fails on a host: a free web service has an
+-- ephemeral filesystem, so every spin-down threw the whole cache away and the
+-- office paid the cooldown again. The database is the only thing on such a
+-- host that survives a restart, which is what puts this here.
+--
+-- `parser_version` mirrors PARSER_VERSION in src/services/scraperService.js.
+-- Rows stamped with an older version are ignored rather than deleted: the
+-- providers keep the raw HTML, so a parser fix re-reads the page it already has
+-- instead of going back out to the source.
+
+CREATE TABLE IF NOT EXISTS readings_cache (
+  date            DATE         PRIMARY KEY,
+  payload         JSONB        NOT NULL,
+  parser_version  INTEGER      NOT NULL,
+  fetched_at      TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- Every read is "this date, at the current parser version", so the version
+-- belongs in the index with the date rather than beside it.
+CREATE INDEX IF NOT EXISTS idx_readings_cache_version
+  ON readings_cache (date, parser_version);
+
+-- ---------------------------------------------------------------------------
 -- Application settings
 -- ---------------------------------------------------------------------------
 -- A key/value bag rather than a wide row: the settings list grows most terms,
