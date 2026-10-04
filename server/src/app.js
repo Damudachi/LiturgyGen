@@ -35,6 +35,32 @@ import { landingPage } from './views/pages.js';
  * client from this same process, so it needs no entry here; the list is for the
  * development server and for a deployed client on a different origin.
  */
+/**
+ * Where the browser is allowed to send requests.
+ *
+ * Its own origin, for the API, plus the Supabase project if one is configured -
+ * sign-in, sign-up and token refresh all go straight from the page to Supabase.
+ * Without that entry the policy blocks them before they leave the browser and
+ * every call fails with "Failed to fetch", which looks like a dead network and
+ * is actually a header.
+ *
+ * Derived from SUPABASE_URL rather than hardcoded or left open, so moving to a
+ * different project needs no code change and a project that is not ours is
+ * still refused.
+ */
+export function connectSources() {
+  const sources = ["'self'"];
+  if (process.env.SUPABASE_URL) {
+    try {
+      // origin only: a CSP source is scheme + host + port, never a path.
+      sources.push(new URL(process.env.SUPABASE_URL).origin);
+    } catch {
+      console.error('SUPABASE_URL is not a valid URL; leaving it out of the CSP.');
+    }
+  }
+  return sources;
+}
+
 export function allowedOrigins() {
   return (process.env.CORS_ORIGINS || 'http://localhost:5173')
     .split(',')
@@ -67,8 +93,9 @@ export function createApp() {
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:'],
           fontSrc: ["'self'", 'data:'],
-          // The client only ever talks to its own origin.
-          connectSrc: ["'self'"],
+          // Its own origin for the API, and Supabase for sign-in and token
+          // refresh. See connectSources().
+          connectSrc: connectSources(),
           objectSrc: ["'none'"],
           frameAncestors: ["'none'"],
           baseUri: ["'self'"],
