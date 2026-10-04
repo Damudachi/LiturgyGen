@@ -144,6 +144,47 @@ h3,
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
 }
 
+/*
+ * The two leaves of the signed-out screen.
+ *
+ * The cover takes a gold light falling from the top-left corner, the way light
+ * sits on a book lying open on a desk; without it a flat navy half-screen
+ * reads as a coloured rectangle rather than a surface.
+ *
+ * The paper carries a fractal-noise grain at 5%, which is the difference
+ * between a cream fill and a sheet of paper. It is one small inline SVG, so it
+ * costs no request, and the background colour underneath it means the leaf is
+ * right even if the data URI never paints.
+ */
+.leaf-cover {
+  background-color: var(--color-ink);
+  background-image:
+    radial-gradient(118% 88% at 6% 0%, rgba(242, 188, 27, 0.11), rgba(242, 188, 27, 0) 56%),
+    radial-gradient(85% 70% at 100% 100%, rgba(38, 53, 81, 0.85), rgba(38, 53, 81, 0) 62%);
+}
+
+.leaf-paper {
+  background-color: var(--color-page);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/*
+ * The one piece of motion on the page: the ribbons fall into the seam, in the
+ * order the colours are worn. Everything else arrives already in place.
+ */
+@keyframes ribbon-drop {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.ribbon-drop {
+  transform-origin: top center;
+  animation: ribbon-drop 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
 @keyframes book-open {
   from {
     opacity: 0;
@@ -184,7 +225,8 @@ h3,
 @media (prefers-reduced-motion: reduce) {
   .animate-book,
   .animate-dim,
-  .animate-panel {
+  .animate-panel,
+  .ribbon-drop {
     animation: none;
   }
   * {

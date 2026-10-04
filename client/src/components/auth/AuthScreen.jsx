@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase.js';
 import { Alert, Button, Field, Input } from '../ui.jsx';
+import EntryLayout from './EntryLayout.jsx';
 
 /**
  * Sign in, or sign up with an email address.
@@ -77,74 +78,72 @@ export default function AuthScreen({ onSignedIn }) {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-60px)] items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md rounded-xl border-t-[3px] border-t-gold bg-page p-8 shadow-rest ring-1 ring-edge sm:p-10">
-        <h1 className="font-serif text-[30px] font-bold text-navy">
-          {signingUp ? 'Create an account' : 'Sign in'}
-        </h1>
-        <p className="mt-2 text-muted">
-          {signingUp
-            ? 'One account per person. You will set up your parish next.'
-            : 'For the parish office staff who prepare the missalettes.'}
-        </p>
+    <EntryLayout>
+      <h2 className="font-serif text-[32px] leading-tight font-bold text-navy">
+        {signingUp ? 'Create an account' : 'Sign in'}
+      </h2>
+      <p className="mt-2 text-muted">
+        {signingUp
+          ? 'One account per person. You will name your parish on the next screen.'
+          : 'For the office staff who prepare the worship aids.'}
+      </p>
 
-        <form onSubmit={submit} className="mt-7 flex flex-col gap-4">
-          <Field label="Email address" htmlFor="auth-email">
-            <Input
-              id="auth-email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              disabled={busy}
-              required
-            />
-          </Field>
-
-          <Field
-            label="Password"
-            htmlFor="auth-password"
-            hint={signingUp ? 'At least 8 characters.' : undefined}
-          >
-            <Input
-              id="auth-password"
-              type="password"
-              autoComplete={signingUp ? 'new-password' : 'current-password'}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              disabled={busy}
-              required
-            />
-          </Field>
-
-          {notice && <Alert tone={notice.tone}>{notice.text}</Alert>}
-
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            loading={busy}
+      <form onSubmit={submit} className="mt-8 flex flex-col gap-4">
+        <Field label="Email address" htmlFor="auth-email">
+          <Input
+            id="auth-email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             disabled={busy}
-            className="mt-1 justify-center"
-          >
-            {signingUp ? 'Create account' : 'Sign in'}
-          </Button>
-        </form>
+            required
+          />
+        </Field>
 
-        <p className="mt-6 text-center text-sm text-muted">
-          {signingUp ? 'Already have an account?' : 'No account yet?'}{' '}
-          <button
-            type="button"
-            className="cursor-pointer font-semibold text-navy underline underline-offset-2 hover:text-ink"
-            onClick={() => {
-              setMode(signingUp ? 'in' : 'up');
-              setNotice(null);
-            }}
-          >
-            {signingUp ? 'Sign in' : 'Create one'}
-          </button>
-        </p>
-      </div>
-    </div>
+        <Field
+          label="Password"
+          htmlFor="auth-password"
+          hint={signingUp ? 'At least 8 characters.' : undefined}
+        >
+          <Input
+            id="auth-password"
+            type="password"
+            autoComplete={signingUp ? 'new-password' : 'current-password'}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            disabled={busy}
+            required
+          />
+        </Field>
+
+        {notice && <Alert tone={notice.tone}>{notice.text}</Alert>}
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          loading={busy}
+          disabled={busy}
+          className="mt-2 w-full justify-center"
+        >
+          {signingUp ? 'Create account' : 'Sign in'}
+        </Button>
+      </form>
+
+      <p className="mt-8 border-t border-edge pt-6 text-sm text-muted">
+        {signingUp ? 'Already have an account?' : 'No account yet?'}{' '}
+        <button
+          type="button"
+          className="cursor-pointer font-semibold text-navy underline underline-offset-2 hover:text-ink"
+          onClick={() => {
+            setMode(signingUp ? 'in' : 'up');
+            setNotice(null);
+          }}
+        >
+          {signingUp ? 'Sign in' : 'Create one'}
+        </button>
+      </p>
+    </EntryLayout>
   );
 }

@@ -1,6 +1,24 @@
 import { useState } from 'react';
 import { api } from '../../api';
 import { Alert, Button, Field, Input } from '../ui.jsx';
+import EntryLayout from './EntryLayout.jsx';
+
+const POINTS = [
+  {
+    claim: 'One library, shared by the office.',
+    detail:
+      'Everyone you add to the parish works from the same prayers, the same house style and the same Mass schedule.',
+  },
+  {
+    claim: 'Nobody else can see it.',
+    detail:
+      'Prayers, settings and finished documents are scoped to this parish, and a parish is only reachable by the people in it.',
+  },
+  {
+    claim: 'The name is yours to change.',
+    detail: 'It appears to your own staff and nowhere else, so an approximation now is no trouble later.',
+  },
+];
 
 /**
  * The screen between confirming an email and having somewhere to put prayers.
@@ -40,62 +58,61 @@ export default function ParishSetup({ email, onReady, onSignOut }) {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-60px)] items-center justify-center px-4 py-10">
-      <div className="w-full max-w-lg rounded-xl border-t-[3px] border-t-gold bg-page p-8 shadow-rest ring-1 ring-edge sm:p-10">
-        <h1 className="font-serif text-[30px] font-bold text-navy">Set up your parish</h1>
-        <p className="mt-2 text-muted">
-          Signed in as {email}. Your prayer library, your house style and your Mass schedule all
-          belong to this parish, and everyone you add to it shares them.
-        </p>
+    <EntryLayout
+      headline="Name your parish, and the library is yours."
+      lede="A parish is where everything LiturgyGen makes is kept — the prayers you transcribe, the way you like them set, and the Masses you prepare for."
+      points={POINTS}
+    >
+      <h2 className="font-serif text-[32px] leading-tight font-bold text-navy">Set up your parish</h2>
+      <p className="mt-2 text-muted">Signed in as {email}.</p>
 
-        <form onSubmit={submit} className="mt-7 flex flex-col gap-4">
-          <Field
-            label="Parish or chapel name"
-            htmlFor="parish-name"
-            hint="You can change this later. It is only shown to your own staff."
-          >
-            <Input
-              id="parish-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Chapel of the Holy Guardian Angel"
-              disabled={busy}
-              maxLength={120}
-              required
-            />
-          </Field>
-
-          {error && <Alert tone="error">{error}</Alert>}
-
-          <Alert tone="info">
-            A set of placeholder prayers is added so the library is not empty. They are written for
-            this tool, not taken from either published book &mdash; your own transcriptions replace
-            them as you type them in.
-          </Alert>
-
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            loading={busy}
+      <form onSubmit={submit} className="mt-8 flex flex-col gap-4">
+        <Field
+          label="Parish or chapel name"
+          htmlFor="parish-name"
+          hint="You can change this later. It is only shown to your own staff."
+        >
+          <Input
+            id="parish-name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Chapel of the Holy Guardian Angel"
             disabled={busy}
-            className="mt-1 justify-center"
-          >
-            Create parish
-          </Button>
-        </form>
+            maxLength={120}
+            required
+          />
+        </Field>
 
-        <p className="mt-6 text-center text-sm text-muted">
-          Wrong account?{' '}
-          <button
-            type="button"
-            onClick={onSignOut}
-            className="cursor-pointer font-semibold text-navy underline underline-offset-2 hover:text-ink"
-          >
-            Sign out
-          </button>
-        </p>
-      </div>
-    </div>
+        {error && <Alert tone="error">{error}</Alert>}
+
+        <Alert tone="info">
+          A set of placeholder prayers is added so the library is not empty. They are written for
+          this tool, not taken from either published book &mdash; your own transcriptions replace
+          them as you type them in.
+        </Alert>
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          loading={busy}
+          disabled={busy}
+          className="mt-2 w-full justify-center"
+        >
+          Create parish
+        </Button>
+      </form>
+
+      <p className="mt-8 border-t border-edge pt-6 text-sm text-muted">
+        Wrong account?{' '}
+        <button
+          type="button"
+          onClick={onSignOut}
+          className="cursor-pointer font-semibold text-navy underline underline-offset-2 hover:text-ink"
+        >
+          Sign out
+        </button>
+      </p>
+    </EntryLayout>
   );
 }
