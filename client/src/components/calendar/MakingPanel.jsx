@@ -201,6 +201,15 @@ export default function MakingPanel({ selection, daysByDate, onRemove, onOpenDay
           <div className="h-2 overflow-hidden rounded-full bg-edge" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
             <div className={cx('h-full rounded-full bg-navy transition-all', job.status === 'failed' && 'bg-bad')} style={{ width: `${percent}%` }} />
           </div>
+          {/*
+            * The countdown while the readings source has asked us to wait. The
+            * server rewrites this message once a second, so it ticks on its
+            * own; the fetch-only panel above has always shown it and this one
+            * never did, which made a long wait look like a stalled run.
+            */}
+          {running && job.message && /Waiting/.test(job.message) && (
+            <p className="text-sm text-muted">{job.message}</p>
+          )}
         </div>
       )}
 

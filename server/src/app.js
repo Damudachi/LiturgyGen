@@ -19,6 +19,7 @@ import readingsRoutes from './routes/readings.js';
 import generateRoutes from './routes/generate.js';
 import batchRoutes from './routes/batch.js';
 import potfRoutes from './routes/potf.js';
+import potfImportRoutes from './routes/potfImport.js';
 import settingsRoutes from './routes/settings.js';
 import { checkDatabase } from './db/index.js';
 import requireAuth, { authConfigured } from './middleware/requireAuth.js';
@@ -232,6 +233,9 @@ export function createApp() {
   app.use('/api/readings', readingsRoutes);
   app.use('/api/generate', generateRoutes);
   app.use('/api/batch', batchRoutes);
+  // Before /api/potf, or the import paths fall through to that router's own
+  // /:id handler and an upload is answered as a template lookup.
+  app.use('/api/potf/import', potfImportRoutes);
   app.use('/api/potf', potfRoutes);
   app.use('/api/settings', settingsRoutes);
 

@@ -205,14 +205,71 @@ export async function seedPotfTemplates({ orgId = null, force = false, log = () 
 const entry = process.argv[1] ? path.resolve(process.argv[1]) : null;
 const isDirectRun = entry !== null && entry === path.resolve(fileURLToPath(import.meta.url));
 
+/*
+ * The command line.
+ *
+ * Seeding is per-parish, so this needs an --org. It used to call
+ * seedPotfTemplates() with no arguments, which hit the `if (!orgId) return`
+ * guard at the top and printed "0 inserted, 0 refreshed, 0 left as edited
+ * (0 defined)" - a silent no-op that read like a finished seed. Anyone running
+ * `npm run seed` to put the office's transcriptions into a new parish got that
+ * line and no prayers.
+ *
+ *   npm run seed -- --list                 which parishes exist
+ *   npm run seed -- --org <uuid>           seed that parish
+ *   npm run seed -- --org <uuid> --force   overwrite rows somebody has edited
+ *
+ * Point DATABASE_URL at whichever database you mean. The transcriptions are
+ * read from server/data/orillo, which is gitignored and exists only on a
+ * machine that has the office's copies - so this is the way to get them into a
+ * deployed database without putting the book in the repository.
+ */
+function flagValue(name) {
+  const index = process.argv.indexOf(name);
+  return index === -1 ? null : process.argv[index + 1] || null;
+}
+
 if (isDirectRun) {
+  const { query } = await import('./index.js');
+
+  if (process.argv.includes('--list')) {
+    const { rows } = await query('SELECT id, name, slug FROM organizations ORDER BY created_at');
+    if (!rows.length) {
+      console.log('No parishes yet. Sign in and found one first.');
+    } else {
+      console.log('Parishes:');
+      for (const row of rows) console.log(`  ${row.id}  ${row.name} (${row.slug})`);
+    }
+    process.exit(0);
+  }
+
+  const orgId = flagValue('--org');
+  if (!orgId) {
+    console.error('Which parish? Pass --org <uuid>, or --list to see them.');
+    console.error('  npm run seed -- --list');
+    process.exit(1);
+  }
+
+  const { rows } = await query('SELECT name FROM organizations WHERE id = $1', [orgId]);
+  if (!rows.length) {
+    console.error(`No parish with id ${orgId}. Run with --list to see them.`);
+    process.exit(1);
+  }
+
   const force = process.argv.includes('--force');
-  const result = await seedPotfTemplates({ force, log: (line) => console.log(line) });
+  const result = await seedPotfTemplates({ orgId, force, log: (line) => console.log(line) });
   console.log(
-    `Prayers of the Faithful seeds: ${result.inserted} inserted, ` +
-      `${result.refreshed} refreshed, ${result.skipped} left as edited ` +
-      `(${result.total} defined).`,
+    `${rows[0].name}: ${result.inserted} inserted, ${result.refreshed} refreshed, ` +
+      `${result.skipped} left as edited (${result.total} defined).`,
   );
+  if (!result.total) {
+    console.error(
+      'Nothing was defined, which means server/data/orillo has no sections in it. ' +
+        'The transcriptions are not in the repository. Copy the data/orillo directory from the office machine into place.',
+    );
+    process.exit(1);
+  }
+  process.exit(0);
 }
 
 export default seedPotfTemplates;

@@ -6,6 +6,7 @@ import { Alert, EmptyState } from '../ui';
 import TemplateForm, { BLANK, PrayerPrint, toForm, toPayload } from './TemplateForm';
 import TemplateList from './TemplateList';
 import TypeInPrayer from './TypeInPrayer';
+import ImportBook from './ImportBook';
 
 /** The prayers LiturgyGen prints: a list on the left, the chosen one as a book. */
 export default function PrayersScreen({ templates, seasons, reload }) {
@@ -78,7 +79,24 @@ export default function PrayersScreen({ templates, seasons, reload }) {
   };
 
   let main;
-  if (selectedId === 'import') {
+  if (selectedId === 'book') {
+    // A whole book, as a file. 'import' below is the single typed-in page; the
+    // two are different enough jobs to be different panes.
+    main = (
+      <div className="h-full overflow-y-auto scroll-slim rounded-xl bg-page p-6 shadow-panel ring-1 ring-edge">
+        <ImportBook
+          onSkip={() => setSelectedId(null)}
+          onSaved={async (count) => {
+            await reload();
+            setNotice({
+              tone: 'success',
+              text: `Added ${count} prayer${count === 1 ? '' : 's'} from your book.`,
+            });
+          }}
+        />
+      </div>
+    );
+  } else if (selectedId === 'import') {
     main = (
       <TypeInPrayer
         seasons={seasons}
@@ -148,6 +166,11 @@ export default function PrayersScreen({ templates, seasons, reload }) {
         }}
         onTypeIn={() => {
           setSelectedId('import');
+          setForm(null);
+          setNotice(null);
+        }}
+        onImport={() => {
+          setSelectedId('book');
           setForm(null);
           setNotice(null);
         }}

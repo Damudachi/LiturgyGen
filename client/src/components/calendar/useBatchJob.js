@@ -6,11 +6,12 @@ export default function useBatchJob() {
   const [job, setJob] = useState(null);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState(null);
+  // Holds the stream's stop function, not a stream object.
   const source = useRef(null);
 
   const closeStream = useCallback(() => {
     if (source.current) {
-      source.current.close();
+      source.current();
       source.current = null;
     }
   }, []);
@@ -26,19 +27,20 @@ export default function useBatchJob() {
       try {
         const started = await api.startBatch({ dates, extraIntentions, checkOnly });
         setJob(started);
-        // Server-Sent Events give the "Making day 4 of 22" counter without polling.
-        const stream = new EventSource(`/api/batch/${started.id}/events`);
-        source.current = stream;
-        stream.onmessage = (event) => {
-          const payload = JSON.parse(event.data);
-          setJob(payload);
-          if (['done', 'failed', 'cancelled'].includes(payload.status)) closeStream();
-        };
-        stream.onerror = () => {
-          // The stream ends when the job finishes; fall back to one poll.
-          closeStream();
-          api.batch(started.id).then(setJob).catch(() => {});
-        };
+        // Server-sent progress gives the "Making day 4 of 22" counter without
+        // polling. api.streamBatch is a fetch rather than an EventSource, so it
+        // can carry the access token - see httpApi.js for what that cost.
+        source.current = api.streamBatch(started.id, {
+          onUpdate: (payload) => {
+            setJob(payload);
+            if (['done', 'failed', 'cancelled'].includes(payload.status)) closeStream();
+          },
+          onError: () => {
+            // The stream also ends when the job does; one poll settles which.
+            closeStream();
+            api.batch(started.id).then(setJob).catch(() => {});
+          },
+        });
       } catch (err) {
         setError(err.message);
       } finally {

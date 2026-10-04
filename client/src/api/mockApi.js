@@ -210,6 +210,11 @@ export const api = {
   startBatch: () => Promise.reject(demoError('Making Word files for several days')),
   batch: () => Promise.reject(demoError('Batch progress')),
   cancelBatch: () => settle({ cancelled: true }),
+  // Demo mode rejects startBatch, so nothing ever reaches the stream.
+  // It exists so the shape of the two modules stays the same.
+  streamBatch: () => () => {},
+  importExtract: () => Promise.reject(demoError('Importing a prayer book')),
+  importCommit: () => Promise.reject(demoError('Importing a prayer book')),
   downloadZip: () => Promise.reject(demoError('Downloading a ZIP')),
   downloadCombined: () => Promise.reject(demoError('Downloading a combined document')),
 

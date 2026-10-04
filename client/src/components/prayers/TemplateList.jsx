@@ -1,8 +1,8 @@
-import { ClipboardPaste, Plus, Search } from 'lucide-react';
+import { ClipboardPaste, FileUp, Plus, Search } from 'lucide-react';
 import { Button, Input, Select, cx } from '../ui';
 
 /** The prayers, grouped by season, on stone. */
-export default function TemplateList({ templates, total, seasons, search, onSearch, seasonFilter, onSeasonFilter, selectedId, onSelect, onNew, onTypeIn }) {
+export default function TemplateList({ templates, total, seasons, search, onSearch, seasonFilter, onSeasonFilter, selectedId, onSelect, onNew, onTypeIn, onImport }) {
   const groups = seasons
     .map((season) => ({ season, items: templates.filter((template) => template.season === season) }))
     .filter((group) => group.items.length);
@@ -21,6 +21,10 @@ export default function TemplateList({ templates, total, seasons, search, onSear
           Type in
         </Button>
       </div>
+      {/* Typing a page in is for one prayer; this is for a whole book. */}
+      <Button icon={FileUp} onClick={onImport} className="bg-page-hi">
+        Import a prayer book
+      </Button>
       <div className="relative">
         <Search aria-hidden="true" className="pointer-events-none absolute top-3 left-3 size-4 text-muted" />
         <Input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search titles and intentions" className="pl-9" aria-label="Search prayers" />

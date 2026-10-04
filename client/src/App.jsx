@@ -10,6 +10,8 @@ import WindowControls, { inDesktopWindow, titleBarProps } from './components/Win
 import AuthScreen from './components/auth/AuthScreen';
 import ParishSetup from './components/auth/ParishSetup';
 import AccountScreen from './components/auth/AccountScreen';
+import EntryLayout from './components/auth/EntryLayout';
+import ImportBook from './components/prayers/ImportBook';
 import { authEnabled, supabase } from './lib/supabase';
 
 const TABS = [
@@ -34,6 +36,16 @@ export default function App() {
    */
   const [session, setSession] = useState(authEnabled ? undefined : null);
   const [account, setAccount] = useState(null);
+
+  /*
+   * The import step, shown once, straight after a parish is founded.
+   *
+   * It is local state rather than something stored on the parish, because it is
+   * an offer and not a milestone: skipping it must not leave a flag behind that
+   * something later has to interpret. The Prayers screen can reach the same
+   * importer whenever the office wants it.
+   */
+  const [offerImport, setOfferImport] = useState(false);
 
   useEffect(() => {
     if (!authEnabled) return undefined;
@@ -91,9 +103,46 @@ export default function App() {
     return (
       <ParishSetup
         email={account.user?.email}
-        onReady={() => api.account().then(setAccount)}
+        onReady={() => {
+          setOfferImport(true);
+          return api.account().then(setAccount);
+        }}
         onSignOut={() => supabase?.auth.signOut()}
       />
+    );
+  }
+
+  /*
+   * A parish founded a moment ago holds placeholder prayers and nothing else,
+   * so this is the one moment the office is certainly thinking about where its
+   * real prayers come from. Offering the book here rather than burying it in a
+   * tab is the difference between a library that gets filled and one that does
+   * not.
+   */
+  if (offerImport) {
+    return (
+      <EntryLayout
+        headline="Your library is waiting for your own prayers."
+        lede="What is in there now is a placeholder set, written for this tool. Hand LiturgyGen your General Intercessions book and it will read the pages for you - or skip this and type them in whenever you like."
+        points={[
+          {
+            claim: 'A PDF or a photograph will do.',
+            detail:
+              'A PDF with real text in it needs nothing installed. A scan or a photograph is read by character recognition instead.',
+          },
+          {
+            claim: 'You approve every page.',
+            detail:
+              'Nothing reaches your library until you tick it. Recognition misreads words, and these are prayers somebody reads aloud.',
+          },
+          {
+            claim: 'You can do this later.',
+            detail: 'The same importer sits on the Prayers screen, and the placeholders work in the meantime.',
+          },
+        ]}
+      >
+        <ImportBook compact onSkip={() => setOfferImport(false)} onSaved={() => loadTemplates()} />
+      </EntryLayout>
     );
   }
 
