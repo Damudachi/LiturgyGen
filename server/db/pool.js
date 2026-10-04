@@ -1,10 +1,10 @@
 /**
  * The PostgreSQL connection pool.
  *
- * Nothing imports this yet. The live database is still better-sqlite3 in
- * src/db/index.js; this file and db/schema.sql are the ground the migration
- * lands on. docs/07-postgres-migration-map.md lists every call site that has to
- * move and what each one becomes.
+ * `src/db/index.js` imports this lazily - lazily because the `process.exit(1)`
+ * below is right for a server and wrong for a test run, which supplies its own
+ * pool instead. The schema it connects to lives in db/schema.sql;
+ * docs/07-postgres-migration-map.md records what each call site used to be.
  */
 
 import pg from 'pg';

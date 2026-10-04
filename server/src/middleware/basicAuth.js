@@ -34,10 +34,10 @@
  *
  *
  * ====================================================================
- *  TODO(you): write `checkCredentials`. The rest of this file is done.
+ *  WHAT `checkCredentials` HAS TO GET RIGHT
  * ====================================================================
  *
- * The spec, which `server/test/basicAuth.test.js` checks:
+ * The contract, which `server/test/basicAuth.test.js` checks:
  *
  *   1. The header looks like:  Authorization: Basic <base64>
  *      where <base64> is the base64 encoding of `username:password`.
@@ -64,21 +64,66 @@
  * Read: MDN "HTTP authentication", RFC 7617, and node:crypto timingSafeEqual.
  */
 
-// import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 
 /**
  * @param {string|undefined} header  the raw Authorization header
  * @returns {boolean} true if it carries the configured username and password
  */
 export function checkCredentials(header) {
-  // TODO(you): replace this line with the implementation described above.
-  throw new Error('checkCredentials is not implemented yet - see the spec in this file.');
+  if (typeof header !== 'string') return false;
+
+  // RFC 7235: the scheme token is case-insensitive, and exactly one space
+  // separates it from the credentials. Some clients send "basic".
+  const match = /^basic +(\S+)$/i.exec(header.trim());
+  if (!match) return false;
+  const encoded = match[1];
+
+  // Buffer.from(..., 'base64') silently DISCARDS characters outside the
+  // alphabet, so "!!!not-base64!!!" decodes to plausible-looking bytes instead
+  // of failing. Checking the shape first means garbage is rejected as garbage.
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(encoded) || encoded.length % 4 !== 0) return false;
+
+  const decoded = Buffer.from(encoded, 'base64').toString('utf8');
+
+  // Split on the FIRST colon only. The username cannot contain one; the
+  // password can, and `decoded.split(':')[1]` would truncate it - which would
+  // let the shorter prefix through as if it were the real password.
+  const separator = decoded.indexOf(':');
+  if (separator === -1) return false;
+  const username = decoded.slice(0, separator);
+  const password = decoded.slice(separator + 1);
+
+  const expectedUser = process.env.BASIC_AUTH_USER;
+  const expectedPass = process.env.BASIC_AUTH_PASS;
+  if (!expectedUser || !expectedPass) return false;
+
+  // Both halves are compared, and both comparisons always run: `&&` would
+  // short-circuit on a wrong username and never time the password, which is
+  // its own small signal.
+  const userOk = constantTimeEqual(username, expectedUser);
+  const passOk = constantTimeEqual(password, expectedPass);
+  return userOk && passOk;
 }
 
-/** Set while `checkCredentials` is still the stub, so the tests skip rather
- *  than fail and CI stays green until you have written it. Delete this line
- *  when you implement the function - the tests turn on by themselves. */
-checkCredentials.notImplemented = true;
+/**
+ * Compare two strings without leaking, in how long it takes, how much of the
+ * second one the first got right.
+ *
+ * `===` on strings returns the moment two bytes differ, so a password that is
+ * wrong in its first character is rejected measurably faster than one wrong in
+ * its twentieth - repeat that enough times and the password can be guessed a
+ * character at a time. timingSafeEqual does not short-circuit, but it throws
+ * when the two buffers differ in length, and the length of a password is
+ * exactly what we must not reveal. Hashing both sides first solves both
+ * problems at once: every sha256 digest is 32 bytes, so the lengths always
+ * match, and the digest of a near-miss shares no prefix with the real one.
+ */
+function constantTimeEqual(actual, expected) {
+  const a = createHash('sha256').update(String(actual), 'utf8').digest();
+  const b = createHash('sha256').update(String(expected), 'utf8').digest();
+  return timingSafeEqual(a, b);
+}
 
 /** True when the host has configured a credential, so the gate should run. */
 export function gateEnabled() {
@@ -100,8 +145,8 @@ export default function basicAuth({ realm = 'LiturgyGen' } = {}) {
     try {
       ok = checkCredentials(req.headers.authorization);
     } catch (error) {
-      // An unimplemented or broken check must DENY, never let everything
-      // through. This is the one place in the app that fails closed.
+      // A broken check must DENY, never let everything through. This is the one
+      // place in the app that fails closed.
       console.error('basicAuth: credential check failed -', error.message);
       ok = false;
     }

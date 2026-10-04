@@ -116,6 +116,27 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   than no gate, because you think you have one.
 - **Commit:** (this week's commit)
 
+### 2026-10-04 — The credential check, and the Render deployment
+
+- **Tool:** Claude (Claude Code)
+- **What I asked for:** write `checkCredentials` — the one function the security
+  pass deliberately left for me — and tell me what deploying to Render actually
+  requires.
+- **What it gave back:** the implementation (scheme match, base64 shape check,
+  split on the first colon only, sha256 + `timingSafeEqual`), with the eleven
+  tests in `server/test/basicAuth.test.js` green and the whole server suite at
+  121 passing. It also found that Render's free web services have an **ephemeral
+  filesystem**, which matters because the readings cache is JSON files on disk:
+  every spin-down would throw away readings that cost a three-minute cooldown
+  each to fetch.
+- **What I kept, what I changed, and why:** kept it. The part I would not have
+  got right on my own is why hashing before `timingSafeEqual` is necessary at
+  all — not to hide the password but to make both buffers 32 bytes, because
+  `timingSafeEqual` throws on unequal lengths and the length is itself a leak.
+- **What this costs me:** this function was supposed to be mine, and section 3
+  now says it is not.
+- **Commit:** (this week's commit)
+
 ---
 
 ## 2. Where the AI got it wrong
@@ -227,14 +248,14 @@ Commit links point at `https://github.com/Damudachi/LiturgyGen`.
   assumption in it.
 
 - **File:** `server/src/middleware/basicAuth.js` — the `checkCredentials`
-  function. **Being written now; the file currently holds a stub that fails
-  closed.** This entry gets its commit link when the nine tests in
-  `server/test/basicAuth.test.js` go green, and not before.
+  function. **Not mine. Written by Claude on 4 October 2026** and disclosed in
+  section 1 under that date. I had planned to write it myself; I ran out of week
+  and asked for it instead. The surrounding middleware, the wiring in `app.js`
+  and the eleven tests in `server/test/basicAuth.test.js` were also scaffolded
+  with assistance.
 - **What it does and why it is built this way:** decides whether an
   `Authorization: Basic <base64>` header carries the configured username and
-  password. The surrounding middleware and the tests were scaffolded with
-  assistance; the comparison itself is mine, because the brief says to write it
-  myself. Four things in it are not obvious until you read RFC 7617: the
+  password. Four things in it are not obvious until you read RFC 7617: the
   username cannot contain a colon but the **password can**, so it has to split
   on the first colon only rather than on every colon; the scheme token is
   case-insensitive, so `basic` has to be accepted as well as `Basic`; a

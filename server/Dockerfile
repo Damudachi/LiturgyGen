@@ -5,12 +5,9 @@
 
 FROM node:22-slim
 
-# better-sqlite3 still ships in the dependency list while the PostgreSQL
-# migration is in progress, and it falls back to a source build when there is no
-# prebuild for this platform. Remove this layer once src/db/index.js runs on pg.
-RUN apt-get update \
- && apt-get install -y --no-install-recommends python3 make g++ \
- && rm -rf /var/lib/apt/lists/*
+# No build toolchain here on purpose. better-sqlite3 was the only dependency
+# that needed one, and it left with the PostgreSQL migration - `pg` is pure
+# JavaScript. Putting python3/make/g++ back adds minutes to every deploy.
 
 ENV NODE_ENV=production
 WORKDIR /app
