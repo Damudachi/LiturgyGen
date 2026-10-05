@@ -57,6 +57,31 @@
   --shadow-well: inset 0 1px 2px rgba(27, 39, 64, 0.07);
 }
 
+/*
+ * The two bars that frame every screen, as one pair of numbers.
+ *
+ * The navbar's height and the book overlay's top edge used to be the literal
+ * 60px, written out in two files; the overlay's `top-[60px]` was a silent
+ * promise about a number living in App.jsx. On a phone the tabs move out of the
+ * navbar and into a bar along the bottom, so there is now a second such number,
+ * and the book has to clear both. Naming them means the book cannot drift out
+ * of the frame when either bar changes.
+ *
+ * --app-nav is 0 wherever the tabs are still in the navbar, which is every
+ * screen 768px and wider, so nothing below pays for a bar that is not there.
+ */
+:root {
+  --app-header: 60px;
+  --app-nav: 0px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    /* The bar itself, plus whatever the phone keeps for its home indicator. */
+    --app-nav: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 html,
 body,
 #root {
@@ -142,6 +167,22 @@ h3,
 
 .ribbon {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
+}
+
+/*
+ * A month is seven columns wide whatever it is shown on, so on a phone each day
+ * gets about 44px and roughly 36px of that is inside the padding. "Thursday of
+ * week 27" cannot be read in 36px at any size worth setting, so the name is
+ * dropped there and DayTile's foot mark carries what is left of the meaning.
+ *
+ * This is one plain rule rather than a max-sm: utility because the name also
+ * carries line-clamp-2, which sets display itself; two display utilities in the
+ * same media query would leave which one wins up to stylesheet order.
+ */
+@media (max-width: 639px) {
+  .tile-label {
+    display: none;
+  }
 }
 
 /*

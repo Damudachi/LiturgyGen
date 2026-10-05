@@ -53,17 +53,21 @@ export default function MonthGrid({ year, month, days, loading, error, onRetry, 
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <div className="grid grid-cols-7 gap-1.5 pb-1.5" aria-hidden="true">
+      {/* The headings sit over tiles about 44px wide on a phone, so they are
+          centred over them there instead of indented to the tile's own pl-2.5,
+          and the first letter alone has to do - "Wed" does not fit. */}
+      <div className="grid grid-cols-7 gap-1.5 pb-1.5 max-sm:gap-1" aria-hidden="true">
         {WEEKDAY_SHORT.map((name) => (
-          <div key={name} className="pl-2 text-[13px] font-medium text-muted">
-            {name}
+          <div key={name} className="pl-2 text-[13px] font-medium text-muted max-sm:pl-0 max-sm:text-center max-sm:text-[11px]">
+            <span className="sm:hidden">{name.charAt(0)}</span>
+            <span className="hidden sm:inline">{name}</span>
           </div>
         ))}
       </div>
       <div
         role="grid"
         aria-label={`${MONTH_NAMES[month - 1]} ${year}`}
-        className="grid min-h-0 flex-1 grid-cols-7 gap-1.5 overflow-y-auto scroll-slim"
+        className="grid min-h-0 flex-1 grid-cols-7 gap-1.5 overflow-y-auto scroll-slim max-sm:gap-1"
         /*
          * The floor is what decides whether a month fits on a laptop.
          *

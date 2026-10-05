@@ -144,7 +144,7 @@ export default function PrayersScreen({ templates, seasons, reload }) {
   }
 
   return (
-    <div className="grid h-[calc(100vh-60px)] min-h-[36rem] gap-5 p-5 max-[1023px]:h-auto min-[1024px]:grid-cols-[22rem_minmax(0,1fr)]">
+    <div className="grid h-[calc(100vh-var(--app-header))] min-h-[36rem] gap-5 p-5 max-[1023px]:h-auto min-[1024px]:grid-cols-[22rem_minmax(0,1fr)]">
       <TemplateList
         templates={filtered}
         total={templates.length}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { CalendarDays, CircleUserRound, HandHeart, Settings2 } from 'lucide-react';
 import api from './api';
 import Logo from './components/Logo';
 import DemoNotice from './components/DemoNotice';
@@ -14,11 +15,18 @@ import EntryLayout from './components/auth/EntryLayout';
 import ImportBook from './components/prayers/ImportBook';
 import { authEnabled, supabase } from './lib/supabase';
 
+/*
+ * The icons are carried for the phone's bottom bar only. Four words plus the
+ * wordmark need about 600px of navbar, which a phone does not have, so below
+ * 768px the tabs move to a bar along the bottom and each one is drawn as a mark
+ * over its label - which also puts them under the thumb rather than up in the
+ * corner furthest from it.
+ */
 const TABS = [
-  { id: 'calendar', label: 'Calendar' },
-  { id: 'prayers', label: 'Prayers' },
-  { id: 'settings', label: 'Settings' },
-  { id: 'account', label: 'Account' },
+  { id: 'calendar', label: 'Calendar', Icon: CalendarDays },
+  { id: 'prayers', label: 'Prayers', Icon: HandHeart },
+  { id: 'settings', label: 'Settings', Icon: Settings2 },
+  { id: 'account', label: 'Account', Icon: CircleUserRound },
 ];
 
 export default function App() {
@@ -167,20 +175,26 @@ export default function App() {
     );
   }
 
+  /* No accounts in the desktop build or in demo mode, so the tab would open a
+     screen explaining that it does not apply. Hide it instead. */
+  const tabs = TABS.filter((entry) => entry.id !== 'account' || authEnabled);
+
   return (
     // In the desktop window the navbar is the title bar, so only the page below it
     // scrolls; its scrollbar never runs up beside the window buttons.
     <div className={inDesktopWindow ? 'flex h-full flex-col' : 'min-h-full'}>
       <header
         {...titleBarProps()}
-        className={cx('on-dark sticky top-0 z-50 flex h-[60px] shrink-0 items-center gap-3 bg-ink px-6 text-page shadow-float', inDesktopWindow && 'select-none')}
+        className={cx(
+          'on-dark sticky top-0 z-50 flex h-[var(--app-header)] shrink-0 items-center gap-3 bg-ink px-6 text-page shadow-float max-md:px-4',
+          inDesktopWindow && 'select-none',
+        )}
       >
         <Logo className="h-8 w-10 shrink-0" />
         <span className="font-serif text-xl font-bold">LiturgyGen</span>
-        <nav className="ml-auto flex h-full gap-1" aria-label="Main">
-          {/* No accounts in the desktop build or in demo mode, so the tab would
-              open a screen explaining that it does not apply. Hide it instead. */}
-          {TABS.filter((entry) => entry.id !== 'account' || authEnabled).map((entry) => (
+        {/* Below 768px these same tabs are drawn in the bottom bar instead. */}
+        <nav className="ml-auto flex h-full gap-1 max-md:hidden" aria-label="Main">
+          {tabs.map((entry) => (
             <button
               key={entry.id}
               type="button"
@@ -199,7 +213,12 @@ export default function App() {
         <WindowControls />
       </header>
 
-      <main className={inDesktopWindow ? 'min-h-0 flex-1 overflow-y-auto' : undefined}>
+      {/*
+        * pb clears the phone's bottom bar, which is fixed and would otherwise
+        * cover the last rows of whatever is on screen - the Download button at
+        * the foot of a day, most of the time. It is 0 on a desktop.
+        */}
+      <main className={cx('pb-[var(--app-nav)]', inDesktopWindow && 'min-h-0 flex-1 overflow-y-auto')}>
         <DemoNotice />
         {tab === 'calendar' && <CalendarScreen settings={settings} templates={templates} />}
         {tab === 'prayers' && <PrayersScreen templates={templates} seasons={seasons} reload={loadTemplates} />}
@@ -208,6 +227,37 @@ export default function App() {
           <AccountScreen account={account} onSignedOut={() => setSession(null)} />
         )}
       </main>
+
+      {/*
+        * The phone's tab bar. It is the same navbar ink so the page still reads
+        * as paper held between two dark edges, and it sits above the book
+        * overlay's dim layer (z-50, as the navbar does) so you can always leave
+        * a day the way you came into it.
+        *
+        * pb picks up the home-indicator inset from --app-nav's own calc, so the
+        * labels are not sitting under the gesture bar on an iPhone.
+        */}
+      <nav
+        aria-label="Main"
+        className="on-dark no-print fixed inset-x-0 bottom-0 z-50 flex h-[var(--app-nav)] items-stretch border-t border-[#3b4a66] bg-ink pb-[env(safe-area-inset-bottom,0px)] text-page shadow-float md:hidden"
+      >
+        {tabs.map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setTab(id)}
+            aria-current={tab === id ? 'page' : undefined}
+            className={cx(
+              'relative flex flex-1 cursor-pointer flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors',
+              tab === id ? 'text-gold' : 'text-[#c9d3dc]',
+            )}
+          >
+            {tab === id && <span aria-hidden="true" className="absolute inset-x-3 top-0 h-[3px] rounded-b bg-gold" />}
+            <Icon className="size-5" aria-hidden="true" strokeWidth={tab === id ? 2.4 : 2} />
+            {label}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

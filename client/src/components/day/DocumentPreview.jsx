@@ -114,7 +114,7 @@ function PotfBlock({ potf, occasionTitle, appendSuffix = true }) {
       <p className="text-center font-bold">{occasionTitle}</p>
 
       {potf.priestInvitation && (
-        <p className="mt-2 text-justify font-bold">
+        <p className="mt-2 text-justify max-sm:text-left font-bold">
           <span className="font-bold">Priest:</span> {potf.priestInvitation}
         </p>
       )}
@@ -131,7 +131,7 @@ function PotfBlock({ potf, occasionTitle, appendSuffix = true }) {
           const body = intention.trim();
           const punctuated = appendSuffix && !/[.?!]$/.test(body) ? `${body}.` : body;
           return (
-            <p key={index} className="text-justify">
+            <p key={index} className="text-justify max-sm:text-left">
               {index + 1}. {punctuated}{' '}
               {appendSuffix && <span className="font-bold italic">Let us pray to the Lord.</span>}
             </p>
@@ -140,7 +140,7 @@ function PotfBlock({ potf, occasionTitle, appendSuffix = true }) {
       </div>
 
       {potf.priestConclusion && (
-        <p className="mt-3 text-justify font-bold">
+        <p className="mt-3 text-justify max-sm:text-left font-bold">
           <span className="font-bold italic">Priest:</span>{' '}
           {/amen\.?$/i.test(potf.priestConclusion.trim())
             ? potf.priestConclusion.trim()

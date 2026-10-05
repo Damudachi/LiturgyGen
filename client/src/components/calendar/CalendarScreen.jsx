@@ -148,11 +148,13 @@ export default function CalendarScreen({ settings, templates }) {
   const showPanel = choosing || Boolean(batch.job);
 
   return (
-    <div className="flex h-[calc(100vh-60px)] min-h-[36rem] flex-col max-[1023px]:h-auto">
+    <div className="flex h-[calc(100vh-var(--app-header))] min-h-[36rem] flex-col max-[1023px]:h-auto">
       <div className="flex min-h-0 flex-1 max-[1023px]:flex-col">
-        <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 px-6 pt-5 pb-5" aria-label="Month">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-serif text-[32px] font-semibold text-ink" aria-live="polite">
+        {/* px-3 on a phone: the month is seven columns whatever the screen, so
+            every pixel of side padding is taken off all seven tiles at once. */}
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 px-6 pt-5 pb-5 max-sm:gap-2.5 max-sm:px-3 max-sm:pt-4" aria-label="Month">
+          <div className="flex flex-wrap items-center gap-3 max-sm:gap-2">
+            <h1 className="font-serif text-[32px] font-semibold text-ink max-sm:text-[26px]" aria-live="polite">
               {MONTH_NAMES[cursor.month - 1]} {cursor.year}
             </h1>
             <div className="flex items-center gap-1.5">

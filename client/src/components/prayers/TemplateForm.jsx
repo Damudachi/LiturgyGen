@@ -140,7 +140,7 @@ export function PrayerPrint({ form }) {
     <div className="missalette">
       <p className="text-center font-bold">{form.title ? form.title.toUpperCase() : 'HEADING'}</p>
       {form.priestInvitation && (
-        <p className="mt-2 text-justify font-bold">Priest: {form.priestInvitation}</p>
+        <p className="mt-2 text-justify max-sm:text-left font-bold">Priest: {form.priestInvitation}</p>
       )}
       {lines(form.responseOptions).map((response, index) => (
         <div key={index}>
@@ -150,13 +150,13 @@ export function PrayerPrint({ form }) {
       ))}
       <div className="mt-3 space-y-3">
         {lines(form.intentions).map((intention, index) => (
-          <p key={index} className="text-justify">
+          <p key={index} className="text-justify max-sm:text-left">
             {index + 1}. {/[.?!]$/.test(intention) ? intention : `${intention}.`} <span className="font-bold italic">Let us pray to the Lord.</span>
           </p>
         ))}
       </div>
       {form.priestConclusion && (
-        <p className="mt-3 text-justify font-bold">
+        <p className="mt-3 text-justify max-sm:text-left font-bold">
           <span className="italic">Priest:</span>{' '}
           {/amen\.?$/i.test(form.priestConclusion.trim()) ? form.priestConclusion.trim() : `${form.priestConclusion.trim()} Amen.`}
         </p>
