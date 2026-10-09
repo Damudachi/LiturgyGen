@@ -67,8 +67,27 @@ and the calendar cache. Each serverless invocation gets a fresh process, and the
 10–15 minute batch runtime exceeds the function limit regardless. The cold start
 has four fixes that are not a migration, and none is chosen yet.
 
-**Open.** The Supabase Site URL still points at `localhost:3000`. Secret
-scanning and push protection are still off. `--color-gold-edge` still fails
+**Checked, and left as it is.** The week-of-09-22 report ended "Next. ... Then
+the REST pass", and the REST pass never happened. Looked at properly this week:
+`server/src/routes/` is 904 lines over eight routers, resource-oriented, with
+`GET`/`POST`/`PUT`/`DELETE` doing what their names say and nested resources
+where there are nested resources (`/api/settings/schedule/:date`,
+`/api/readings/:date/override`). Six endpoints are action-shaped rather than
+resource-shaped — `POST /api/readings/check`, `/api/calendar/expand`,
+`/api/potf/parse`, `/api/potf/:id/duplicate`, `/api/generate/preview` and
+`/api/batch/:id/cancel`.
+
+The week-2 report called those "remote procedure calls wearing HTTP", and on
+reflection that was the wrong thing to be embarrassed about. "Check these
+eighteen dates and tell me which ones are missing a psalm response" is not a
+resource; nor is "cancel this job". Forcing them into `PUT /api/checks/{id}`
+would invent a resource that nothing stores in order to satisfy a shape. The
+genuine defect the same paragraph named — `routes/settings.js` building a
+`WHERE` clause by string concatenation — **is** fixed, and that was the row
+worth acting on. So: no REST pass, and the reason is written down rather than
+the promise being quietly dropped.
+
+**Open.** The Supabase Site URL still points at `localhost:3000`. `--color-gold-edge` still fails
 contrast as a graphic, and the reason it has not been a one-line fix is now
 written down: the token is doing two jobs and needs splitting. The prayer-book
 importer is still unrun against a real book. `docs/assets/phone.png` predates

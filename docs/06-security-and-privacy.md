@@ -6,9 +6,18 @@ the thing is actually true today; where a row has changed its answer, the old
 answer is left in the row rather than deleted, because *what I believed and
 when* is the point of a checklist.
 
-Two rows closed since the first pass — `helmet` and rate limiting — and one row
-turned out to be wrong rather than stale: the count of commits carrying a
-personal email address. Both kinds are marked below.
+**25 of the 26 rows are ticked.** Three closed since the first pass — `helmet`,
+rate limiting, and secret scanning with push protection — and one row turned out
+to be wrong rather than stale: the count of commits carrying a personal email
+address, which was understated by seven.
+
+The one row left open is the author email and surname in the git history, and it
+is left open deliberately rather than reworded until it passed. A rewrite is
+possible and was costed; what it cannot do is erase objects GitHub has already
+served, so the honest state of that row is "measured, bounded and declared".
+The row carries the measurement, the three options and the reason for the
+choice. A security checklist whose boxes are all ticked because the hard row was
+rephrased is worth less than one that names what is still true.
 
 The longer, rubric-shaped version of this document is
 [`SECURITY-CHECKLIST.md`](../SECURITY-CHECKLIST.md) in the repository root. This
@@ -30,12 +39,14 @@ file is the prose one; that one is the table with the evidence commands in it.
 - [x] **Future commits are anonymous.** `git config user.email` is set, for this
       repository only, to `Damudachi@users.noreply.github.com`. The global
       config is untouched, so other projects are unaffected
-- [ ] **Secret scanning and push protection are not on.** This repository is
-      already public, so both are available now at **Settings → Code security
-      and analysis** and neither is enabled. Push protection cannot undo
-      anything already pushed; it covers every commit from here. The history
-      audit above is what says nothing has leaked so far — but an audit is a
-      snapshot, not a control
+- [x] **Secret scanning and push protection are on.** Both enabled at
+      **Settings → Code security and analysis**. This row used to read "not on",
+      with the note that the history audit above is a snapshot and not a
+      control — which is exactly the gap these two close. Push protection cannot
+      undo anything already pushed; what it does is refuse the next commit that
+      carries a recognised credential pattern, which is the only part of this
+      problem a tool can actually own. The audit says nothing has leaked so far;
+      these two say the same thing about commits that do not exist yet
 - [ ] **A name is still in the history, and the count was wrong.** Commit
       `db5e93b` added a reflection journal PDF whose filename carried my
       surname. Removing a file does not remove it from the history, so the name
@@ -43,8 +54,8 @@ file is the prose one; that one is the table with the evidence commands in it.
       This row used to say "the eighteen commits made before 27 September" and
       "every commit since carries the noreply address". Counted again on
       2026-10-09, against 53 commits:
-      `git log --pretty=%ae | sort | uniq -c` returns **25** carrying
-      `sabando.ag@gmail.com` and 28 carrying
+      `git log --pretty=%ae | sort | uniq -c` returns **25** carrying the
+      personal address and 28 carrying
       `Damudachi@users.noreply.github.com`. Eighteen was never the number, and
       the cut-off is not clean: **seven of the 25 are dated 2026-10-04**, well
       after the switch. The repository-local setting is not the leak —
@@ -53,12 +64,45 @@ file is the prose one; that one is the table with the evidence commands in it.
       interface, which commits as the account's primary email and never sees a
       local git config. **So the rule is: an edit made in the browser
       re-attaches the address, every time.** Edit locally, or set the primary
-      address on the GitHub account to the noreply one. Nothing sensitive
-      beyond the name is in any of it and no credential was ever committed, so
-      this is not urgent — but the fix is a history rewrite
-      (`git filter-repo --path 'Docu/' --invert-paths --mailmap ...`) followed
-      by a force push, which rewrites every commit id and is not something to
-      do casually. Decided, not forgotten. Open
+      address on the GitHub account to the noreply one.
+
+      **Everything in the history that carries an identity**, measured rather
+      than assumed:
+
+      | What | Where | Reachable how |
+      | --- | --- | --- |
+      | A surname in a filename | a reflection-journal PDF under `Docu/`, added in `db5e93b`, modified in `cfba87c`, deleted in `d6baf70` | `git log --all --name-only` |
+      | A personal author email | 25 of 53 commits | `git log --pretty=%ae` |
+      | Reflogs of a stray embedded git directory | `git(old)/logs/refs/…` in `7e30ee4`, removed in `34eac90` | same |
+
+      The `git(old)/` entry is new to this row and was not previously known:
+      an embedded `.git` directory's reflogs were committed in the initial
+      commit, and a reflog line carries an author name and address of its own.
+
+      **Why this is not simply "run `filter-repo` and force push".** The rewrite
+      itself is the easy half. The hard half is that this repository has been
+      public for weeks, so:
+
+      - every one of the 53 commit ids changes, which breaks **19 commit
+        permalinks in `AI-USAGE.md`** — a graded disclosure document whose whole
+        value is that a marker can click a link and check the claim;
+      - a force push does **not** delete the old objects from GitHub. They stay
+        reachable by full SHA, and a merged pull request (`#10`) keeps showing
+        its original commits. Purging those needs GitHub Support, not a git
+        command;
+      - there are ten remote branches, six of them Dependabot's, which all
+        need deleting and letting regenerate.
+
+      So the options are: rewrite and accept that the exposure is reduced rather
+      than erased until Support purges it; start a fresh repository, which is
+      the only way to be certain and costs the URL and the history; or keep
+      declaring it. Nothing sensitive beyond a surname and a gmail address is in
+      any of it, and no credential was ever committed.
+
+      **This box stays unticked on purpose.** The honest state of this row is
+      "measured, bounded and declared", and that is worth more in a security
+      document than a tick that would mean "I reworded the row until it was
+      true". Decided, not forgotten. Open
 
 ## The application
 
