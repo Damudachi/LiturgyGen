@@ -2,8 +2,13 @@
 
 > **Status: done.** LiturgyGen runs on **PostgreSQL**. `better-sqlite3` is out
 > of `server/package.json`, out of the Dockerfile, and out of CI. All 20 call
-> sites across the five files below are converted, 112 tests pass, and the whole
-> API has been exercised end to end against the real `db/schema.sql`.
+> sites across the five files below are converted and the whole API has been
+> exercised end to end against the real `db/schema.sql`. This line read "112
+> tests pass" when the migration landed; the suite has grown since, and the
+> current count is in the newest entry of
+> [`04-weekly-reports.md`](04-weekly-reports.md) rather than repeated here,
+> because a number copied into five files is a number that will be wrong in
+> four of them.
 >
 > This file is kept as the record of what changed and why, because it is the
 > explanation of the diff. The tables below describe the work as it was planned;

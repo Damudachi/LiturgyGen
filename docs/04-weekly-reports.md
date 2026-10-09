@@ -4,6 +4,80 @@ Newest at the top. Never edit an old one.
 
 ---
 
+## Week of 2026-10-06
+
+**Done.** Week 3's two deferred security items, which the week-2 checklist had
+named as "they become real the day the API sits on a public URL". It did, so
+they did.
+
+`helmet` is in, with the Content-Security-Policy written out rather than left at
+the default or switched off: `styleSrc` allows `'unsafe-inline'` because Tailwind
+injects a stylesheet at run time, `scriptSrc` does not, and `connect-src` is
+derived from `SUPABASE_URL` instead of hardcoded. It has a test —
+`server/test/csp.test.js` — because the way a too-tight policy fails is the
+worst kind: the browser blocks every sign-in request before it leaves the page,
+`fetch` rejects with "Failed to fetch", and **nothing reaches a server log at
+all**. There is no trace to debug from, so the policy gets an assertion instead.
+`express-rate-limit` is on `/api` at 600 requests a minute, applied after the
+gate so a signed-in office is counted separately from anonymous traffic at the
+door, and off under `NODE_ENV=test`.
+
+The phone layout. The navbar's four tabs move to a fixed bottom bar below 768px
+and each gains a mark; below 640px a day tile sheds everything that is not the
+date and the liturgical colour. The two bars are now one pair of custom
+properties, `--app-header` and `--app-nav`, because the day book has to clear
+both and the heights were previously literals written out in two files — a
+`top-[60px]` that was a silent promise about a number in `App.jsx`.
+
+`SECURITY-CHECKLIST.md` was written against the announcement's four sections,
+with the evidence command for every row.
+
+**What broke, and what it cost.** Nothing broke. What went wrong is that the
+documentation stopped tracking the code, in both directions, and neither
+direction was visible from inside the repository:
+
+- `docs/06` still listed `helmet` and rate limiting as open, for eight days
+  after both shipped. `helmet` landed in the *same commit* as the PostgreSQL
+  migration, on the same day the checklist was written saying it had not.
+- The mobile work touched nine files and **no document at all**, so the screen
+  map had no bottom bar in it and the design system's breakpoint table was
+  missing the two breakpoints the work added.
+- `docs/06` claimed "eighteen commits" carry a personal author email and that
+  every commit since the switch carries the noreply address. Counted properly:
+  **25 of 53**, and seven of those are dated 2026-10-04, after the switch. The
+  local git config was never wrong — those seven are edits made through
+  GitHub's web interface, which commits as the account's primary address and
+  never sees a local config. That is a standing trap, not a one-off slip, and it
+  is now written down as one.
+
+**Also.** The demo video is recorded, and it is **6:13 against a 5:00
+maximum**. The cue sheet targeted 4:50, so the overrun is 1:23 and it is spread
+across all twelve slides rather than concentrated in one — the signature of
+reading slides aloud instead of talking over them. The existing cut list is
+worth about 1:05, so it does not close the gap on its own; `docs/05` now says
+what else has to go and what must survive whatever happens, which is the demo,
+the code walk-through and the AI disclosure. An earlier attempt to measure the
+file reported a corrupt `mvhd` atom with `timescale=0`; the atom was fine and
+the parse offset was wrong.
+
+Migrating the API to Vercel was investigated to kill the ~50s cold start and
+**rejected**: four separate pieces of process-level state make it impossible —
+the batch job queue in a `Map`, the SSE progress stream, the USCCB grace cookie,
+and the calendar cache. Each serverless invocation gets a fresh process, and the
+10–15 minute batch runtime exceeds the function limit regardless. The cold start
+has four fixes that are not a migration, and none is chosen yet.
+
+**Open.** The Supabase Site URL still points at `localhost:3000`. Secret
+scanning and push protection are still off. `--color-gold-edge` still fails
+contrast as a graphic, and the reason it has not been a one-line fix is now
+written down: the token is doing two jobs and needs splitting. The prayer-book
+importer is still unrun against a real book. `docs/assets/phone.png` predates
+both the entry spread and the bottom tab bar, so it shows a layout that no
+longer exists. The video needs re-recording. 152 tests (138 server — 137 pass, 1
+skipped — and 14 client).
+
+---
+
 ## Week of 2026-09-29
 
 **Done.** Accounts. LiturgyGen serves more than one parish now: sign-in is a

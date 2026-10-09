@@ -1,6 +1,34 @@
 # 5. Demo video
 
-**Link:** not recorded yet. Due in week 3.
+> **Status: recorded, and it is too long.**
+>
+> | | |
+> | --- | --- |
+> | Recorded | 2026-10-04 |
+> | Runtime | **6:13** (373.4s) |
+> | Allowed | 3:00–5:00 |
+> | Over by | **1:13** |
+> | Link | a public Google Drive link, kept in the private coursework folder — not in this repository, because the video shows a face and says a name |
+>
+> The cue sheet below targets **4:50**. The recording came in **1:23 over that
+> target** and 1:13 over the hard maximum, so every beat ran long rather than
+> one beat running away: 1:23 spread across twelve slides is about seven seconds
+> each. That is the shape of reading a slide aloud instead of talking over it,
+> which is the one thing the cue sheet says not to do.
+>
+> **Treat this as a real overrun, not a cosmetic one.** A stated maximum is a
+> requirement, and how it is enforced is not written down anywhere I can check —
+> it may cost marks, or it may mean a marker stops watching at 5:00. If it is
+> the second, what goes unwatched is the last two slides, and one of those is
+> *Who wrote what*, the AI disclosure. That is the worst possible thing to lose,
+> so the fix is a re-record against the cut list under **If it runs long**,
+> not a trim at the end. **Confirm the actual penalty with the course
+> announcement before deciding how much work to put into the re-record.**
+>
+> The duration is measurable from the file itself:
+> `mvhd` version 0, timescale 1000, duration 373353. An earlier attempt to read
+> this reported `timescale=0` and was written up as a corrupt file; the atom was
+> fine and the offset in the parse was wrong.
 
 Three to five minutes, face and voice, as a public Google Drive link. The rubric
 gives 60 of the presentation's 100 points to this, for walking through the app
@@ -58,6 +86,26 @@ points are for.
 3. **`schema.sql`** in the code beat, keeping the cascade
 4. **Slide 5, A month at a time** — fold its one line into the demo itself
 
+### Sized against the 6:13 take
+
+The four cuts above are worth roughly 0:18 + 0:17 + 0:10 + 0:20 = **1:05**
+against the cue sheet's own allocations. The take is 1:13 over the maximum, so
+**the cut list alone does not get there** — it was written to absorb a beat that
+ran long, not a take that ran long everywhere.
+
+What actually closes the gap, in order of how much it buys for how little it
+costs:
+
+1. **Make all four cuts.** About 1:05.
+2. **Stop reading the slides.** The overrun is distributed, so this is where the
+   rest is. A slide is the visual; the sentence is spoken over it, once.
+3. **Do not re-narrate the demo.** Slides 3 and 5 exist to be folded into the
+   clicking, which is cut 1 and cut 4 above.
+
+Keep intact, whatever else goes: the live demo (slide 4), the code walk-through
+of the POTF cascade (slide 9), and slide 11. The first two are what 60 of the
+100 points are for, and the third is the AI disclosure, which is not optional.
+
 ## What to say about AI, on camera
 
 One honest sentence at slide 11, then move on. It is disclosed in `AI-USAGE.md`
@@ -65,6 +113,12 @@ and the badge rewards an honest record over a tidy story. Do not oversell
 authorship of code the git history can contradict.
 
 ## Checklist before recording
+
+The boxes are **deliberately left unticked**. This is the list to work down
+before a take, and the take that exists was made against it — but which rows
+were actually confirmed on the day was not recorded at the time, and ticking
+them now would be writing down something I do not know. It stands as the list
+for the re-record.
 
 - [ ] **Warm the cache.** Run a batch over the demo dates *before* recording. A
       date never fetched costs a live USCCB request and up to three minutes of

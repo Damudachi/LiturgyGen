@@ -1,7 +1,18 @@
 # 6. Security and privacy checklist
 
-Worked through on 2026-09-27, before the restructured repository was pushed.
-Boxes are ticked only where the thing is actually true today.
+Worked through on 2026-09-27, before the restructured repository was pushed,
+and re-checked against the code on **2026-10-09**. Boxes are ticked only where
+the thing is actually true today; where a row has changed its answer, the old
+answer is left in the row rather than deleted, because *what I believed and
+when* is the point of a checklist.
+
+Two rows closed since the first pass — `helmet` and rate limiting — and one row
+turned out to be wrong rather than stale: the count of commits carrying a
+personal email address. Both kinds are marked below.
+
+The longer, rubric-shaped version of this document is
+[`SECURITY-CHECKLIST.md`](../SECURITY-CHECKLIST.md) in the repository root. This
+file is the prose one; that one is the table with the evidence commands in it.
 
 ## Before the first push
 
@@ -25,16 +36,29 @@ Boxes are ticked only where the thing is actually true today.
       anything already pushed; it covers every commit from here. The history
       audit above is what says nothing has leaked so far — but an audit is a
       snapshot, not a control
-- [ ] **A name is still in the history.** Commit `db5e93b` added a reflection
-      journal PDF whose filename carried my surname. Removing a file does not
-      remove it from the history, so the name is reachable by anyone who walks
-      the log - and an author email is too, on the eighteen commits made before
-      27 September, when the repository-local `user.email` was switched to the
-      GitHub noreply address. Every commit since carries the noreply address. Nothing sensitive beyond the name is in it, and no credential was
-      ever committed, so this is not urgent — but the fix is a history rewrite
-      (`git filter-repo --path 'Docu/' --invert-paths`) followed by a force
-      push, which rewrites every commit id and is not something to do casually.
-      Decided, not forgotten. Open
+- [ ] **A name is still in the history, and the count was wrong.** Commit
+      `db5e93b` added a reflection journal PDF whose filename carried my
+      surname. Removing a file does not remove it from the history, so the name
+      is reachable by anyone who walks the log — and an author email is too.
+      This row used to say "the eighteen commits made before 27 September" and
+      "every commit since carries the noreply address". Counted again on
+      2026-10-09, against 53 commits:
+      `git log --pretty=%ae | sort | uniq -c` returns **25** carrying
+      `sabando.ag@gmail.com` and 28 carrying
+      `Damudachi@users.noreply.github.com`. Eighteen was never the number, and
+      the cut-off is not clean: **seven of the 25 are dated 2026-10-04**, well
+      after the switch. The repository-local setting is not the leak —
+      `git config --local user.email` still reads the noreply address today.
+      Those seven are the README and asset edits made through GitHub's web
+      interface, which commits as the account's primary email and never sees a
+      local git config. **So the rule is: an edit made in the browser
+      re-attaches the address, every time.** Edit locally, or set the primary
+      address on the GitHub account to the noreply one. Nothing sensitive
+      beyond the name is in any of it and no credential was ever committed, so
+      this is not urgent — but the fix is a history rewrite
+      (`git filter-repo --path 'Docu/' --invert-paths --mailmap ...`) followed
+      by a force push, which rewrites every commit id and is not something to
+      do casually. Decided, not forgotten. Open
 
 ## The application
 
@@ -79,13 +103,31 @@ Boxes are ticked only where the thing is actually true today.
 - [x] `NODE_ENV=production` on a host, and no stack trace in any response body —
       `src/app.js` returns a plain message for a 5xx in production and logs the
       detail
-- [ ] **`helmet` is not installed.** Its default Content-Security-Policy blocks
-      the inline styles the built client uses, and I would rather add it with
-      the policy set correctly than add it and disable the part that matters.
-      Open, for week 3
-- [ ] **No rate limiting.** Nothing here accepts a password or costs money, and
-      the app is a local tool for one office, so this has been knowingly
-      deferred. It becomes real the moment the API is on a public URL
+- [x] **`helmet`, with a policy written to fit.** Installed in `src/app.js`.
+      This row used to read "not installed", on the reasoning that helmet's
+      default Content-Security-Policy blocks the inline styles the built client
+      needs and that adding it with the wrong policy is worse than not adding
+      it. The policy is now written out instead of switched off: `styleSrc`
+      allows `'unsafe-inline'` because Tailwind injects a stylesheet at run
+      time, `scriptSrc` does **not** — which is why the landing page's fragment
+      forwarder is a file at `/auth-forward.js` rather than an inline block —
+      and `connectSources()` derives `connect-src` from `SUPABASE_URL` instead
+      of hardcoding it or leaving it open. `crossOriginEmbedderPolicy` is off:
+      it buys nothing here and breaks the WebView2 desktop shell.
+      `server/test/csp.test.js` exists because getting this wrong caused a real
+      outage — the browser blocked every sign-in request before it left the
+      page, `fetch` rejected with "Failed to fetch", and **nothing was logged
+      anywhere**. A policy that is too tight fails silently in the browser with
+      no server-side trace, so it gets a test
+- [x] **Rate limiting.** `express-rate-limit` on `/api`, applied *after* the
+      gate so a signed-in office is measured separately from anonymous traffic
+      at the door. 600 requests a minute, which is generous on purpose: opening
+      a month fires one calendar request plus one check per chosen day, and a
+      200-day batch polls its own progress. It is a brake on abuse, not a quota.
+      Disabled under `NODE_ENV=test` so the suite is not throttled. Sign-in
+      attempts are rate-limited by Supabase, not here. This row used to read
+      "knowingly deferred, because this is a local tool for one office" — true
+      until the API went on a public URL, which is what made it real
 - [x] **Passwords are not ours to leak.** This row used to read "no accounts and
       no passwords, so nothing to hash" — true until accounts shipped, and left
       here corrected rather than deleted. Supabase Auth holds the credentials
@@ -97,17 +139,24 @@ Boxes are ticked only where the thing is actually true today.
 - [x] `npm audit` run on 2026-09-27: three moderate advisories in `qs`, reached
       through `body-parser` and `express`. `npm audit fix` cleared all three
       without a breaking change; `npm audit` now reports zero. Dependabot is on
-      for both npm and Actions, grouped into one PR per ecosystem
+      for both npm and Actions, grouped into one PR per ecosystem. Two
+      dependencies have been added since and are in that audit surface:
+      `helmet` and `express-rate-limit`
 
 ## Privacy
 
-- [x] **No real people.** LiturgyGen stores liturgical dates, scripture
-      citations and prayer text. It collects nothing about anybody. There is no
-      user table because there are no users to model
+- [x] **Almost no real people, and the exception is named.** LiturgyGen's own
+      tables store liturgical dates, scripture citations and prayer text. This
+      row used to end "there is no user table because there are no users to
+      model", which stopped being true when accounts shipped: there is a
+      `memberships` table now. What it holds is a `user_id` and a role — not a
+      name, not an email. The address itself lives in Supabase Auth, never
+      here. See the last row of this section
 - [x] Seed data is invented. `server/db/seed.sql` and the demo seed hold
       placeholder prayers written for this tool and three invented Mass dates
 - [x] No classmate's name, number, email or photo anywhere — not in seed data,
-      not in the screenshots, and not in the demo video when it is recorded
+      not in the screenshots, and not in the demo video, which has now been
+      recorded and watched back for exactly this
 - [x] No face-like image in the application at all. The chapel seal was the
       only one and is no longer used; the mark is an inline SVG of an open book
 - [x] **One category of personal information, named rather than denied.** This
@@ -152,6 +201,10 @@ either would be a real problem with my name permanently attached, and the first
 draft of the demo seed generator would have done exactly that. What I did about
 it: the books never enter version control, the scripture is fetched at runtime
 and stripped out of anything committed, and the public installer ships without
-the office's data. What I knowingly accepted: no rate limiting and no `helmet`,
-because this is a single-office local tool today — both become real the day the
-API sits on a public URL, which is week 3.
+the office's data. What I knowingly accepted at the time: no rate
+limiting and no `helmet`, because this was a single-office local tool. The API
+then went on a public URL, which is exactly the condition I had written down as
+the thing that would make both real, and both are now in — the CSP with a test
+behind it, because the way it fails is silent. What is still open is the author
+email in the history, and the fact that an edit made through GitHub's web
+interface puts it back.

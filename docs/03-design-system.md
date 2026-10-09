@@ -59,12 +59,21 @@ because a true white stripe disappears against the paper.
 Eleven pairs measured; the weakest real pair is 4.52 : 1 against a 4.5 : 1
 target.
 
-**One known failure.** `--color-gold-edge` (`#C99500`) is the fill of the small
-"needs a look" triangle in the making panel: **2.42 : 1** against the page, which
-fails even the 3 : 1 asked of a meaningful graphic. It is never carrying meaning
-alone — every one of those icons sits beside a text label saying the same thing,
-and the icon carries an `aria-label` — but it should be darkened to `#8A6500`
-(4.77 : 1). Open.
+**One known failure, still open.** `--color-gold-edge` (`#C99500`) is the fill
+of the small "needs a look" triangle in the making panel and on a day tile:
+**2.42 : 1** against the page, which fails even the 3 : 1 asked of a meaningful
+graphic. It is never carrying meaning alone — every one of those icons sits
+beside a text label saying the same thing, and the icon carries an `aria-label`
+— but it should be darkened to `#8A6500` (4.77 : 1).
+
+The token is doing two jobs, which is why this has not been a one-line fix. As a
+**graphic** it fails. As an **edge** — the 1px ring around a gold disc, the 3px
+underside of a gold button, the fill of the fetch progress bar, all against gold
+rather than against the page — it is a border on a colour that already passes,
+and 2.42 : 1 against the page is the wrong measurement for it. Darkening the one
+token changes all five. The fix is to split it: a `--color-warn` at `#8A6500`
+for the triangle, and leave `--color-gold-edge` as the edge it is named after.
+Open.
 
 ## Type
 
@@ -106,9 +115,29 @@ and drops the translate under `prefers-reduced-motion`.
 
 | Breakpoint | Class | What changes |
 | --- | --- | --- |
+| below 640px | `max-sm:` / `sm:hidden` | day tiles shed their labels and tighten their padding; weekday headings condense to single letters; today becomes a navy disc; the corner badges become footer marks |
+| below 768px | `max-md:` / `md:hidden` | the navbar's tabs move to a fixed bottom bar with icons; `--app-nav` stops being 0 |
 | below 900px | `max-[899px]` | the book's two pages become one column; gutter shading off |
 | below 1024px | `max-[1023px]` | the making panel drops below the month; the Prayers list column goes full width |
 | 1024px and up | `min-[1024px]` | the panel returns to 29%; Prayers returns to two columns |
+
+The first two are Tailwind's own `sm` and `md`; the other two are written out in
+pixels. That mix is deliberate rather than sloppy — `sm` and `md` happened to
+land where the tile and the navbar actually broke, and 900 and 1024 did not
+correspond to anything in the default set.
+
+Two of the three bars in the app are declared as custom properties rather than
+utilities, because more than one file has to agree about them:
+
+| Property | Default | Below 768px |
+| --- | --- | --- |
+| `--app-header` | `60px` | `60px` |
+| `--app-nav` | `0px` | `calc(56px + env(safe-area-inset-bottom, 0px))` |
+
+`--app-nav` is 0 at every width where the tabs are still in the navbar, so no
+layout above 768px pays any space for a bar that is not drawn. The
+`env(safe-area-inset-bottom)` term is what keeps the bar clear of a phone's home
+indicator. See `docs/02-mockup.md` for why these are named at all.
 
 Each was written because a specific layout broke at that width, not because a
 framework offered a set. At 375px nothing scrolls sideways.
@@ -120,13 +149,22 @@ framework offered a set. At 375px nothing scrolls sideways.
   is what makes it keyboard-reachable for free.
 - **No raster images in the app's own chrome.** The mark is inline SVG with
   `role="img"` and an `aria-label`; the screenshots in `docs/assets` are
-  documentation, not interface. Icons are `aria-hidden` because each sits beside
-  a text label; the few that stand alone carry an `aria-label`.
+  documentation, not interface. Icons are `lucide-react`, and
+  `aria-hidden` because each sits beside a text label; the few that stand alone
+  carry an `aria-label` — including the day tile's footer marks below 640px,
+  where the label itself is what got removed to make room.
 - The `Field` atom renders a real `<label>` wrapping its input, so association
   is structural and cannot be forgotten. Controls outside a Field carry
   `aria-label`.
 - One focus style for the whole app: a 3px navy outline with a 2px offset,
-  switched to gold inside the dark navbar.
+  switched to gold inside the dark navbar — and in the phone's bottom bar,
+  which is the same ink.
+- **The phone's tab bar is a second `<nav>` of real `<button>`s**, each carrying
+  `aria-current="page"` when it is the open tab, exactly as the desktop tabs do.
+  It is the same `TABS` array rendered twice, so a tab cannot exist in one place
+  and not the other, and the current tab cannot be announced differently
+  depending on screen width. The icons are `aria-hidden`; the label beside each
+  one is the accessible name.
 - The month grid supports arrow-key navigation with a roving tabindex, so a
   keyboard user moves between days rather than tabbing through all thirty-odd
   buttons. The day book traps Tab while open, closes on Escape, and returns
