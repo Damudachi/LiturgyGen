@@ -12,8 +12,6 @@ Built with Claude (Anthropic) — it wrote most of the first draft of the servic
 layer, the `.docx` builder and the React components. Who wrote what, entry by
 entry, is in [`AI-USAGE.md`](AI-USAGE.md).
 
-**Live site:** https://damudachi.github.io/LiturgyGen/ https://liturgygen.onrender.com
-**API:** see [What I would do next](#what-i-would-do-next)
 **Demo video:** [video link](https://drive.google.com/file/d/1DSrBRrZrKqdLYPJjeBxkJoreqn6hR12U/view?usp=drive_link)
 
 **The app — client and API on one Render service:** https://liturgygen.onrender.com
@@ -40,8 +38,12 @@ is the process, [`/readyz`](https://liturgygen.onrender.com/readyz) is the datab
   `romcal` library does not carry.
 - **Fetch the readings** from USCCB, with Evangelizo as a fallback, a permanent
   on-disk cache, and a paste box for the date neither source can reach.
-- **Attach the Prayers of the Faithful**, matched by a seven-tier cascade from
-  the celebration down to the Ordinary Time book for the same weekday.
+- **Attach the Prayers of the Faithful**, matched by a cascade that takes the
+  most specific thing that exists — the celebration, then the calendar date,
+  then season-and-week-and-day, down to the Ordinary Time book for the same
+  weekday. Six passes over the day's own season, its ferial season and Ordinary
+  Time, each walking six match rules, specific prayers before any whole-season
+  catch-all. `server/src/services/potfService.js`.
 - **Show the missalette as it will print**, on the facing page, in the same font
   the Word file uses.
 - **Make a month at once** — a ZIP of one file per day, or one master document —
@@ -50,6 +52,11 @@ is the process, [`/readyz`](https://liturgygen.onrender.com/readyz) is the datab
 - **Type the intercession books in once**, from the printed page, and keep them
   — or hand over a PDF or a photograph of the pages and approve what is read
   out of it.
+- **Work on a phone as well as a desk.** Below 768px the navbar's four tabs move
+  to a fixed bottom bar; below 640px a day tile keeps only the date and the
+  liturgical colour. The two bars are one pair of custom properties,
+  `--app-header` and `--app-nav`, so the day book always clears both. The screen
+  map is in [`docs/02-mockup.md`](docs/02-mockup.md).
 
 | The day book | The Prayers library |
 | --- | --- |
@@ -254,11 +261,35 @@ Outside the gate on purpose: the landing page at `/`, `/healthz` and `/readyz`
 marked unhealthy and killed — and `/auth-forward.js`, which a visitor following
 an email confirmation link needs before they have a session at all.
 
+**`/api/account` is the one route mounted above the parish requirement**, and it
+is still signed in — `requireAuth({ requireOrg: false })`, declared inside the
+router itself rather than inherited. A brand new account has confirmed its email
+and belongs to no parish yet, and this is the route that gets it out of that
+state: requiring a parish to found a parish is a loop. It returns nothing the
+caller did not already have — their own email, their own parish — and never
+echoes the access token back.
+
 Accounts are **off** when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are
 unset, so local development and the desktop build are unaffected, and **on**
 when a host sets both. The service role key bypasses RLS and belongs only in the
 host's settings panel — never in a `VITE_` variable, every one of which is
 compiled into a file the whole internet can download.
+
+**What else is on the door.** `helmet` sets the headers, with the
+Content-Security-Policy written out rather than left at the default:
+`styleSrc` allows `'unsafe-inline'` because Tailwind injects a stylesheet at run
+time, `scriptSrc` does not, and `connect-src` is derived from `SUPABASE_URL`
+instead of hardcoded. `server/test/csp.test.js` asserts it, because a too-tight
+policy fails in the worst way — the browser blocks the request before it leaves
+the page and nothing reaches a server log at all. `express-rate-limit` is on
+`/api` at 600 requests a minute, applied after the gate so a signed-in office is
+counted separately from traffic at the door, and off under `NODE_ENV=test`.
+
+The full audit is two documents, deliberately:
+[`SECURITY-CHECKLIST.md`](SECURITY-CHECKLIST.md) is the table with an evidence
+command per row, and
+[`docs/06-security-and-privacy.md`](docs/06-security-and-privacy.md) is the same
+ground in prose with the reasoning. If one changes, check the other.
 
 ## The API
 
@@ -266,6 +297,8 @@ compiled into a file the whole internet can download.
 | --- | --- | --- |
 | `GET` | `/healthz` | is the process alive — **outside the gate** |
 | `GET` | `/readyz` | is the database reachable — **outside the gate** |
+| `GET` | `/api/account` | the signed-in account and its parish — **signed in, but no parish needed** |
+| `POST` | `/api/account/organisation` | found a parish, and seed its prayer library |
 | `GET` | `/api/calendar/month/:year/:month` | the liturgical calendar for a month |
 | `GET` | `/api/calendar/day/:date` | one liturgical day |
 | `POST` | `/api/calendar/expand` | expand a month plus a filter into a list of dates |
@@ -278,17 +311,25 @@ compiled into a file the whole internet can download.
 | `POST` | `/api/generate/preview` | the composed day as JSON |
 | `POST` | `/api/batch` | start a batch |
 | `GET` | `/api/batch/:id` · `/zip` · `/combined` | progress, and the two downloads |
+| `POST` | `/api/batch/:id/cancel` | stop a batch that is still running |
 | `GET`/`POST` | `/api/potf` | list / create a prayer template |
 | `PUT`/`DELETE` | `/api/potf/:id` | update / delete one |
+| `POST` | `/api/potf/:id/duplicate` | copy one as a starting point |
 | `POST` | `/api/potf/parse` | parse a typed-in prayer page |
 | `POST` | `/api/potf/import/extract` | a PDF or an image of a prayer book → drafts. **Saves nothing** |
 | `POST` | `/api/potf/import/commit` | save the drafts somebody approved |
 | `GET`/`PUT` | `/api/settings` | document defaults |
 | `GET`/`POST`/`DELETE` | `/api/settings/schedule` | the office's Mass schedule |
 
-Several of these are remote procedure calls wearing HTTP rather than resources —
-`/readings/check`, `/calendar/expand`, `/potf/parse`, `/batch/:id/cancel`. That
-is the REST pass still to come, and it is listed in
+That is what the client calls. A handful of smaller routes are not listed —
+`/api/calendar/meta`, `/api/calendar/resolve/:date`, `/api/readings/providers`,
+`/api/readings/:date/full`, `DELETE /api/readings/cache` and
+`/api/batch/:id/events`; `server/src/routes/` is the complete list.
+
+Six of these are action-shaped rather than resource-shaped — `/readings/check`,
+`/calendar/expand`, `/potf/parse`, `/potf/:id/duplicate`, `/generate/preview`
+and `/batch/:id/cancel`. The rest of `server/src/routes/` is resource-oriented,
+with nested resources where there are nested resources. See
 [What I would do next](#what-i-would-do-next).
 
 ## Project structure
@@ -315,6 +356,7 @@ is the REST pass still to come, and it is listed in
       tools/               the demo-seed generator
     desktop/               the Windows launcher, Inno Setup script and build script
     docs/                  planning documents, weekly reports, screenshots
+                           docs/README.md is the index and says what is stale
     compose.yml            PostgreSQL and the API, for local work or self-hosting
 
 ## Architecture
@@ -327,9 +369,11 @@ disk cache), the prayer cascade, and the Word builder. The database holds the
 prayer templates, the hand corrections, the settings and the Mass schedule —
 nothing about any person.
 
-The client is on GitHub Pages. The API and the database are not hosted yet; the
-desktop build runs both on the office's own machine, which is how the app is
-actually used today.
+All three are hosted. The client and the API are one Render web service, served
+from the same origin; the database and the accounts are on Supabase. GitHub
+Pages carries only the client-only demo build. The desktop build still runs the
+API and a database on the office's own machine, but it is the last SQLite build
+and is on hold — see [Desktop build](#desktop-build).
 
 ## Desktop build
 
@@ -359,6 +403,11 @@ later.
 
     npm run test:server     # 138 tests (1 skips without a real PostgreSQL)
     npm run test:client     # 14 tests
+
+152 in total, last run on 2026-10-11. The count that is kept up to date lives in
+the newest entry of [`docs/04-weekly-reports.md`](docs/04-weekly-reports.md);
+everywhere else, including here, refers to it, because a number copied into five
+documents is a number that will be wrong in four of them.
 
 Two of them are there because of regressions that left no trace anywhere.
 `server/test/boot.test.js` makes the four requests the client fires on sign-in,
@@ -394,9 +443,15 @@ served instead of the readings. CI runs both suites plus a client build on Node
   unevenly: some routes check a date, some let it reach the database. A single
   module applied at the edge, so a malformed request is always a readable 400
   and never a 500.
-- **A real REST pass.** Four endpoints are still remote procedure calls wearing
-  HTTP - `/api/readings/check`, `/api/calendar/expand`, `/api/potf/parse` and
-  `/api/batch/:id/cancel`. They work; they are not resources.
+- ~~**A real REST pass.**~~ **Looked at and declined**, 2026-10-09. Six
+  endpoints are action-shaped, and that is the right shape: "check these
+  eighteen dates and tell me which are missing a psalm response" is not a
+  resource, and nor is "cancel this job". Forcing them into `PUT
+  /api/checks/{id}` would invent a resource that nothing stores in order to
+  satisfy a shape. The genuine defect named in the same old paragraph — a
+  `WHERE` clause built by string concatenation in `routes/settings.js` — was the
+  row worth acting on, and it is fixed. Reasoning in
+  [`docs/04-weekly-reports.md`](docs/04-weekly-reports.md).
 - **The desktop build, or a decision to retire it.** It shipped as one `.exe`
   because SQLite was a file. PostgreSQL is a server, so the installer in
   `desktop/release/` is the last SQLite build. See [Desktop build](#desktop-build).
@@ -422,13 +477,11 @@ the Faithful cascade, the REST API, or the calendar service. The Supabase
 project, its Auth configuration and its Row Level Security policies were set up
 by hand.
 
-[`AI-USAGE.md`](AI-USAGE.md) is the full record, entry by entry against a
-commit, including ten cases where it got something wrong and what that cost.
-This paragraph used to claim the migration was mine; it was not, and the
-correction is recorded there rather than quietly made.
-
-The full account — six worked examples with commits, four cases where it was
-wrong, and which files are mine — is in [AI-USAGE.md](AI-USAGE.md).
+[`AI-USAGE.md`](AI-USAGE.md) is the full record: eight worked sessions dated
+against their commits, **ten** cases where it got something wrong and what each
+cost, and a file-by-file list of which code is mine. This paragraph used to
+claim the migration was mine; it was not, and the correction is recorded there
+rather than quietly made.
 
 ## Licence
 

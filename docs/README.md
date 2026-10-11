@@ -3,7 +3,7 @@
 Everything LiturgyGen is marked on that is not code, kept here in the
 repository so it is versioned alongside the thing it describes.
 
-Last checked against the code on **2026-10-09**.
+Last checked against the code on **2026-10-11**.
 
 | File | What it is |
 | --- | --- |
@@ -37,8 +37,13 @@ installed while the table said it was.
 `08-presentation-script.md` is deliberately **not in this repository**: it is the
 spoken script, and it says my name out loud in the first line. It is git-ignored
 and kept in the private coursework folder with the rest of the identifying
-material. The demo video's Google Drive link is kept there too, for the same
-reason — the video shows a face and says a name.
+material.
+
+The demo video's Google Drive link **used to** be kept there for the same reason
+— the video shows a face and says a name — but it was committed to the main
+README on 2026-10-11 and is public now. That contradiction is written up in
+[05-demo-video.md](05-demo-video.md) and wants a deliberate call either way; this
+paragraph no longer describes where the link is.
 
 The full wireframe and design-system documents, with the rendered sheets, are
 Word files kept outside this repository, because they carry a name and a student

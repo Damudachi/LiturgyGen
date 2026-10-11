@@ -162,7 +162,7 @@ dependency order — `db/index.js` first, because everything else imports from i
 | 272 | `UPDATE ... SET ${sets.join(', ')} WHERE id = @id` | the `SET` list is assembled dynamically from which fields changed. Keep that, but number the placeholders: build `sets` as `` `${column} = $${n++}` `` and push the value onto an array in the same order |
 | 277 | `deleteTemplate` | `rowCount` |
 | 291 | `UPDATE ... SET is_placeholder = 1` | `= TRUE` |
-| 359–390 | `resolveForDay` — the cascade, seven tiers, one `LIMIT 1` query per tier | the largest single change. Each tier is its own `await`, so a date that falls through to the last tier is now seven round trips instead of seven in-process reads. **Measure this before optimising it**, but the obvious fix if it matters is one query with a `CASE` ranking and `ORDER BY rank LIMIT 1` |
+| 359–390 | `resolveForDay` — the cascade, one `LIMIT 1` query per tier | the largest single change. Each tier is its own `await`, so a date that falls through to the last tier is a round trip per tier instead of an in-process read. **Re-counted 2026-10-11: six passes, not the "seven tiers" this row and `docs/05` both said** — the day's own season specific, its ferial season specific, the Ordinary Time weekday, then the three whole-season catch-alls in the same order; each pass walks six `MATCH_RULES`. Worst case is six round trips. **Measure this before optimising it**, but the obvious fix if it matters is one query with a `CASE` ranking and `ORDER BY rank LIMIT 1` |
 
 ### `server/src/services/scraperService.js` — reading overrides
 

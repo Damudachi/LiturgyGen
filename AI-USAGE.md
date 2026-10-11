@@ -372,11 +372,15 @@ ribbon rather than six.
 - **File:** `server/src/services/potfService.js` — the `resolveForDay` cascade
 - **Commit:** `28b679d` — https://github.com/Damudachi/LiturgyGen/commit/28b679d
 - **What it does and why it is built this way:** picks which Prayers of the
-  Faithful page belongs to a date. It runs seven tiers, most specific first:
+  Faithful page belongs to a date. Six match rules, most specific first:
   celebration id, then the calendar date (MM-DD, because the book keys 17–24
   December and 2–5 January to dates rather than to liturgical weeks), then
-  season + week + weekday, then narrower combinations, then the Ordinary Time
-  book for the same week and weekday. It stops at the first hit. The order is
+  season + week + weekday, then season + week, season + weekday, and season
+  alone. Those six are run as six passes — the day's own season, its ferial
+  season, then the Ordinary Time book for the same week and weekday, with every
+  specific prayer tried before any whole-season catch-all. It stops at the first
+  hit. (This paragraph said "seven tiers" until 2026-10-11, as did three other
+  documents; counted against the code it is six and six.) The order is
   the order the office uses when they flip through the two physical volumes, and
   I worked it out by watching them do it. The fallback to Ordinary Time is the
   part a naive matcher gets wrong: a day in a proper season with no page of its

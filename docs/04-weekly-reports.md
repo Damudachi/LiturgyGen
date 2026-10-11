@@ -95,6 +95,33 @@ both the entry spread and the bottom tab bar, so it shows a layout that no
 longer exists. The video needs re-recording. 152 tests (138 server — 137 pass, 1
 skipped — and 14 client).
 
+**Added 2026-10-11, same week.** The main README was brought back in line with
+the code, and three of its claims had gone stale rather than merely thin: the
+header still sent readers to *What I would do next* for an API that has been on
+Render for a week, *Architecture* still ended "the API and the database are not
+hosted yet", and *What I would do next* still promised the REST pass that this
+same report had already looked at and declined. The README also undercounted the
+action-shaped endpoints as four against the six counted here, and its AI-usage
+footer claimed "six worked examples ... four cases where it was wrong" against
+the eight and ten actually in `AI-USAGE.md` — a duplicated paragraph that
+contradicted the corrected one three lines above it. The phone layout, `helmet`
+and the rate limit were in the code, in `docs/02`, `docs/03` and this report, and
+nowhere in the README at all; they are now.
+
+Re-measured while there: **28 of 58** commits carry the personal author email,
+not the 25 of 53 recorded on 2026-10-09. Three commits made today through the
+GitHub web interface account for the whole difference — committed *after* the
+row warning that browser edits do exactly that was written. The trap documented
+last week is not theoretical, and `docs/06` and `SECURITY-CHECKLIST.md` now say
+the local git config fixes local commits only. Test counts re-run and unchanged
+at 138 server and 14 client.
+
+**Needs a decision, not a document.** The demo video's Google Drive link was
+committed to the public README today. `docs/05` and `docs/README.md` both said
+it was kept private on purpose, because the video shows a face and says a name.
+Both now flag the contradiction instead of asserting the old rule; which way it
+resolves is a call about the face and the name, not about the docs.
+
 ---
 
 ## Week of 2026-09-29

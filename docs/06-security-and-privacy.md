@@ -53,18 +53,24 @@ file is the prose one; that one is the table with the evidence commands in it.
       is reachable by anyone who walks the log — and an author email is too.
       This row used to say "the eighteen commits made before 27 September" and
       "every commit since carries the noreply address". Counted again on
-      2026-10-09, against 53 commits:
-      `git log --pretty=%ae | sort | uniq -c` returns **25** carrying the
-      personal address and 28 carrying
+      2026-10-11, against 58 commits:
+      `git log --pretty=%ae | sort | uniq -c` returns **28** carrying the
+      personal address and 30 carrying
       `Damudachi@users.noreply.github.com`. Eighteen was never the number, and
-      the cut-off is not clean: **seven of the 25 are dated 2026-10-04**, well
-      after the switch. The repository-local setting is not the leak —
-      `git config --local user.email` still reads the noreply address today.
-      Those seven are the README and asset edits made through GitHub's web
-      interface, which commits as the account's primary email and never sees a
-      local git config. **So the rule is: an edit made in the browser
-      re-attaches the address, every time.** Edit locally, or set the primary
-      address on the GitHub account to the noreply one.
+      the cut-off is not clean: **ten of the 28 are dated after the switch** —
+      seven on 2026-10-04 and three more on 2026-10-11. The repository-local
+      setting is not the leak — `git config --local user.email` still reads the
+      noreply address today. All ten are README and asset edits made through
+      GitHub's web interface, which commits as the account's primary email and
+      never sees a local git config. **So the rule is: an edit made in the
+      browser re-attaches the address, every time.** Edit locally, or set the
+      primary address on the GitHub account to the noreply one.
+
+      The three from 2026-10-11 (`7b6baf8`, `44c816f`, `882fed8`, the demo-video
+      link) were committed in the browser *after* this row was written warning
+      against exactly that. The count in this row is therefore a floor that
+      rises on its own: re-run the command before quoting it, rather than
+      trusting the number printed here.
 
       **Everything in the history that carries an identity**, measured rather
       than assumed:
@@ -72,7 +78,7 @@ file is the prose one; that one is the table with the evidence commands in it.
       | What | Where | Reachable how |
       | --- | --- | --- |
       | A surname in a filename | a reflection-journal PDF under `Docu/`, added in `db5e93b`, modified in `cfba87c`, deleted in `d6baf70` | `git log --all --name-only` |
-      | A personal author email | 25 of 53 commits | `git log --pretty=%ae` |
+      | A personal author email | 28 of 58 commits, counted 2026-10-11 | `git log --pretty=%ae` |
       | Reflogs of a stray embedded git directory | `git(old)/logs/refs/…` in `7e30ee4`, removed in `34eac90` | same |
 
       The `git(old)/` entry is new to this row and was not previously known:

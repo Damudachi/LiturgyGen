@@ -8,7 +8,7 @@
 > | Runtime | **6:13** (373.4s) |
 > | Allowed | 3:00–5:00 |
 > | Over by | **1:13** |
-> | Link | a public Google Drive link, kept in the private coursework folder — not in this repository, because the video shows a face and says a name |
+> | Link | **now in the public README**, committed 2026-10-11 in `7b6baf8`. It was previously kept in the private coursework folder only, because the video shows a face and says a name — see the note below |
 >
 > The cue sheet below targets **4:50**. The recording came in **1:23 over that
 > target** and 1:13 over the hard maximum, so every beat ran long rather than
@@ -29,6 +29,19 @@
 > `mvhd` version 0, timescale 1000, duration 373353. An earlier attempt to read
 > this reported `timescale=0` and was written up as a corrupt file; the atom was
 > fine and the offset in the parse was wrong.
+
+> **The link is now public, and that is a change of decision worth naming.**
+> This document and `docs/README.md` both said the Drive link was kept out of
+> the repository on purpose, because the video shows a face and says a name,
+> and the rest of the identifying material — the presentation script, the
+> wireframe Word files — is kept out for the same reason. The link was committed
+> to the README anyway on 2026-10-11, through the GitHub web interface. The
+> video is unlisted-by-link rather than indexed, so this is a smaller exposure
+> than a name in a filename; it is also a face and a name now reachable from a
+> public README rather than from a private folder. **Either is defensible — but
+> pick one deliberately:** remove the link and point markers at the private
+> folder, or keep it and drop the privacy rationale from `docs/README.md`, which
+> currently claims the opposite.
 
 Three to five minutes, face and voice, as a public Google Drive link. The rubric
 gives 60 of the presentation's 100 points to this, for walking through the app
@@ -71,7 +84,7 @@ read aloud. The deck's speaker notes are written to that length.
 | 2:35–2:55 | **6. The output** | Letter, those four margins, Book Antiqua, and the tab stop at 9630 twips that puts every citation flush right. "Almost right" is the version somebody notices during Mass. |
 | 2:55–3:12 | **7. One origin, one gate** | Supabase issues the session; the server verifies the token and resolves which parish is asking. The gate guards `/api` and **only** `/api` — above `express.static` it served a signed-out browser a JSON error instead of the page that draws the sign-in form, so nobody could ever sign in. Render, database on Supabase. |
 | 3:12–3:32 | **8. Seven tables** | Every parish-owned table carries an `org_id` and every query names it. Then the exception: `readings_cache` does not, because 8 September's readings are the same in every parish and a miss costs three minutes of cooldown. |
-| **3:32–4:12** | **9. The code** → **EDITOR** | `potfService.js`, the cascade — **the part I wrote**. Seven tiers, most specific first, falling back to the Ordinary Time book for the same weekday; an order I got by watching the office work. Then `db/schema.sql` if the clock allows. **Alt-tab back.** |
+| **3:32–4:12** | **9. The code** → **EDITOR** | `potfService.js`, the cascade — **the part I wrote**. Six passes, most specific first, falling back to the Ordinary Time book for the same weekday; an order I got by watching the office work. (**The recording says "seven tiers" and that is wrong** — re-counted 2026-10-11: six passes over the day's season, its ferial season and Ordinary Time, each walking six match rules. Say six, or say "a cascade, most specific first" and name no number.) Then `db/schema.sql` if the clock allows. **Alt-tab back.** |
 | 4:12–4:32 | **10. Challenges** | Pick **one** and tell it properly. The date bug is the best: a DATE parsed as local midnight prints Tuesday's readings at Wednesday's Mass, and nobody debugging wrong readings suspects a date parser. |
 | 4:32–4:44 | **11. Who wrote what** | Plainly: the liturgical logic and the parsers are mine, the PostgreSQL migration and the retired Basic Auth credential check were AI-written and disclosed in `AI-USAGE.md`. What I learned anyway was the ephemeral-filesystem trap. No apology, no dwelling. |
 | 4:44–4:50 | **12. What is next** — back to face | A parish can sign up and found its own library; letting a colleague *into* one is the gap that is left. Thank you. |
